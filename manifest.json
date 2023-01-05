@@ -13,7 +13,7 @@
   "action": {
     "default_popup": "popup.html"
   },
-  "content-scripts": [
+  "content_scripts": [
     {
       "matches": ["<all_urls>"],
       "js": ["content.js"],
@@ -34,5 +34,11 @@
     "storage",
     "webNavigation",
     "*://*/*"
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["assets/*"],
+      "matches": ["*://*/*"]
+    }
   ]
 }
