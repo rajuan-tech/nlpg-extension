@@ -1,8 +1,113 @@
+// constants --start
+const elBrainDrawerID = "hey-brain-drawer";
+const elBrainRootID = "hey-brain-root";
+const elBrainContentID = "hey-brain-content";
+const kBrainRootHeight = 475;
+
+const tabFirstItemID = "hey-brain-root-tab-item-first";
+const tabSecondItemID = "hey-brain-root-tab-item-second";
+const tabThirdItemID = "hey-brain-root-tab-item-third";
+// constants --end
+
+// tab related actions --start
+const createTabItem = (id, title) => {
+  let tabItem = document.createElement("div");
+  tabItem.id = id;
+  tabItem.style.position = "relative";
+  tabItem.style.borderTopLeftRadius = "8px";
+  tabItem.style.borderTopRightRadius = "8px";
+  tabItem.style.border = "1px solid rgba(200, 200, 200, 0.4)";
+  tabItem.style.borderBottomWidth = "0";
+  tabItem.style.backdropFilter = "blur(10px)";
+  tabItem.innerHTML = title;
+  tabItem.style.fontSize = "14px";
+  tabItem.style.fontWeight = "bold";
+  tabItem.style.display = "flex";
+  tabItem.style.alignItems = "center";
+  tabItem.style.justifyContent = "center";
+  tabItem.style.cursor = "pointer";
+  tabItem.style.padding = "0px 12px";
+  return tabItem;
+};
+
+const selectTabItem = (tabID) => {
+  let elTabItem = document.getElementById(tabID);
+  let elTabItemContainer = document.getElementById("hey-brain-root-tabs");
+  let elTabItemContainerChildren = elTabItemContainer.children;
+  for (let i = 0; i < elTabItemContainerChildren.length; i++) {
+    elTabItemContainerChildren[i].style.backgroundColor = "#0A0458";
+    elTabItemContainerChildren[i].style.color = "#fff";
+  }
+  elTabItem.style.backgroundColor = "rgba(243, 243, 243, 0.2)";
+  elTabItem.style.color = "#0A0458";
+
+  var content = "";
+  if (tabID === tabFirstItemID) {
+    content = "smartpass";
+  } else if (tabID === tabSecondItemID) {
+    content = "tags";
+  } else if (tabID === tabThirdItemID) {
+    content = "notes";
+  }
+
+  chrome.runtime.sendMessage(
+    { action: "select-tab", data: content },
+    (response) => {
+      console.log("response:", response);
+      if (response) {
+        if (response.tab === "smartpass") {
+          createSmartpassContent(tabID);
+        } else if (response.tab === "tags") {
+          createTagsContent(tabID);
+        } else if (response.tab === "notes") {
+          createNotesContent(tabID);
+        }
+      }
+    }
+  );
+};
+// tab related actions --end
+
+// tab content related actions --start
+
+// tab smartpass content --start
+const createSmartpassContent = (tid) => {
+  let tabContent = document.createElement("div");
+  tabContent.id = elBrainContentID + "-" + tid + "-content";
+  tabContent.style.position = "relative";
+  tabContent.innerText = elBrainContentID + "-" + tid + "-content !smartpass";
+  document.getElementById(elBrainContentID).innerHTML = "";
+  document.getElementById(elBrainContentID).appendChild(tabContent);
+};
+// tab smartpass content --end
+
+// tab tags content --start
+const createTagsContent = (tid) => {
+  let tabContent = document.createElement("div");
+  tabContent.id = elBrainContentID + "-" + tid + "-content";
+  tabContent.style.position = "relative";
+  tabContent.innerText = elBrainContentID + "-" + tid + "-content !tags";
+  document.getElementById(elBrainContentID).innerHTML = "";
+  document.getElementById(elBrainContentID).appendChild(tabContent);
+};
+// tab tags content --end
+
+// tab notes content --start
+const createNotesContent = (tid) => {
+  let tabContent = document.createElement("div");
+  tabContent.id = elBrainContentID + "-" + tid + "-content";
+  tabContent.style.position = "relative";
+  tabContent.innerText = elBrainContentID + "-" + tid + "-content !notes";
+  document.getElementById(elBrainContentID).innerHTML = "";
+  document.getElementById(elBrainContentID).appendChild(tabContent);
+};
+// tab notes content --end
+
+// tab content related actions --end
+
 chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
   if (request.action === "init") {
-    const elBrainDrawerID = "hey-brain-drawer";
-    const elBrainRootID = "hey-brain-root";
-    const kBrainRootHeight = 475;
+    //TODO: check if user is not logged in, if no user return from here.
 
     // brain drawer --start
     let elBrainDrawer = document.createElement("div");
@@ -87,13 +192,21 @@ chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
     elBrainRoot.appendChild(elBrainRootDismissButton);
     // brain root dismiss button --end
 
+    // brain content --start
+    let elBrainContent = document.createElement("div");
+    elBrainContent.id = elBrainContentID;
+    elBrainContent.style.position = "relative";
+    elBrainContent.style.width = "100%";
+    elBrainContent.style.height = "100%";
+    elBrainContent.style.zIndex = "99999";
+    elBrainContent.style.overflowY = "auto";
+    elBrainContent.style.overflowX = "hidden";
+    elBrainRoot.appendChild(elBrainContent);
+    // brain content --end
+
     // brain root tabs --start
     const tabItemHeight = 32;
     const tabItemDeactiveBackground = "#0A0458";
-
-    const tabFirstItemID = "hey-brain-root-tab-item-first";
-    const tabSecondItemID = "hey-brain-root-tab-item-second";
-    const tabThirdItemID = "hey-brain-root-tab-item-third";
 
     let elBrainRootTabs = document.createElement("div");
     elBrainRootTabs.id = "hey-brain-root-tabs";
@@ -111,110 +224,41 @@ chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
     elBrainRoot.appendChild(elBrainRootTabs);
 
     // brain root tab first --start
-    let elBrainRootTabItemFirst = document.createElement("div");
-    elBrainRootTabItemFirst.id = tabFirstItemID;
-    elBrainRootTabItemFirst.style.position = "relative";
-    elBrainRootTabItemFirst.style.borderTopLeftRadius = "8px";
-    elBrainRootTabItemFirst.style.borderTopRightRadius = "8px";
-    elBrainRootTabItemFirst.style.border = "1px solid rgba(200, 200, 200, 0.4)";
-    elBrainRootTabItemFirst.style.borderBottomWidth = "0";
-    elBrainRootTabItemFirst.style.backgroundColor = "rgba(243, 243, 243, 0.2)";
-    elBrainRootTabItemFirst.style.backdropFilter = "blur(10px)";
+    let elBrainRootTabItemFirst = createTabItem(tabFirstItemID, "SMARTPASS");
     elBrainRootTabItemFirst.style.height = tabItemHeight + "px";
+    elBrainRootTabItemFirst.style.backgroundColor = "rgba(243, 243, 243, 0.2)";
     elBrainRootTabItemFirst.style.color = tabItemDeactiveBackground;
-    elBrainRootTabItemFirst.innerHTML = "SMARTPAST";
-    elBrainRootTabItemFirst.style.fontSize = "14px";
-    elBrainRootTabItemFirst.style.fontWeight = "bold";
-    elBrainRootTabItemFirst.style.display = "flex";
-    elBrainRootTabItemFirst.style.alignItems = "center";
-    elBrainRootTabItemFirst.style.justifyContent = "center";
-    elBrainRootTabItemFirst.style.cursor = "pointer";
-    elBrainRootTabItemFirst.style.padding = "0px 12px";
     elBrainRootTabItemFirst.onclick = () => {
-      elBrainRootTabItemFirst.style.backgroundColor =
-        "rgba(243, 243, 243, 0.2)";
-      elBrainRootTabItemFirst.style.color = tabItemDeactiveBackground;
-      document.getElementById(tabSecondItemID).style.backgroundColor =
-        tabItemDeactiveBackground;
-      document.getElementById(tabSecondItemID).style.color = "#fff";
-      document.getElementById(tabThirdItemID).style.backgroundColor =
-        tabItemDeactiveBackground;
-      document.getElementById(tabThirdItemID).style.color = "#fff";
+      selectTabItem(tabFirstItemID);
     };
     elBrainRootTabs.appendChild(elBrainRootTabItemFirst);
     // brain root tab first --end
 
     // brain root tab second --start
-    let elBrainRootTabItemSecond = document.createElement("div");
-    elBrainRootTabItemSecond.id = tabSecondItemID;
-    elBrainRootTabItemSecond.style.position = "relative";
-    elBrainRootTabItemSecond.style.borderTopLeftRadius = "8px";
-    elBrainRootTabItemSecond.style.borderTopRightRadius = "8px";
-    elBrainRootTabItemSecond.style.border =
-      "1px solid rgba(200, 200, 200, 0.4)";
-    elBrainRootTabItemSecond.style.borderBottomWidth = "0";
-    elBrainRootTabItemSecond.style.backgroundColor = tabItemDeactiveBackground;
-    elBrainRootTabItemSecond.style.backdropFilter = "blur(10px)";
+    let elBrainRootTabItemSecond = createTabItem(tabSecondItemID, "TAGS");
     elBrainRootTabItemSecond.style.height = tabItemHeight + "px";
+    elBrainRootTabItemSecond.style.backgroundColor = tabItemDeactiveBackground;
     elBrainRootTabItemSecond.style.color = "#fff";
-    elBrainRootTabItemSecond.innerHTML = "TAGS";
-    elBrainRootTabItemSecond.style.fontSize = "14px";
-    elBrainRootTabItemSecond.style.fontWeight = "bold";
-    elBrainRootTabItemSecond.style.display = "flex";
-    elBrainRootTabItemSecond.style.alignItems = "center";
-    elBrainRootTabItemSecond.style.justifyContent = "center";
-    elBrainRootTabItemSecond.style.cursor = "pointer";
-    elBrainRootTabItemSecond.style.padding = "0px 12px";
     elBrainRootTabItemSecond.style.marginLeft = "8px";
     elBrainRootTabItemSecond.style.marginRight = "8px";
     elBrainRootTabItemSecond.onclick = () => {
-      elBrainRootTabItemSecond.style.backgroundColor =
-        "rgba(243, 243, 243, 0.2)";
-      elBrainRootTabItemSecond.style.color = tabItemDeactiveBackground;
-      document.getElementById(tabFirstItemID).style.backgroundColor =
-        tabItemDeactiveBackground;
-      document.getElementById(tabFirstItemID).style.color = "#fff";
-      document.getElementById(tabThirdItemID).style.backgroundColor =
-        tabItemDeactiveBackground;
-      document.getElementById(tabThirdItemID).style.color = "#fff";
+      selectTabItem(tabSecondItemID);
     };
     elBrainRootTabs.appendChild(elBrainRootTabItemSecond);
     // brain root tab second --end
 
     // brain root tab second --third
-    let elBrainRootTabItemThird = document.createElement("div");
-    elBrainRootTabItemThird.id = tabThirdItemID;
-    elBrainRootTabItemThird.style.position = "relative";
-    elBrainRootTabItemThird.style.borderTopLeftRadius = "8px";
-    elBrainRootTabItemThird.style.borderTopRightRadius = "8px";
-    elBrainRootTabItemThird.style.border = "1px solid rgba(200, 200, 200, 0.4)";
-    elBrainRootTabItemThird.style.borderBottomWidth = "0";
-    elBrainRootTabItemThird.style.backgroundColor = tabItemDeactiveBackground;
-    elBrainRootTabItemThird.style.backdropFilter = "blur(10px)";
+    let elBrainRootTabItemThird = createTabItem(tabThirdItemID, "NOTES");
     elBrainRootTabItemThird.style.height = tabItemHeight + "px";
+    elBrainRootTabItemThird.style.backgroundColor = tabItemDeactiveBackground;
     elBrainRootTabItemThird.style.color = "#fff";
-    elBrainRootTabItemThird.innerHTML = "NOTES";
-    elBrainRootTabItemThird.style.fontSize = "14px";
-    elBrainRootTabItemThird.style.fontWeight = "bold";
-    elBrainRootTabItemThird.style.display = "flex";
-    elBrainRootTabItemThird.style.alignItems = "center";
-    elBrainRootTabItemThird.style.justifyContent = "center";
-    elBrainRootTabItemThird.style.cursor = "pointer";
-    elBrainRootTabItemThird.style.padding = "0px 12px";
     elBrainRootTabItemThird.onclick = () => {
-      elBrainRootTabItemThird.style.backgroundColor =
-        "rgba(243, 243, 243, 0.2)";
-      elBrainRootTabItemThird.style.color = tabItemDeactiveBackground;
-      document.getElementById(tabFirstItemID).style.backgroundColor =
-        tabItemDeactiveBackground;
-      document.getElementById(tabFirstItemID).style.color = "#fff";
-      document.getElementById(tabSecondItemID).style.backgroundColor =
-        tabItemDeactiveBackground;
-      document.getElementById(tabSecondItemID).style.color = "#fff";
+      selectTabItem(tabThirdItemID);
     };
     elBrainRootTabs.appendChild(elBrainRootTabItemThird);
     // brain root tab second --third
 
     document.body.appendChild(elBrainRoot);
+    selectTabItem(tabFirstItemID);
   }
 });

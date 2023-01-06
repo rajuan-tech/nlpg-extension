@@ -24,16 +24,16 @@
     "extension-pages": "script-src 'unsafe-inline' 'unsafe-eval'; object-src 'self'; img-src * data: 'self' 'unsafe-eval'"
   },
   "offline_enabled": false,
+  "host_permissions": ["https://*/*", "http://*/*"],
   "permissions": [
     "notifications",
     "tabs",
-    "<all_urls>",
     "activeTab",
+    "background",
     "contextMenus",
     "declarativeContent",
     "storage",
-    "webNavigation",
-    "*://*/*"
+    "webNavigation"
   ],
   "web_accessible_resources": [
     {
