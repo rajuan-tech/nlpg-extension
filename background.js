@@ -9,8 +9,6 @@ chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
 });
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  console.log("request:", request);
-  console.log("sender:", sender);
   if (request.action === "select-tab") {
     if (request.data === "smartpass") {
       // will load smartpass data from the server
@@ -26,5 +24,20 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     }
   } else {
     sendResponse({});
+  }
+});
+
+chrome.storage.onChanged.addListener(function (changes, namespace) {
+  for (let key in changes) {
+    if (key === "access_token") {
+      chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+        chrome.tabs.sendMessage(tabs[0].id, {
+          action:
+            changes[key].newValue && changes[key].newValue.length > 0
+              ? "init"
+              : "deinit",
+        });
+      });
+    }
   }
 });
