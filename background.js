@@ -18,7 +18,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       sendResponse({ tab: request.data, data: ["example", "another-tag"] });
     } else if (request.data === "notes") {
       // will load notes data from the server
-      sendResponse({ tab: request.data, data: "lorem ipsum" });
+      sendResponse({ tab: request.data, sender: sender, data: "lorem ipsum" });
     } else {
       sendResponse({});
     }

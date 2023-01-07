@@ -9,6 +9,15 @@ const tabSecondItemID = "hey-brain-root-tab-item-second";
 const tabThirdItemID = "hey-brain-root-tab-item-third";
 // constants --end
 
+// helpers --start
+const pageInfo = () => {
+  return {
+    title: document.title,
+    url: window.location.href,
+  };
+};
+// helpers --end
+
 // init --start
 const init = () => {
   // brain drawer --start
@@ -69,6 +78,8 @@ const init = () => {
   elBrainRoot.style.width = "375px";
   elBrainRoot.style.transition = "all 0.3s ease-in-out";
   elBrainRoot.style.transform = "translateX(100%)";
+  elBrainRoot.style.font = "14px/1.5 Helvetica, sans-serif";
+  elBrainRoot.style.fontSize = "16px";
   // brain root --end
 
   // brain root dismiss button --start
@@ -209,14 +220,13 @@ const selectTabItem = (tabID) => {
   chrome.runtime.sendMessage(
     { action: "select-tab", data: content },
     (response) => {
-      console.log("response:", response);
       if (response) {
         if (response.tab === "smartpass") {
-          createSmartpassContent(tabID);
+          createSmartpassContent(response);
         } else if (response.tab === "tags") {
-          createTagsContent(tabID);
+          createTagsContent(response);
         } else if (response.tab === "notes") {
-          createNotesContent(tabID);
+          createNotesContent(response);
         }
       }
     }
@@ -249,11 +259,63 @@ const createTagsContent = (tid) => {
 // tab tags content --end
 
 // tab notes content --start
-const createNotesContent = (tid) => {
+const createNotesContent = (r) => {
   let tabContent = document.createElement("div");
-  tabContent.id = elBrainContentID + "-" + tid + "-content";
+  tabContent.id = elBrainContentID + "-" + r.tab + "-content";
   tabContent.style.position = "relative";
-  tabContent.innerText = elBrainContentID + "-" + tid + "-content !notes";
+  tabContent.style.height = "100%";
+  console.log(r);
+
+  const favIcon = r.sender.tab.favIconUrl
+    ? `<div><img src="` +
+      r.sender.tab.favIconUrl +
+      `" width="32" height="32" /></div>`
+    : "";
+
+  const title =
+    r.sender.tab.title.length > 100
+      ? r.sender.tab.title.substring(0, 100) + "..."
+      : r.sender.tab.title;
+
+  tabContent.innerHTML =
+    `
+      <div class="flex flex-col space-y-2 h-full">
+        <div class="flex flex-row space-x-2">
+      ` +
+    favIcon +
+    `
+          <div class="font-semibold">` +
+    title +
+    `
+          </div>
+        </div>
+        <div class="flex flex-grow">
+          <textarea class="w-full h-full border border-gray-100 rounded-lg p-2 text-md">` +
+    r.data +
+    `</textarea>
+        </div>
+        <div class="flex flex-row space-x-2 items-center">
+          <p class="flex flex-grow"><a href="https://heybrain.ai/notes" class="text-purple-600 hover:text-purple-500 underline hover:underline text-sm" target="_blank">view all notes</a></p> 
+          <div>
+          <button class="px-6 py-2 font-semibold rounded-full text-xs" style="background:#DDD;color:#666;">
+          EXPORT
+        </button>          
+          </div>
+          <div>
+            <button class="px-6 py-2 text-white font-semibold rounded-full text-xs" style="background:#2B007B;" onclick="
+            (function(e){
+              console.log(e);
+              alert('save note');
+              return false;
+          })(arguments[0]);return false;
+            ">
+              SAVE
+            </button>
+          </div>
+        </div>
+      </div>
+  `;
+
   document.getElementById(elBrainContentID).innerHTML = "";
   document.getElementById(elBrainContentID).appendChild(tabContent);
 };
