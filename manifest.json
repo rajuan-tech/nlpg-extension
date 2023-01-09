@@ -27,6 +27,7 @@
   "host_permissions": ["https://*/*", "http://*/*"],
   "permissions": [
     "notifications",
+    "alarms",
     "tabs",
     "activeTab",
     "background",

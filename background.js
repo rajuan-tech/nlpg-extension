@@ -9,19 +9,24 @@ chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
 });
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  if (request.action === "select-tab") {
-    if (request.data === "smartpass") {
-      // will load smartpass data from the server
-      sendResponse({ tab: request.data, data: [] });
-    } else if (request.data === "tags") {
-      // will load tags data from the server
-      sendResponse({ tab: request.data, data: ["example", "another-tag"] });
-    } else if (request.data === "notes") {
-      // will load notes data from the server
-      sendResponse({ tab: request.data, sender: sender, data: "lorem ipsum" });
-    } else {
-      sendResponse({});
-    }
+  if (request.action === "get-url-data") {
+    fetch(
+      "https://s3.eu-west-2.amazonaws.com/nlpgraph.com/ttttemp0921/get_url_data.json"
+    )
+      .then((response) => response.json())
+      .then((data) => {
+        sendResponse(data);
+      });
+    return true;
+  } else if (request.action === "get-smartpast") {
+    fetch(
+      "https://s3.eu-west-2.amazonaws.com/nlpgraph.com/ttttemp0921/document-embedding-related.json"
+    )
+      .then((response) => response.json())
+      .then((data) => {
+        sendResponse(data);
+      });
+    return true;
   } else {
     sendResponse({});
   }

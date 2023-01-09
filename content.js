@@ -1,13 +1,18 @@
 // constants --start
 const elBrainDrawerID = "hey-brain-drawer";
 const elBrainRootID = "hey-brain-root";
+const elBrainRootTabsID = "hey-brain-root-tabs";
 const elBrainContentID = "hey-brain-content";
+const elBrainLoaderID = "hey-brain-loader";
 const kBrainRootHeight = 475;
 
 const tabFirstItemID = "hey-brain-root-tab-item-first";
 const tabSecondItemID = "hey-brain-root-tab-item-second";
 const tabThirdItemID = "hey-brain-root-tab-item-third";
 // constants --end
+
+var pageData = null;
+var pageSmartPast = [];
 
 // helpers --start
 const pageInfo = () => {
@@ -122,7 +127,7 @@ const init = () => {
   const tabItemDeactiveBackground = "#0A0458";
 
   let elBrainRootTabs = document.createElement("div");
-  elBrainRootTabs.id = "hey-brain-root-tabs";
+  elBrainRootTabs.id = elBrainRootTabsID;
   elBrainRootTabs.style.position = "absolute";
   elBrainRootTabs.style.top = -tabItemHeight - 1 + "px"; // 1px border
   elBrainRootTabs.style.left = "0";
@@ -137,7 +142,7 @@ const init = () => {
   elBrainRoot.appendChild(elBrainRootTabs);
 
   // brain root tab first --start
-  let elBrainRootTabItemFirst = createTabItem(tabFirstItemID, "SMARTPASS");
+  let elBrainRootTabItemFirst = createTabItem(tabFirstItemID, "SMARTPAST");
   elBrainRootTabItemFirst.style.height = tabItemHeight + "px";
   elBrainRootTabItemFirst.style.backgroundColor = "rgba(243, 243, 243, 0.2)";
   elBrainRootTabItemFirst.style.color = tabItemDeactiveBackground;
@@ -172,7 +177,42 @@ const init = () => {
   // brain root tab second --third
 
   document.body.appendChild(elBrainRoot);
-  selectTabItem(tabFirstItemID);
+
+  // load page data --start
+  elBrainRootTabs.style.display = "none";
+  elBrainContent.style.display = "none";
+
+  let elBrainLoader = document.createElement("div");
+  elBrainLoader.id = elBrainLoaderID;
+  elBrainLoader.style.position = "absolute";
+  elBrainLoader.style.top = "0";
+  elBrainLoader.style.left = "0";
+  elBrainLoader.style.width = "100%";
+  elBrainLoader.style.height = "100%";
+  elBrainLoader.style.zIndex = "99999";
+  elBrainLoader.style.display = "flex";
+  elBrainLoader.style.flexDirection = "column";
+  elBrainLoader.style.alignItems = "center";
+  elBrainLoader.style.justifyContent = "center";
+  elBrainLoader.style.boxSizing = "border-box";
+  elBrainLoader.style.fontSize = "16px";
+  elBrainLoader.style.fontWeight = "regular";
+  elBrainLoader.innerText = "Loading...";
+  elBrainRoot.appendChild(elBrainLoader);
+
+  chrome.runtime.sendMessage(
+    { action: "get-url-data", data: {} },
+    (response) => {
+      elBrainRootTabs.style.display = "flex";
+      elBrainContent.style.display = "block";
+      elBrainLoader.style.display = "none";
+      if (response) {
+        pageData = response;
+        selectTabItem(tabFirstItemID);
+      }
+    }
+  );
+  // load page data --end
 };
 // init --end
 
@@ -199,7 +239,7 @@ const createTabItem = (id, title) => {
 
 const selectTabItem = (tabID) => {
   let elTabItem = document.getElementById(tabID);
-  let elTabItemContainer = document.getElementById("hey-brain-root-tabs");
+  let elTabItemContainer = document.getElementById(elBrainRootTabsID);
   let elTabItemContainerChildren = elTabItemContainer.children;
   for (let i = 0; i < elTabItemContainerChildren.length; i++) {
     elTabItemContainerChildren[i].style.backgroundColor = "#0A0458";
@@ -207,45 +247,120 @@ const selectTabItem = (tabID) => {
   }
   elTabItem.style.backgroundColor = "rgba(243, 243, 243, 0.2)";
   elTabItem.style.color = "#0A0458";
-
-  var content = "";
+  document.getElementById(elBrainLoaderID).style.display = "none";
   if (tabID === tabFirstItemID) {
-    content = "smartpass";
+    createSmartpastContent();
   } else if (tabID === tabSecondItemID) {
-    content = "tags";
+    createTagsContent();
   } else if (tabID === tabThirdItemID) {
-    content = "notes";
+    createNotesContent();
   }
-
-  chrome.runtime.sendMessage(
-    { action: "select-tab", data: content },
-    (response) => {
-      if (response) {
-        if (response.tab === "smartpass") {
-          createSmartpassContent(response);
-        } else if (response.tab === "tags") {
-          createTagsContent(response);
-        } else if (response.tab === "notes") {
-          createNotesContent(response);
-        }
-      }
-    }
-  );
 };
 // tab related actions --end
 
 // tab content related actions --start
 
-// tab smartpass content --start
-const createSmartpassContent = (tid) => {
+// tab smartpast content --start
+const createSmartpastContent = () => {
   let tabContent = document.createElement("div");
-  tabContent.id = elBrainContentID + "-" + tid + "-content";
+  tabContent.id = elBrainContentID + "-smartpast-content";
   tabContent.style.position = "relative";
-  tabContent.innerText = elBrainContentID + "-" + tid + "-content !smartpass";
+  tabContent.style.display = "flex";
+  tabContent.style.flexDirection = "column";
+  tabContent.style.width = "100%";
+  tabContent.style.height = "100%";
+  tabContent.innerHTML = "";
   document.getElementById(elBrainContentID).innerHTML = "";
   document.getElementById(elBrainContentID).appendChild(tabContent);
+
+  document.getElementById(elBrainLoaderID).style.display = "flex";
+  chrome.runtime.sendMessage(
+    { action: "get-smartpast", data: {} },
+    (response) => {
+      document.getElementById(elBrainLoaderID).style.display = "none";
+      if (response) {
+        pageSmartPast = response;
+        console.log(pageSmartPast);
+        Object.keys(pageSmartPast).forEach((key) => {
+          const item = pageSmartPast[key];
+          let elSmartpastItem = document.createElement("div");
+          elSmartpastItem.style.position = "relative";
+          elSmartpastItem.style.border = "1px solid rgba(200, 200, 200, 0.4)";
+          elSmartpastItem.style.borderRadius = "12px";
+          elSmartpastItem.style.margin = "8px";
+          elSmartpastItem.style.padding = "8px";
+          elSmartpastItem.style.display = "flex";
+          elSmartpastItem.style.flexDirection = "column";
+          elSmartpastItem.style.justifyContent = "space-between";
+          elSmartpastItem.style.cursor = "pointer";
+          elSmartpastItem.style.boxSizing = "border-box";
+          elSmartpastItem.style.backgroundColor = "white";
+          elSmartpastItem.onclick = () => {
+            window.open(item.url, "_blank");
+          };
+
+          const favIcon = item.favicon
+            ? `<div><img src="` +
+              item.favicon +
+              `" width="32" height="32" /></div>`
+            : "";
+
+          const title =
+            item.title.length > 50
+              ? item.title.substring(0, 50) + "..."
+              : item.title;
+
+          const screenshot = item.screenshot
+            ? `<img src="` +
+              item.screenshot +
+              `" width="100%" height="140px" />`
+            : "";
+
+          const descriptionImgSrc = chrome.runtime.getURL(
+            "assets/images/description.png"
+          );
+
+          const description = item.description
+            ? item.description
+            : "No description.";
+
+          elSmartpastItem.innerHTML =
+            `
+            <div style="position: relative; display: flex; flex-direction: column; justify-content: space-between; font-size: 16px;" class="space-y-4">
+            <div class="flex flex-row space-x-2">
+            ` +
+            favIcon +
+            `
+                <div class="font-semibold">` +
+            title +
+            `
+                </div>
+              </div>
+              ` +
+            screenshot +
+            `  
+            <div class="flex flex-row w-full p-1 space-x-2" style="font-size:12px;">
+              <div class="shrink-0"><img src="` +
+            descriptionImgSrc +
+            `" width="24px" height="24px" /></div>
+            <div>` +
+            description +
+            `</div>
+            </div>
+            </div>
+            `;
+
+          document
+            .getElementById(elBrainContentID + "-smartpast-content")
+            .appendChild(elSmartpastItem);
+        });
+      }
+    }
+  );
+
+  // let elSmartpastContainer = document.createElement("div");
 };
-// tab smartpass content --end
+// tab smartpast content --end
 
 // tab tags content --start
 const createTagsContent = (tid) => {
@@ -259,23 +374,20 @@ const createTagsContent = (tid) => {
 // tab tags content --end
 
 // tab notes content --start
-const createNotesContent = (r) => {
+const createNotesContent = () => {
   let tabContent = document.createElement("div");
-  tabContent.id = elBrainContentID + "-" + r.tab + "-content";
+  tabContent.id = elBrainContentID + "-notes-content";
   tabContent.style.position = "relative";
   tabContent.style.height = "100%";
-  console.log(r);
-
-  const favIcon = r.sender.tab.favIconUrl
-    ? `<div><img src="` +
-      r.sender.tab.favIconUrl +
-      `" width="32" height="32" /></div>`
+  console.log(pageData);
+  const favIcon = pageData.favicon
+    ? `<div><img src="` + pageData.favicon + `" width="32" height="32" /></div>`
     : "";
 
   const title =
-    r.sender.tab.title.length > 100
-      ? r.sender.tab.title.substring(0, 100) + "..."
-      : r.sender.tab.title;
+    pageData.title.length > 100
+      ? pageData.title.substring(0, 100) + "..."
+      : pageData.title;
 
   tabContent.innerHTML =
     `
@@ -291,7 +403,7 @@ const createNotesContent = (r) => {
         </div>
         <div class="flex flex-grow">
           <textarea class="w-full h-full border border-gray-100 rounded-lg p-2 text-md">` +
-    r.data +
+    pageData.notes +
     `</textarea>
         </div>
         <div class="flex flex-row space-x-2 items-center">
