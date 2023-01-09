@@ -280,7 +280,6 @@ const createSmartpastContent = () => {
       document.getElementById(elBrainLoaderID).style.display = "none";
       if (response) {
         pageSmartPast = response;
-        console.log(pageSmartPast);
         Object.keys(pageSmartPast).forEach((key) => {
           const item = pageSmartPast[key];
           let elSmartpastItem = document.createElement("div");
@@ -379,7 +378,6 @@ const createNotesContent = () => {
   tabContent.id = elBrainContentID + "-notes-content";
   tabContent.style.position = "relative";
   tabContent.style.height = "100%";
-  console.log(pageData);
   const favIcon = pageData.favicon
     ? `<div><img src="` + pageData.favicon + `" width="32" height="32" /></div>`
     : "";
