@@ -208,7 +208,8 @@ const init = () => {
       elBrainLoader.style.display = "none";
       if (response) {
         pageData = response;
-        selectTabItem(tabFirstItemID);
+        console.log("pageData", pageData);
+        selectTabItem(tabSecondItemID);
       }
     }
   );
@@ -364,12 +365,53 @@ const createSmartpastContent = () => {
 // tab tags content --start
 const createTagsContent = (tid) => {
   let tabContent = document.createElement("div");
-  tabContent.id = elBrainContentID + "-" + tid + "-content";
+  tabContent.id = elBrainContentID + "-tags-content";
   tabContent.style.position = "relative";
-  tabContent.innerText = elBrainContentID + "-" + tid + "-content !tags";
+  tabContent.style.height = "100%";
+  tabContent.style.display = "flex";
+  tabContent.style.flexDirection = "column";
+
+  tabContent.innerHTML =
+    `
+    <div class="flex flex-grow flex-wrap space-y-4" id="` +
+    elBrainContentID +
+    `-tags-content-active-tags-list">
+    </div>
+    <div class="flex">
+    input
+    </div>
+    <div class="flex flex-grow flex-wrap">
+    suggesteds
+    </div>
+  `;
+
   document.getElementById(elBrainContentID).innerHTML = "";
   document.getElementById(elBrainContentID).appendChild(tabContent);
+  fillTagsContent();
 };
+
+const fillTagsContent = () => {
+  const tags = pageData.tags.split(",");
+
+  var tagsHTML = "";
+  tags.forEach((tag, index) => {
+    tagsHTML +=
+      '<div class="flex flex-row items-center justify-center px-2 py-1 space-x-1 text-sm font-medium rounded-full" style="background-color: #E7E8FC; height:24px;">';
+    tagsHTML += '<div class="flex-shrink-0"><img src="';
+    tagsHTML += chrome.runtime.getURL("assets/images/tag.png");
+    tagsHTML += '" width="16px" height="16px" /></div>';
+    tagsHTML += "<div id='tag-item-" + index + "'>" + tag + "</div>";
+    tagsHTML +=
+      '<div class="flex-shrink-0 cursor-pointer" onclick="(function(e){alert(\'remove tag\');return false;})(arguments[0]);return false;"><img src="';
+    tagsHTML += chrome.runtime.getURL("assets/images/tag-remove.png");
+    tagsHTML += '" width="16px" height="16px" /></div>';
+    tagsHTML += "</div>";
+  });
+  document.getElementById(
+    elBrainContentID + "-tags-content-active-tags-list"
+  ).innerHTML = tagsHTML;
+};
+
 // tab tags content --end
 
 // tab notes content --start
