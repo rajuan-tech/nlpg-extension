@@ -249,6 +249,23 @@ const selectTabItem = (tabID) => {
   elTabItem.style.backgroundColor = "rgba(243, 243, 243, 0.2)";
   elTabItem.style.color = "#0A0458";
   document.getElementById(elBrainLoaderID).style.display = "none";
+
+  if (document.getElementById(elBrainContentID + "-tags-content-input")) {
+    // remove input enter key listener
+    document
+      .getElementById(elBrainContentID + "-tags-content-input")
+      .removeEventListener("keydown", addNewTag);
+
+    // remove tag item remove click listener
+    if (document.getElementsByClassName("remove-tag-item").length > 0) {
+      Array.from(document.getElementsByClassName("remove-tag-item")).forEach(
+        (el) => {
+          el.removeEventListener("click", removeTag, false);
+        }
+      );
+    }
+  }
+
   if (tabID === tabFirstItemID) {
     createSmartpastContent();
   } else if (tabID === tabSecondItemID) {
@@ -371,14 +388,36 @@ const createTagsContent = (tid) => {
   tabContent.style.display = "flex";
   tabContent.style.flexDirection = "column";
 
+  const favIcon = pageData.favicon
+    ? `<div><img src="` + pageData.favicon + `" width="32" height="32" /></div>`
+    : "";
+
+  const title =
+    pageData.title.length > 100
+      ? pageData.title.substring(0, 100) + "..."
+      : pageData.title;
+
   tabContent.innerHTML =
     `
-    <div class="flex flex-grow flex-wrap space-y-4" id="` +
+    <div class="flex flex-row space-x-2">
+    ` +
+    favIcon +
+    `
+        <div class="font-semibold">` +
+    title +
+    `
+        </div>
+      </div>
+    <div class="flex flex-grow flex-wrap" style="align-content: baseline;" id="` +
     elBrainContentID +
     `-tags-content-active-tags-list">
     </div>
     <div class="flex">
-    input
+      <input type="text" id="` +
+    elBrainContentID +
+    `-tags-content-input" 
+      class="flex-grow px-4 py-2 border border-gray-300 rounded-full" 
+      placeholder="Add a tag" />
     </div>
     <div class="flex flex-grow flex-wrap">
     suggesteds
@@ -388,21 +427,73 @@ const createTagsContent = (tid) => {
   document.getElementById(elBrainContentID).innerHTML = "";
   document.getElementById(elBrainContentID).appendChild(tabContent);
   fillTagsContent();
+  document
+    .getElementById(elBrainContentID + "-tags-content-input")
+    .addEventListener("keydown", addNewTag, false);
+};
+
+const addNewTag = (e) => {
+  if (e.keyCode === 13) {
+    // if enter key
+    const el = document.getElementById(
+      elBrainContentID + "-tags-content-input"
+    );
+    const tag = el.value.trim();
+    if (tag.length === 0) return;
+    const tags = pageData.tags.split(",");
+    tags.push(tag);
+    var rtags = [];
+    tags.forEach((tag) => {
+      const t = tag.trim();
+      if (t.length > 0 && rtags.indexOf(t) === -1) {
+        rtags.push(t);
+      }
+    });
+    pageData.tags = rtags.join(",");
+    fillTagsContent();
+    el.value = "";
+  }
+};
+
+const removeTag = (e) => {
+  const el = e.target;
+  const idx = el.attributes["idx"].value;
+  if (idx === undefined) {
+    return;
+  }
+
+  const tags = pageData.tags.split(",");
+  const tag = document.getElementById("tag-item-" + idx).innerText;
+  const index = tags.indexOf(tag);
+  if (index > -1) {
+    tags.splice(index, 1);
+  }
+  pageData.tags = tags.join(",");
+  fillTagsContent();
 };
 
 const fillTagsContent = () => {
   const tags = pageData.tags.split(",");
-
+  if (tags.length === 1 && tags[0] === "") {
+    document.getElementById(
+      elBrainContentID + "-tags-content-active-tags-list"
+    ).innerHTML = "";
+    return;
+  }
   var tagsHTML = "";
   tags.forEach((tag, index) => {
     tagsHTML +=
-      '<div class="flex flex-row items-center justify-center px-2 py-1 space-x-1 text-sm font-medium rounded-full" style="background-color: #E7E8FC; height:24px;">';
+      '<div class="flex flex-row items-center justify-center px-2 py-1 space-x-1 mr-1 mb-1 text-sm font-medium rounded-full" style="background-color: #E7E8FC; height:24px;">';
     tagsHTML += '<div class="flex-shrink-0"><img src="';
     tagsHTML += chrome.runtime.getURL("assets/images/tag.png");
     tagsHTML += '" width="16px" height="16px" /></div>';
     tagsHTML += "<div id='tag-item-" + index + "'>" + tag + "</div>";
     tagsHTML +=
-      '<div class="flex-shrink-0 cursor-pointer" onclick="(function(e){alert(\'remove tag\');return false;})(arguments[0]);return false;"><img src="';
+      '<div class="flex-shrink-0 cursor-pointer remove-tag-item" id="tag-remove-item-id-' +
+      index +
+      '"><img idx="' +
+      index +
+      '" src="';
     tagsHTML += chrome.runtime.getURL("assets/images/tag-remove.png");
     tagsHTML += '" width="16px" height="16px" /></div>';
     tagsHTML += "</div>";
@@ -410,6 +501,24 @@ const fillTagsContent = () => {
   document.getElementById(
     elBrainContentID + "-tags-content-active-tags-list"
   ).innerHTML = tagsHTML;
+
+  // remove tag item remove click listener
+  if (document.getElementsByClassName("remove-tag-item").length > 0) {
+    Array.from(document.getElementsByClassName("remove-tag-item")).forEach(
+      (el) => {
+        el.removeEventListener("click", removeTag, false);
+      }
+    );
+  }
+
+  // add tag item remove click listener
+  if (document.getElementsByClassName("remove-tag-item").length > 0) {
+    Array.from(document.getElementsByClassName("remove-tag-item")).forEach(
+      (el) => {
+        el.addEventListener("click", removeTag, false);
+      }
+    );
+  }
 };
 
 // tab tags content --end
@@ -475,6 +584,7 @@ const createNotesContent = () => {
 
 // tab content related actions --end
 
+// listeners --start
 chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
   if (request.action === "init") {
     chrome.storage.local.get(["access_token"], (data) => {
@@ -487,3 +597,13 @@ chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
     document.body.removeChild(document.getElementById(elBrainRootID));
   }
 });
+
+if (document.readyState !== "complete") {
+  window.addEventListener("load", afterWindowLoaded);
+} else {
+  afterWindowLoaded();
+}
+
+function afterWindowLoaded() {}
+
+// listeners --end
