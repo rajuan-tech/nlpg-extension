@@ -318,9 +318,9 @@ const createSmartpastContent = () => {
           };
 
           const favIcon = item.favicon
-            ? `<div><img src="` +
+            ? `<div style="width:32px;min-width:32px;"><img src="` +
               item.favicon +
-              `" width="32" height="32" /></div>`
+              `" width="24" height="24" /></div>`
             : "";
 
           const title =
@@ -338,33 +338,64 @@ const createSmartpastContent = () => {
             "assets/images/description.png"
           );
 
-          const description = item.description
-            ? item.description
-            : "No description.";
+          var descriptionContent = "";
+          if (item.description && item.description.length > 0) {
+            descriptionContent =
+              `<div class="flex flex-row w-full p-1 space-x-2" style="font-size:12px;">
+              <div class="shrink-0"><img src="` +
+              descriptionImgSrc +
+              `" width="24px" height="24px" /></div>
+            <div>` +
+              item.description +
+              `</div>
+            </div>`;
+          }
+
+          var dateContent = "";
+          if (item.date) {
+            var date = new Date(item.date);
+            var dateStr =
+              date.getDate() +
+              "/" +
+              (date.getMonth() + 1) +
+              "/" +
+              date.getFullYear() +
+              " " +
+              date.getHours() +
+              ":" +
+              date.getMinutes();
+            dateContent =
+              `<div style="margin-left:40px;font-size:12px;opacity:0.5;">` +
+              dateStr +
+              `</div>`;
+          }
 
           elSmartpastItem.innerHTML =
             `
             <div style="position: relative; display: flex; flex-direction: column; justify-content: space-between; font-size: 16px;" class="space-y-4">
-            <div class="flex flex-row space-x-2">
-            ` +
+            <div class="flex flex-col">
+              <div class="flex flex-row space-x-2">
+              ` +
             favIcon +
             `
-                <div class="font-semibold">` +
+                  <div class="font-semibold">` +
             title +
             `
+                  </div>
                 </div>
+                <div style="margin-left:40px;font-size:12px;opacity:0.5;">` +
+            item.domain +
+            `</div>
               </div>
               ` +
             screenshot +
             `  
-            <div class="flex flex-row w-full p-1 space-x-2" style="font-size:12px;">
-              <div class="shrink-0"><img src="` +
-            descriptionImgSrc +
-            `" width="24px" height="24px" /></div>
-            <div>` +
-            description +
-            `</div>
-            </div>
+            ` +
+            descriptionContent +
+            `
+            ` +
+            dateContent +
+            `
             </div>
             `;
 
