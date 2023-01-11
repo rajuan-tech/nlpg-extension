@@ -210,7 +210,7 @@ const init = () => {
       if (response) {
         pageData = response;
         console.log("pageData", pageData);
-        selectTabItem(tabSecondItemID);
+        selectTabItem(tabFirstItemID);
       }
     }
   );
@@ -338,18 +338,20 @@ const createSmartpastContent = () => {
             "assets/images/description.png"
           );
 
-          var descriptionContent = "";
-          if (item.description && item.description.length > 0) {
-            descriptionContent =
-              `<div class="flex flex-row w-full p-1 space-x-2" style="font-size:12px;">
-              <div class="shrink-0"><img src="` +
-              descriptionImgSrc +
-              `" width="24px" height="24px" /></div>
-            <div>` +
-              item.description +
-              `</div>
-            </div>`;
-          }
+          var descriptionText =
+            item.description && item.description.length > 0
+              ? item.description
+              : item.title;
+
+          const descriptionContent =
+            `<div class="flex flex-row w-full p-1 space-x-2" style="font-size:12px;">
+          <div class="shrink-0"><img src="` +
+            descriptionImgSrc +
+            `" width="24px" height="24px" /></div>
+        <div>` +
+            descriptionText +
+            `</div>
+        </div>`;
 
           var dateContent = "";
           if (item.date) {
@@ -365,7 +367,7 @@ const createSmartpastContent = () => {
               ":" +
               date.getMinutes();
             dateContent =
-              `<div style="margin-left:40px;font-size:12px;opacity:0.5;">` +
+              `<div style="margin-left:32px;font-size:12px;opacity:0.5;">` +
               dateStr +
               `</div>`;
           }
