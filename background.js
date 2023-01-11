@@ -27,6 +27,15 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         sendResponse(data);
       });
     return true;
+  } else if (request.action === "get-tag-suggestions") {
+    fetch(
+      "https://s3.eu-west-2.amazonaws.com/nlpgraph.com/ttttemp0921/suggested_tags_s.json"
+    )
+      .then((response) => response.json())
+      .then((data) => {
+        sendResponse(data);
+      });
+    return true;
   } else {
     sendResponse({});
   }

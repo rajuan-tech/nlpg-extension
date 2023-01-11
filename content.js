@@ -13,6 +13,7 @@ const tabThirdItemID = "hey-brain-root-tab-item-third";
 
 var pageData = null;
 var pageSmartPast = [];
+var pageTagsSuggestions = [];
 
 // helpers --start
 const pageInfo = () => {
@@ -254,7 +255,7 @@ const selectTabItem = (tabID) => {
     // remove input enter key listener
     document
       .getElementById(elBrainContentID + "-tags-content-input")
-      .removeEventListener("keydown", addNewTag);
+      .removeEventListener("keydown", tagInputKeydown);
 
     // remove tag item remove click listener
     if (document.getElementsByClassName("remove-tag-item").length > 0) {
@@ -323,8 +324,8 @@ const createSmartpastContent = () => {
             : "";
 
           const title =
-            item.title.length > 50
-              ? item.title.substring(0, 50) + "..."
+            item.title.length > 75
+              ? item.title.substring(0, 75) + "..."
               : item.title;
 
           const screenshot = item.screenshot
@@ -380,21 +381,22 @@ const createSmartpastContent = () => {
 // tab smartpast content --end
 
 // tab tags content --start
-const createTagsContent = (tid) => {
+const createTagsContent = () => {
   let tabContent = document.createElement("div");
   tabContent.id = elBrainContentID + "-tags-content";
   tabContent.style.position = "relative";
   tabContent.style.height = "100%";
   tabContent.style.display = "flex";
   tabContent.style.flexDirection = "column";
+  tabContent.className = "space-y-4";
 
   const favIcon = pageData.favicon
     ? `<div><img src="` + pageData.favicon + `" width="32" height="32" /></div>`
     : "";
 
   const title =
-    pageData.title.length > 100
-      ? pageData.title.substring(0, 100) + "..."
+    pageData.title.length > 35
+      ? pageData.title.substring(0, 35) + "..."
       : pageData.title;
 
   tabContent.innerHTML =
@@ -412,15 +414,17 @@ const createTagsContent = (tid) => {
     elBrainContentID +
     `-tags-content-active-tags-list">
     </div>
-    <div class="flex">
+    <div class="flex ">
       <input type="text" id="` +
     elBrainContentID +
     `-tags-content-input" 
       class="flex-grow px-4 py-2 border border-gray-300 rounded-full" 
       placeholder="Add a tag" />
     </div>
-    <div class="flex flex-grow flex-wrap">
-    suggesteds
+    <div class="flex flex-grow flex-wrap" style="align-content: baseline;" id="` +
+    elBrainContentID +
+    `-tags-content-suggested">
+    
     </div>
   `;
 
@@ -429,10 +433,21 @@ const createTagsContent = (tid) => {
   fillTagsContent();
   document
     .getElementById(elBrainContentID + "-tags-content-input")
-    .addEventListener("keydown", addNewTag, false);
+    .addEventListener("keydown", tagInputKeydown, false);
+
+  chrome.runtime.sendMessage(
+    {
+      action: "get-tag-suggestions",
+    },
+    (response) => {
+      if (response) {
+        fillSuggestionsContent(response);
+      }
+    }
+  );
 };
 
-const addNewTag = (e) => {
+const tagInputKeydown = (e) => {
   if (e.keyCode === 13) {
     // if enter key
     const el = document.getElementById(
@@ -440,19 +455,24 @@ const addNewTag = (e) => {
     );
     const tag = el.value.trim();
     if (tag.length === 0) return;
-    const tags = pageData.tags.split(",");
-    tags.push(tag);
-    var rtags = [];
-    tags.forEach((tag) => {
-      const t = tag.trim();
-      if (t.length > 0 && rtags.indexOf(t) === -1) {
-        rtags.push(t);
-      }
-    });
-    pageData.tags = rtags.join(",");
-    fillTagsContent();
+    addTag(tag);
     el.value = "";
+  } else {
   }
+};
+
+const addTag = (tag) => {
+  const tags = pageData.tags.split(",");
+  tags.push(tag);
+  var rtags = [];
+  tags.forEach((tag) => {
+    const t = tag.trim();
+    if (t.length > 0 && rtags.indexOf(t) === -1) {
+      rtags.push(t);
+    }
+  });
+  pageData.tags = rtags.join(",");
+  fillTagsContent();
 };
 
 const removeTag = (e) => {
@@ -521,6 +541,35 @@ const fillTagsContent = () => {
   }
 };
 
+const fillSuggestionsContent = (items) => {
+  Object.keys(items).forEach((key, index) => {
+    const item = items[key];
+    const tag = item.id;
+    var bgColor =
+      item.kind && item.kind === "recommended" ? "#6CF7D3" : "#82EBFC";
+    var iconSrc =
+      item.kind && item.kind === "recommended" ? "tag" : "tag-suggestion";
+
+    const el = document.createElement("div");
+    el.className =
+      "flex flex-row items-center justify-center px-2 py-1 space-x-1 mr-1 mb-1 text-sm font-medium rounded-full cursor-pointer tag-suggestion-item-" +
+      index;
+    el.style.backgroundColor = bgColor;
+    el.style.height = "24px";
+    el.innerHTML =
+      '<div class="flex-shrink-0"><img src="' +
+      chrome.runtime.getURL("assets/images/" + iconSrc + ".png") +
+      '" width="16px" height="16px" /></div>';
+    el.innerHTML += "<div>" + tag + "</div>";
+    el.addEventListener("click", (e) => {
+      addTag(tag);
+    });
+    document
+      .getElementById(elBrainContentID + "-tags-content-suggested")
+      .appendChild(el);
+  });
+};
+
 // tab tags content --end
 
 // tab notes content --start
@@ -534,8 +583,8 @@ const createNotesContent = () => {
     : "";
 
   const title =
-    pageData.title.length > 100
-      ? pageData.title.substring(0, 100) + "..."
+    pageData.title.length > 35
+      ? pageData.title.substring(0, 35) + "..."
       : pageData.title;
 
   tabContent.innerHTML =
