@@ -527,10 +527,19 @@ const removeTag = (e) => {
 
 const fillTagsContent = () => {
   const tags = pageData.tags.split(",");
-  if (tags.length === 1 && tags[0] === "") {
+  console.log(tags);
+  if ((tags.length === 1 && tags[0] === "") || tags.length === 0) {
     document.getElementById(
       elBrainContentID + "-tags-content-active-tags-list"
     ).innerHTML = "";
+    var emptyStateHTML = "";
+    emptyStateHTML +=
+      '<div class="flex flex-col items-center justify-center text-md font-semibold" style="align-self: center;width: 100%;height: 100%;">';
+    emptyStateHTML += "No tags yet.";
+    emptyStateHTML += "</div>";
+    document.getElementById(
+      elBrainContentID + "-tags-content-active-tags-list"
+    ).innerHTML = emptyStateHTML;
     return;
   }
   var tagsHTML = "";
