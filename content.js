@@ -11,15 +11,33 @@ const tabSecondItemID = "hey-brain-root-tab-item-second";
 const tabThirdItemID = "hey-brain-root-tab-item-third";
 // constants --end
 
+var accessToken = "";
 var pageData = null;
 var pageSmartPast = [];
 var pageTagsSuggestions = [];
 
 // helpers --start
 const pageInfo = () => {
+  var description = document
+    .querySelector('meta[name="description"]')
+    .getAttribute("content");
+  if (!description) {
+    description = document
+      .querySelector('meta[property="og:description"]')
+      .getAttribute("content");
+    if (!description) {
+      description = document
+        .querySelector('meta[property="twitter:description"]')
+        .getAttribute("content");
+      if (!description) {
+        description = "";
+      }
+    }
+  }
   return {
     title: document.title,
     url: window.location.href,
+    description: description,
   };
 };
 // helpers --end
@@ -86,6 +104,7 @@ const init = () => {
   elBrainRoot.style.transform = "translateX(100%)";
   elBrainRoot.style.font = "14px/1.5 Helvetica, sans-serif";
   elBrainRoot.style.fontSize = "16px";
+  elBrainRoot.style.color = "#000";
   // brain root --end
 
   // brain root dismiss button --start
@@ -202,7 +221,13 @@ const init = () => {
   elBrainRoot.appendChild(elBrainLoader);
 
   chrome.runtime.sendMessage(
-    { action: "get-url-data", data: {} },
+    {
+      action: "get-url-data",
+      data: {
+        access_token: accessToken,
+        page_description: pageInfo().description,
+      },
+    },
     (response) => {
       elBrainRootTabs.style.display = "flex";
       elBrainContent.style.display = "block";
@@ -452,6 +477,7 @@ const createTagsContent = () => {
     elBrainContentID +
     `-tags-content-input" 
       class="flex-grow px-4 py-2 border border-gray-300 rounded-full" 
+      style="background: white;"
       placeholder="Add a tag" />
     </div>
     <div class="flex flex-grow flex-wrap" style="align-content: baseline;" id="` +
@@ -495,16 +521,14 @@ const tagInputKeydown = (e) => {
 };
 
 const addTag = (tag) => {
-  const tags = pageData.tags.split(",");
+  const tags = pageData.tags;
   tags.push(tag);
-  var rtags = [];
   tags.forEach((tag) => {
     const t = tag.trim();
-    if (t.length > 0 && rtags.indexOf(t) === -1) {
-      rtags.push(t);
+    if (t.length > 0 && pageData.tags.indexOf(t) === -1) {
+      pageData.tags.push(t);
     }
   });
-  pageData.tags = rtags.join(",");
   fillTagsContent();
 };
 
@@ -515,20 +539,19 @@ const removeTag = (e) => {
     return;
   }
 
-  const tags = pageData.tags.split(",");
+  const tags = pageData.tags;
   const tag = document.getElementById("tag-item-" + idx).innerText;
   const index = tags.indexOf(tag);
   if (index > -1) {
     tags.splice(index, 1);
   }
-  pageData.tags = tags.join(",");
+  pageData.tags = tags;
   fillTagsContent();
 };
 
 const fillTagsContent = () => {
-  const tags = pageData.tags.split(",");
-  console.log(tags);
-  if ((tags.length === 1 && tags[0] === "") || tags.length === 0) {
+  const tags = pageData.tags;
+  if (tags.length === 0) {
     document.getElementById(
       elBrainContentID + "-tags-content-active-tags-list"
     ).innerHTML = "";
@@ -642,7 +665,7 @@ const createNotesContent = () => {
           </div>
         </div>
         <div class="flex flex-grow">
-          <textarea class="w-full h-full border border-gray-100 rounded-lg p-2 text-md">` +
+          <textarea class="w-full h-full border border-gray-100 rounded-lg p-2 text-md" style="background: white;">` +
     pageData.notes +
     `</textarea>
         </div>
@@ -680,6 +703,7 @@ chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
   if (request.action === "init") {
     chrome.storage.local.get(["access_token"], (data) => {
       if (data.access_token) {
+        accessToken = data.access_token;
         init();
       }
     });

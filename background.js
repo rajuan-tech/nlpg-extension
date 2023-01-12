@@ -1,3 +1,5 @@
+const baseURL = "https://api.nlpgraph.com/stage/api";
+
 chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
   if (
     changeInfo.status === "complete" &&
@@ -10,12 +12,22 @@ chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === "get-url-data") {
-    fetch(
-      "https://s3.eu-west-2.amazonaws.com/nlpgraph.com/ttttemp0921/get_url_data.json"
-    )
+    fetch(baseURL + "/brain/get_url_data", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + request.data.access_token,
+      },
+      body: JSON.stringify({
+        url: sender.url,
+        domain: sender.origin,
+        title: sender.tab.title,
+        description: request.data.page_description,
+      }),
+    })
       .then((response) => response.json())
       .then((data) => {
-        sendResponse(data);
+        sendResponse(data.response);
       });
     return true;
   } else if (request.action === "get-smartpast") {
