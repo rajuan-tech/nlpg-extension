@@ -83,11 +83,6 @@ document.addEventListener("DOMContentLoaded", function () {
     req.onreadystatechange = function () {
       if (req.readyState == 4 && req.status == 200) {
         const response = JSON.parse(req.responseText);
-        // // save accessToken to local storage
-        // localStorage.setItem("access_token", response.response.accessToken);
-        // // save user json to local storage
-        // localStorage.setItem("user", JSON.stringify(response.response.user));
-        // save access token to chrome storage
         chrome.storage.local.set({
           access_token: response.response.accessToken,
           user: JSON.stringify(response.response.user),
@@ -107,4 +102,96 @@ document.addEventListener("DOMContentLoaded", function () {
     };
     // End of sign in, up & out actions.
   }); // End of sign in button event listener.
+
+  var signUpButton = document.getElementById("sign-up-button");
+  signUpButton.addEventListener("click", function () {
+    const signingUpText = "SIGNING YOU UP...";
+    if (signUpButton.innerHTML == signingUpText) {
+      return;
+    }
+
+    var username = document.getElementById("sign-up-username");
+    var email = document.getElementById("sign-up-email");
+    var password = document.getElementById("sign-up-password");
+    var passwordConfirm = document.getElementById("sign-up-confirm-password");
+
+    if (username.value == "") {
+      alert("Username is required.");
+      return;
+    }
+
+    if (email.value == "") {
+      alert("Email is required.");
+      return;
+    }
+
+    if (password.value == "") {
+      alert("Password is required.");
+      return;
+    }
+
+    if (password.value !== passwordConfirm.value) {
+      alert("Passwords do not match.");
+      return;
+    }
+
+    username.disabled = true;
+    email.disabled = true;
+    password.disabled = true;
+    passwordConfirm.disabled = true;
+    signUpButton.disabled = true;
+    signUpButton.innerHTML = signingUpText;
+
+    var usernameValue = username.value;
+    var emailValue = email.value;
+    var passwordValue = password.value;
+    const req = new XMLHttpRequest();
+    req.open("POST", baseURL + "/auth/register", true);
+    req.setRequestHeader("Content-type", "application/json");
+    req.send(
+      JSON.stringify({
+        username: usernameValue,
+        email: emailValue,
+        password: passwordValue,
+        firstname: "",
+        lastname: "",
+      })
+    );
+    req.onreadystatechange = function () {
+      if (req.readyState == 4) {
+        const response = JSON.parse(req.responseText);
+        if (
+          response.code === 200 &&
+          response.data &&
+          response.data.accessToken.length > 0
+        ) {
+          chrome.storage.local.set({
+            access_token: response.data.accessToken,
+            user: JSON.stringify(response.data.user),
+          });
+          // hide sign in form
+          document.getElementById("sign-up").style.display = "none";
+          // signed in form
+          document.getElementById("signed-in").style.display = "flex";
+          // load user
+          loadUser();
+        } else {
+          username.disabled = false;
+          email.disabled = false;
+          password.disabled = false;
+          passwordConfirm.disabled = false;
+          signUpButton.disabled = false;
+          signUpButton.innerHTML = "SIGN UP";
+          alert(response.response);
+        }
+      } else {
+        username.disabled = false;
+        email.disabled = false;
+        password.disabled = false;
+        passwordConfirm.disabled = false;
+        signUpButton.disabled = false;
+        signUpButton.innerHTML = "SIGN UP";
+      }
+    };
+  }); // End of sign up button event listener.
 }); // End of DOMContentLoaded event listener.
