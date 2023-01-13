@@ -17,23 +17,35 @@ var pageSmartPast = [];
 var pageTagsSuggestions = [];
 
 // helpers --start
+
+const metaSelector = (name) => {
+  if (!name) {
+    return null;
+  }
+  if (document.querySelector(name)) {
+    return document.querySelector(name);
+  }
+  return null;
+};
+
 const pageInfo = () => {
-  var description = document
-    .querySelector('meta[name="description"]')
-    .getAttribute("content");
+  var description = metaSelector('meta[name="description"]')?.getAttribute(
+    "content"
+  );
   if (!description) {
-    description = document
-      .querySelector('meta[property="og:description"]')
-      .getAttribute("content");
+    description = metaSelector('meta[property="og:description"]')?.getAttribute(
+      "content"
+    );
     if (!description) {
-      description = document
-        .querySelector('meta[property="twitter:description"]')
-        .getAttribute("content");
+      description = metaSelector(
+        'meta[property="twitter:description"]'
+      )?.getAttribute("content");
       if (!description) {
         description = "";
       }
     }
   }
+
   return {
     title: document.title,
     url: window.location.href,
