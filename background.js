@@ -48,6 +48,27 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         sendResponse(data);
       });
     return true;
+  } else if (request.action === "update-notes") {
+    var id = request.data.id;
+    var notes = request.data.notes;
+
+    fetch(baseURL + "/brain/update_url_document", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + request.data.access_token,
+      },
+      body: JSON.stringify({
+        id: id,
+        notes: notes,
+        notes_html: "<p>" + notes + "</p>",
+      }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        sendResponse(data.response);
+      });
+    return true;
   } else {
     sendResponse({});
   }

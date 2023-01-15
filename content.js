@@ -304,6 +304,12 @@ const selectTabItem = (tabID) => {
     }
   }
 
+  if (document.getElementById(elBrainContentID + "-notes-save-content")) {
+    document
+      .getElementById(elBrainContentID + "-notes-save-button")
+      .removeEventListener("click", saveNotes, false);
+  }
+
   if (tabID === tabFirstItemID) {
     createSmartpastContent();
   } else if (tabID === tabSecondItemID) {
@@ -677,27 +683,24 @@ const createNotesContent = () => {
           </div>
         </div>
         <div class="flex flex-grow">
-          <textarea class="w-full h-full border border-gray-100 rounded-lg p-2 text-md" style="background: white;">` +
+          <textarea class="w-full h-full border border-gray-100 rounded-lg p-2 text-md" style="background: white;" id="` +
+    elBrainContentID +
+    `-notes-textarea">` +
     pageData.notes +
     `</textarea>
         </div>
         <div class="flex flex-row space-x-2 items-center">
-          <p class="flex flex-grow"><a href="https://heybrain.ai/notes" class="text-purple-600 hover:text-purple-500 underline hover:underline text-sm" target="_blank">view all notes</a></p> 
-          <div>
-          <button class="px-6 py-2 font-semibold rounded-full text-xs" style="background:#DDD;color:#666;">
-          EXPORT
-        </button>          
+          <div class="flex-grow" id="` +
+    elBrainContentID +
+    `-notes-footer">
           </div>
-          <div>
-            <button class="px-6 py-2 text-white font-semibold rounded-full text-xs" style="background:#2B007B;" onclick="
-            (function(e){
-              console.log(e);
-              alert('save note');
-              return false;
-          })(arguments[0]);return false;
-            ">
-              SAVE
-            </button>
+            <div>
+              <button class="px-6 py-2 text-white font-semibold rounded-full text-xs" style="background:#2B007B;" id="` +
+    elBrainContentID +
+    `-notes-save-button">
+                SAVE
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -705,6 +708,51 @@ const createNotesContent = () => {
 
   document.getElementById(elBrainContentID).innerHTML = "";
   document.getElementById(elBrainContentID).appendChild(tabContent);
+
+  // save notes button click listener
+  document
+    .getElementById(elBrainContentID + "-notes-save-button")
+    .addEventListener("click", saveNotes, false);
+};
+
+const saveNotes = () => {
+  if (
+    document.getElementById(elBrainContentID + "-notes-save-button")
+      .innerText === "SAVING"
+  ) {
+    return;
+  }
+  const notes = document.getElementById(
+    elBrainContentID + "-notes-textarea"
+  ).value;
+  document.getElementById(elBrainContentID + "-notes-save-button").innerText =
+    "SAVING";
+  chrome.runtime.sendMessage(
+    {
+      action: "update-notes",
+      data: {
+        access_token: accessToken,
+        id: pageData.id,
+        notes: notes,
+      },
+    },
+    (response) => {
+      if (response) {
+        pageData.notes = notes;
+        document.getElementById(
+          elBrainContentID + "-notes-save-button"
+        ).innerText = "SAVE";
+        document.getElementById(
+          elBrainContentID + "-notes-footer"
+        ).innerHTML = `<div class="text-xs text-green-500">Notes saved successfully.</div>`;
+        setTimeout(() => {
+          document.getElementById(
+            elBrainContentID + "-notes-footer"
+          ).innerHTML = "";
+        }, 2000);
+      }
+    }
+  );
 };
 // tab notes content --end
 
