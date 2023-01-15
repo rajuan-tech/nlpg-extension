@@ -512,13 +512,25 @@ const createTagsContent = () => {
     .getElementById(elBrainContentID + "-tags-content-input")
     .addEventListener("keydown", tagInputKeydown, false);
 
+  if (document.getElementById(elBrainContentID + "-tags-content-suggested")) {
+    document.getElementById(
+      elBrainContentID + "-tags-content-suggested"
+    ).innerHTML = "Loading suggestions..";
+  }
   chrome.runtime.sendMessage(
     {
-      action: "get-tag-suggestions",
+      action: "suggested-tags",
+      data: {
+        id: pageData.id,
+        access_token: accessToken,
+      },
     },
     (response) => {
       if (response) {
-        fillSuggestionsContent(response);
+        document.getElementById(
+          elBrainContentID + "-tags-content-suggested"
+        ).innerHTML = "";
+        fillSuggestionsContent(response.response);
       }
     }
   );
@@ -548,6 +560,21 @@ const addTag = (tag) => {
     }
   });
   fillTagsContent();
+  chrome.runtime.sendMessage(
+    {
+      action: "add-tags",
+      data: {
+        access_token: accessToken,
+        id: pageData.id,
+        tags: [tag],
+      },
+    },
+    (response) => {
+      if (response) {
+        // Success
+      }
+    }
+  );
 };
 
 const removeTag = (e) => {
@@ -565,6 +592,21 @@ const removeTag = (e) => {
   }
   pageData.tags = tags;
   fillTagsContent();
+  chrome.runtime.sendMessage(
+    {
+      action: "remove-tags",
+      data: {
+        access_token: accessToken,
+        id: pageData.id,
+        tags: [tag],
+      },
+    },
+    (response) => {
+      if (response) {
+        // Success
+      }
+    }
+  );
 };
 
 const fillTagsContent = () => {
