@@ -113,6 +113,25 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         sendResponse(data);
       });
     return true;
+  } else if (request.action === "autocomplete-tags") {
+    fetch(
+      baseURL +
+        "/tag/search/autocomplete?q=" +
+        request.data.query +
+        "&limit=10",
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: "Bearer " + request.data.access_token,
+        },
+      }
+    )
+      .then((response) => response.json())
+      .then((data) => {
+        sendResponse(data);
+      });
+    return true;
   } else {
     sendResponse({});
   }

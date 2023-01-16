@@ -293,6 +293,9 @@ const selectTabItem = (tabID) => {
     document
       .getElementById(elBrainContentID + "-tags-content-input")
       .removeEventListener("keydown", tagInputKeydown);
+    document
+      .getElementById(elBrainContentID + "-tags-content-input")
+      .removeEventListener("keyup", tagInputKeyup);
 
     // remove tag item remove click listener
     if (document.getElementsByClassName("remove-tag-item").length > 0) {
@@ -511,29 +514,37 @@ const createTagsContent = () => {
   document
     .getElementById(elBrainContentID + "-tags-content-input")
     .addEventListener("keydown", tagInputKeydown, false);
+  document
+    .getElementById(elBrainContentID + "-tags-content-input")
+    .addEventListener("keyup", tagInputKeyup, false);
 
-  if (document.getElementById(elBrainContentID + "-tags-content-suggested")) {
-    document.getElementById(
-      elBrainContentID + "-tags-content-suggested"
-    ).innerHTML = "Loading suggestions..";
-  }
-  chrome.runtime.sendMessage(
-    {
-      action: "suggested-tags",
-      data: {
-        id: pageData.id,
-        access_token: accessToken,
-      },
-    },
-    (response) => {
-      if (response) {
-        document.getElementById(
-          elBrainContentID + "-tags-content-suggested"
-        ).innerHTML = "";
-        fillSuggestionsContent(response.response);
-      }
+  if (pageTagsSuggestions.length > 0) {
+    fillSuggestionsContent(pageTagsSuggestions);
+  } else {
+    if (document.getElementById(elBrainContentID + "-tags-content-suggested")) {
+      document.getElementById(
+        elBrainContentID + "-tags-content-suggested"
+      ).innerHTML = "Loading suggestions..";
     }
-  );
+    chrome.runtime.sendMessage(
+      {
+        action: "suggested-tags",
+        data: {
+          id: pageData.id,
+          access_token: accessToken,
+        },
+      },
+      (response) => {
+        if (response) {
+          pageTagsSuggestions = response.response;
+          document.getElementById(
+            elBrainContentID + "-tags-content-suggested"
+          ).innerHTML = "";
+          fillSuggestionsContent(response.response);
+        }
+      }
+    );
+  }
 };
 
 const tagInputKeydown = (e) => {
@@ -547,6 +558,38 @@ const tagInputKeydown = (e) => {
     addTag(tag);
     el.value = "";
   } else {
+  }
+};
+
+const tagInputKeyup = (e) => {
+  if (e.keyCode === 13) {
+    // if enter key
+    return;
+  } else {
+    const el = document.getElementById(
+      elBrainContentID + "-tags-content-input"
+    );
+    const tag = el.value.trim();
+    if (tag.length === 0) {
+      console.log("empty");
+      console.log(pageTagsSuggestions);
+      fillSuggestionsContent(pageTagsSuggestions);
+      return;
+    }
+    chrome.runtime.sendMessage(
+      {
+        action: "autocomplete-tags",
+        data: {
+          access_token: accessToken,
+          query: tag,
+        },
+      },
+      (response) => {
+        if (response) {
+          fillAutoCompleteContent(response.response);
+        }
+      }
+    );
   }
 };
 
@@ -667,9 +710,44 @@ const fillTagsContent = () => {
 };
 
 const fillSuggestionsContent = (items) => {
+  document.getElementById(
+    elBrainContentID + "-tags-content-suggested"
+  ).innerHTML = "";
   Object.keys(items).forEach((key, index) => {
     const item = items[key];
     const tag = item.id;
+    var bgColor =
+      item.kind && item.kind === "recommended" ? "#6CF7D3" : "#82EBFC";
+    var iconSrc =
+      item.kind && item.kind === "recommended" ? "tag" : "tag-suggestion";
+
+    const el = document.createElement("div");
+    el.className =
+      "flex flex-row items-center justify-center px-2 py-1 space-x-1 mr-1 mb-1 text-sm font-medium rounded-full cursor-pointer tag-suggestion-item-" +
+      index;
+    el.style.backgroundColor = bgColor;
+    el.style.height = "24px";
+    el.innerHTML =
+      '<div class="flex-shrink-0"><img src="' +
+      chrome.runtime.getURL("assets/images/" + iconSrc + ".png") +
+      '" width="16px" height="16px" /></div>';
+    el.innerHTML += "<div>" + tag + "</div>";
+    el.addEventListener("click", (e) => {
+      addTag(tag);
+    });
+    document
+      .getElementById(elBrainContentID + "-tags-content-suggested")
+      .appendChild(el);
+  });
+};
+
+const fillAutoCompleteContent = (items) => {
+  document.getElementById(
+    elBrainContentID + "-tags-content-suggested"
+  ).innerHTML = "";
+  Object.keys(items).forEach((key, index) => {
+    const item = items[key];
+    const tag = item.id ? item.id : item;
     var bgColor =
       item.kind && item.kind === "recommended" ? "#6CF7D3" : "#82EBFC";
     var iconSrc =
