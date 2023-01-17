@@ -725,6 +725,11 @@ const fillTagsContent = () => {
 };
 
 const fillSuggestionsContent = (items) => {
+  const el = document.getElementById(elBrainContentID + "-tags-content-input");
+  if (el.value.length > 0) {
+    return;
+  }
+
   document.getElementById(
     elBrainContentID + "-tags-content-suggested"
   ).innerHTML = "";
@@ -760,14 +765,19 @@ const fillSuggestionsContent = (items) => {
 };
 
 const fillAutoCompleteContent = (items) => {
+  const el = document.getElementById(elBrainContentID + "-tags-content-input");
+  if (el.value.length === 0) {
+    return;
+  }
+
   document.getElementById(
     elBrainContentID + "-tags-content-suggested"
   ).innerHTML = "";
 
-  if (pageData.tags.indexOf(tag) === -1) {
-    Object.keys(items).forEach((key, index) => {
-      const item = items[key];
-      const tag = item.id ? item.id : item;
+  Object.keys(items).forEach((key, index) => {
+    const item = items[key];
+    const tag = item.id ? item.id : item;
+    if (pageData.tags.indexOf(tag) === -1) {
       var bgColor =
         item.kind && item.kind === "recommended" ? "#6CF7D3" : "#82EBFC";
       var iconSrc =
@@ -790,8 +800,8 @@ const fillAutoCompleteContent = (items) => {
       document
         .getElementById(elBrainContentID + "-tags-content-suggested")
         .appendChild(el);
-    });
-  }
+    }
+  });
 };
 
 // tab tags content --end
