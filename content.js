@@ -629,7 +629,7 @@ const addTag = (tag) => {
     },
     (response) => {
       if (response) {
-        // Success
+        fillSuggestionsContent(pageTagsSuggestions);
       }
     }
   );
@@ -661,7 +661,7 @@ const removeTag = (e) => {
     },
     (response) => {
       if (response) {
-        // Success
+        fillSuggestionsContent(pageTagsSuggestions);
       }
     }
   );
@@ -731,28 +731,31 @@ const fillSuggestionsContent = (items) => {
   Object.keys(items).forEach((key, index) => {
     const item = items[key];
     const tag = item.id;
-    var bgColor =
-      item.kind && item.kind === "recommended" ? "#6CF7D3" : "#82EBFC";
-    var iconSrc =
-      item.kind && item.kind === "recommended" ? "tag" : "tag-suggestion";
 
-    const el = document.createElement("div");
-    el.className =
-      "flex flex-row items-center justify-center px-2 py-1 space-x-1 mr-1 mb-1 text-sm font-medium rounded-full cursor-pointer tag-suggestion-item-" +
-      index;
-    el.style.backgroundColor = bgColor;
-    el.style.height = "24px";
-    el.innerHTML =
-      '<div class="flex-shrink-0"><img src="' +
-      chrome.runtime.getURL("assets/images/" + iconSrc + ".png") +
-      '" width="16px" height="16px" /></div>';
-    el.innerHTML += "<div>" + tag + "</div>";
-    el.addEventListener("click", (e) => {
-      addTag(tag);
-    });
-    document
-      .getElementById(elBrainContentID + "-tags-content-suggested")
-      .appendChild(el);
+    if (pageData.tags.indexOf(tag) === -1) {
+      var bgColor =
+        item.kind && item.kind === "recommended" ? "#6CF7D3" : "#82EBFC";
+      var iconSrc =
+        item.kind && item.kind === "recommended" ? "tag" : "tag-suggestion";
+
+      const el = document.createElement("div");
+      el.className =
+        "flex flex-row items-center justify-center px-2 py-1 space-x-1 mr-1 mb-1 text-sm font-medium rounded-full cursor-pointer tag-suggestion-item-" +
+        index;
+      el.style.backgroundColor = bgColor;
+      el.style.height = "24px";
+      el.innerHTML =
+        '<div class="flex-shrink-0"><img src="' +
+        chrome.runtime.getURL("assets/images/" + iconSrc + ".png") +
+        '" width="16px" height="16px" /></div>';
+      el.innerHTML += "<div>" + tag + "</div>";
+      el.addEventListener("click", (e) => {
+        addTag(tag);
+      });
+      document
+        .getElementById(elBrainContentID + "-tags-content-suggested")
+        .appendChild(el);
+    }
   });
 };
 
@@ -760,32 +763,35 @@ const fillAutoCompleteContent = (items) => {
   document.getElementById(
     elBrainContentID + "-tags-content-suggested"
   ).innerHTML = "";
-  Object.keys(items).forEach((key, index) => {
-    const item = items[key];
-    const tag = item.id ? item.id : item;
-    var bgColor =
-      item.kind && item.kind === "recommended" ? "#6CF7D3" : "#82EBFC";
-    var iconSrc =
-      item.kind && item.kind === "recommended" ? "tag" : "tag-suggestion";
 
-    const el = document.createElement("div");
-    el.className =
-      "flex flex-row items-center justify-center px-2 py-1 space-x-1 mr-1 mb-1 text-sm font-medium rounded-full cursor-pointer tag-suggestion-item-" +
-      index;
-    el.style.backgroundColor = bgColor;
-    el.style.height = "24px";
-    el.innerHTML =
-      '<div class="flex-shrink-0"><img src="' +
-      chrome.runtime.getURL("assets/images/" + iconSrc + ".png") +
-      '" width="16px" height="16px" /></div>';
-    el.innerHTML += "<div>" + tag + "</div>";
-    el.addEventListener("click", (e) => {
-      addTag(tag);
+  if (pageData.tags.indexOf(tag) === -1) {
+    Object.keys(items).forEach((key, index) => {
+      const item = items[key];
+      const tag = item.id ? item.id : item;
+      var bgColor =
+        item.kind && item.kind === "recommended" ? "#6CF7D3" : "#82EBFC";
+      var iconSrc =
+        item.kind && item.kind === "recommended" ? "tag" : "tag-suggestion";
+
+      const el = document.createElement("div");
+      el.className =
+        "flex flex-row items-center justify-center px-2 py-1 space-x-1 mr-1 mb-1 text-sm font-medium rounded-full cursor-pointer tag-suggestion-item-" +
+        index;
+      el.style.backgroundColor = bgColor;
+      el.style.height = "24px";
+      el.innerHTML =
+        '<div class="flex-shrink-0"><img src="' +
+        chrome.runtime.getURL("assets/images/" + iconSrc + ".png") +
+        '" width="16px" height="16px" /></div>';
+      el.innerHTML += "<div>" + tag + "</div>";
+      el.addEventListener("click", (e) => {
+        addTag(tag);
+      });
+      document
+        .getElementById(elBrainContentID + "-tags-content-suggested")
+        .appendChild(el);
     });
-    document
-      .getElementById(elBrainContentID + "-tags-content-suggested")
-      .appendChild(el);
-  });
+  }
 };
 
 // tab tags content --end
