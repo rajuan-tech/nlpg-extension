@@ -524,7 +524,8 @@ const createTagsContent = () => {
     if (document.getElementById(elBrainContentID + "-tags-content-suggested")) {
       document.getElementById(
         elBrainContentID + "-tags-content-suggested"
-      ).innerHTML = "Loading suggestions..";
+      ).innerHTML =
+        "<p class='text-xs text-gray-500 text-center w-full'>Loading suggestions..</p>";
     }
     chrome.runtime.sendMessage(
       {
@@ -571,10 +572,14 @@ const tagInputKeyup = (e) => {
     );
     const tag = el.value.trim();
     if (tag.length === 0) {
-      console.log("empty");
-      console.log(pageTagsSuggestions);
       fillSuggestionsContent(pageTagsSuggestions);
       return;
+    }
+    if (document.getElementById(elBrainContentID + "-tags-content-suggested")) {
+      document.getElementById(
+        elBrainContentID + "-tags-content-suggested"
+      ).innerHTML =
+        "<p class='text-xs text-gray-500 text-center w-full'>Loading autocomplete..</p>";
     }
     chrome.runtime.sendMessage(
       {
@@ -587,6 +592,16 @@ const tagInputKeyup = (e) => {
       (response) => {
         if (response) {
           fillAutoCompleteContent(response.response);
+        } else {
+          if (
+            document.getElementById(
+              elBrainContentID + "-tags-content-suggested"
+            )
+          ) {
+            document.getElementById(
+              elBrainContentID + "-tags-content-suggested"
+            ).innerHTML = "";
+          }
         }
       }
     );

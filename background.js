@@ -1,4 +1,5 @@
 const baseURL = "https://api.nlpgraph.com/stage/api";
+var autoCompleteControllers = [];
 
 chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
   if (
@@ -114,6 +115,15 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       });
     return true;
   } else if (request.action === "autocomplete-tags") {
+    if (autoCompleteControllers.length > 0) {
+      autoCompleteControllers.forEach((controller) => {
+        controller.abort();
+      });
+      autoCompleteControllers = [];
+    }
+
+    var autoCompleteController = new AbortController();
+    autoCompleteControllers.push(autoCompleteController);
     fetch(
       baseURL +
         "/tag/search/autocomplete?q=" +
@@ -125,11 +135,13 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
           "Content-Type": "application/json",
           Authorization: "Bearer " + request.data.access_token,
         },
+        signal: autoCompleteController.signal,
       }
     )
       .then((response) => response.json())
       .then((data) => {
         sendResponse(data);
+        isLoadingAutocomplete = false;
       });
     return true;
   } else {
