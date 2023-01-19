@@ -550,7 +550,11 @@ const createTagsContent = () => {
       },
       (response) => {
         if (response) {
-          pageTagsSuggestions = response.response;
+          Object.keys(response.response).forEach((key) => {
+            var r = response.response[key];
+            r.local_type = "suggested";
+            pageTagsSuggestions.push(r);
+          });
           document.getElementById(
             elBrainContentID + "-tags-content-suggested"
           ).innerHTML = "";
@@ -697,7 +701,11 @@ const loadRecommendedTags = () => {
     },
     (response) => {
       if (response) {
-        pageTagsRecommendations = response.response;
+        Object.keys(response.response).forEach((key) => {
+          var r = response.response[key];
+          r.local_type = "recommended";
+          pageTagsRecommendations.push(r);
+        });
         fillSuggestionsContent();
       }
     }
@@ -787,6 +795,11 @@ const fillSuggestionsContent = () => {
         item.kind && item.kind === "recommended" ? "#6CF7D3" : "#82EBFC";
       var iconSrc =
         item.kind && item.kind === "recommended" ? "tag" : "tag-suggestion";
+
+      if (item.local_type && item.local_type === "recommended") {
+        bgColor = "#6CF7D3";
+        iconSrc = "tag";
+      }
 
       const el = document.createElement("div");
       el.className =
