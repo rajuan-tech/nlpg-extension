@@ -17,7 +17,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: "Bearer " + request.data.access_token,
+        api_key: request.data.access_token,
       },
       body: JSON.stringify({
         url: sender.url,
@@ -48,7 +48,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: "Bearer " + request.data.access_token,
+        api_key: request.data.access_token,
       },
       body: JSON.stringify({
         id: id,
@@ -69,7 +69,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: "Bearer " + request.data.access_token,
+        api_key: request.data.access_token,
       },
       body: JSON.stringify({
         id: id,
@@ -89,7 +89,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: "Bearer " + request.data.access_token,
+        api_key: request.data.access_token,
       },
       body: JSON.stringify({
         id: id,
@@ -106,7 +106,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-        Authorization: "Bearer " + request.data.access_token,
+        api_key: request.data.access_token,
       },
     })
       .then((response) => response.json())
@@ -133,7 +133,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
-          Authorization: "Bearer " + request.data.access_token,
+          api_key: request.data.access_token,
         },
         signal: autoCompleteController.signal,
       }

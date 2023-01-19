@@ -84,7 +84,7 @@ document.addEventListener("DOMContentLoaded", function () {
       if (req.readyState == 4 && req.status == 200) {
         const response = JSON.parse(req.responseText);
         chrome.storage.local.set({
-          access_token: response.response.accessToken,
+          access_token: response.response.user.api_key,
           user: JSON.stringify(response.response.user),
         });
         // hide sign in form
@@ -163,10 +163,12 @@ document.addEventListener("DOMContentLoaded", function () {
         if (
           response.code === 200 &&
           response.data &&
-          response.data.accessToken.length > 0
+          response.data.accessToken.length > 0 &&
+          response.data.user &&
+          response.data.user.api_key
         ) {
           chrome.storage.local.set({
-            access_token: response.data.accessToken,
+            access_token: response.data.user.api_key,
             user: JSON.stringify(response.data.user),
           });
           // hide sign in form
