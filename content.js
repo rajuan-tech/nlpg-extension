@@ -15,6 +15,7 @@ var accessToken = "";
 var pageData = null;
 var pageSmartPast = [];
 var pageTagsSuggestions = [];
+var pageTagsRecommendations = [];
 
 // helpers --start
 
@@ -519,7 +520,7 @@ const createTagsContent = () => {
     .addEventListener("keyup", tagInputKeyup, false);
 
   if (pageTagsSuggestions.length > 0) {
-    fillSuggestionsContent(pageTagsSuggestions);
+    fillSuggestionsContent();
   } else {
     if (document.getElementById(elBrainContentID + "-tags-content-suggested")) {
       document.getElementById(
@@ -541,11 +542,12 @@ const createTagsContent = () => {
           document.getElementById(
             elBrainContentID + "-tags-content-suggested"
           ).innerHTML = "";
-          fillSuggestionsContent(response.response);
+          fillSuggestionsContent();
         }
       }
     );
   }
+  loadRecommendedTags();
 };
 
 const tagInputKeydown = (e) => {
@@ -572,7 +574,7 @@ const tagInputKeyup = (e) => {
     );
     const tag = el.value.trim();
     if (tag.length === 0) {
-      fillSuggestionsContent(pageTagsSuggestions);
+      fillSuggestionsContent();
       return;
     }
     if (document.getElementById(elBrainContentID + "-tags-content-suggested")) {
@@ -629,7 +631,8 @@ const addTag = (tag) => {
     },
     (response) => {
       if (response) {
-        fillSuggestionsContent(pageTagsSuggestions);
+        fillSuggestionsContent();
+        loadRecommendedTags();
       }
     }
   );
@@ -661,7 +664,29 @@ const removeTag = (e) => {
     },
     (response) => {
       if (response) {
-        fillSuggestionsContent(pageTagsSuggestions);
+        fillSuggestionsContent();
+        loadRecommendedTags();
+      }
+    }
+  );
+};
+
+const loadRecommendedTags = () => {
+  if (pageData.tags.length === 0) {
+    return;
+  }
+  chrome.runtime.sendMessage(
+    {
+      action: "recommended-tags",
+      data: {
+        id: pageData.id,
+        access_token: accessToken,
+      },
+    },
+    (response) => {
+      if (response) {
+        pageTagsRecommendations = response.response;
+        fillSuggestionsContent();
       }
     }
   );
@@ -724,7 +749,7 @@ const fillTagsContent = () => {
   }
 };
 
-const fillSuggestionsContent = (items) => {
+const fillSuggestionsContent = () => {
   const el = document.getElementById(elBrainContentID + "-tags-content-input");
   if (el.value.length > 0) {
     return;
@@ -733,8 +758,16 @@ const fillSuggestionsContent = (items) => {
   document.getElementById(
     elBrainContentID + "-tags-content-suggested"
   ).innerHTML = "";
-  Object.keys(items).forEach((key, index) => {
-    const item = items[key];
+
+  if (
+    pageTagsSuggestions.length === 0 &&
+    pageTagsRecommendations.length === 0
+  ) {
+    return;
+  }
+  const combined = pageTagsSuggestions.concat(pageTagsRecommendations);
+  Object.keys(combined).forEach((key, index) => {
+    const item = combined[key];
     const tag = item.id;
 
     if (pageData.tags.indexOf(tag) === -1) {

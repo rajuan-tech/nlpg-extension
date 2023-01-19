@@ -114,6 +114,25 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         sendResponse(data);
       });
     return true;
+  } else if (request.action === "recommended-tags") {
+    fetch(
+      baseURL +
+        "/tag/recommended?doc_id=" +
+        request.data.id +
+        "&type=keyword&limit=10",
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          api_key: request.data.access_token,
+        },
+      }
+    )
+      .then((response) => response.json())
+      .then((data) => {
+        sendResponse(data);
+      });
+    return true;
   } else if (request.action === "autocomplete-tags") {
     if (autoCompleteControllers.length > 0) {
       autoCompleteControllers.forEach((controller) => {
