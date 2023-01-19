@@ -61,6 +61,31 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         sendResponse(data.response);
       });
     return true;
+  } else if (request.action === "save-screenshot") {
+    var id = request.data.id;
+    const getScreenshot = new Promise((res, rej) => {
+      chrome.tabs.captureVisibleTab(null, {}, function (dataUrl) {
+        res(dataUrl);
+      });
+    });
+    getScreenshot.then((data) => {
+      fetch(baseURL + "/brain/update_url_document", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          api_key: request.data.access_token,
+        },
+        body: JSON.stringify({
+          id: id,
+          screenshot: data,
+        }),
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          sendResponse(data.response);
+        });
+    });
+    return true;
   } else if (request.action === "add-tags") {
     var id = request.data.id;
     var tags = request.data.tags;

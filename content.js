@@ -249,6 +249,18 @@ const init = () => {
         pageData = response;
         console.log("pageData", pageData);
         selectTabItem(tabFirstItemID);
+        if (!pageData.screenshot_url || pageData.screenshot_url.length === 0) {
+          chrome.runtime.sendMessage(
+            {
+              action: "save-screenshot",
+              data: {
+                access_token: accessToken,
+                id: pageData.id,
+              },
+            },
+            (response) => {}
+          );
+        }
       }
     }
   );

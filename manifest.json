@@ -24,7 +24,7 @@
     "extension-pages": "script-src 'unsafe-inline' 'unsafe-eval'; object-src 'self'; img-src * data: 'self' 'unsafe-eval'"
   },
   "offline_enabled": false,
-  "host_permissions": ["https://*/*", "http://*/*"],
+  "host_permissions": ["https://*/*", "http://*/*", "<all_urls>"],
   "permissions": [
     "notifications",
     "alarms",
