@@ -29,23 +29,28 @@ const metaSelector = (name) => {
   return null;
 };
 
-const pageInfo = () => {
-  var description = metaSelector('meta[name="description"]')?.getAttribute(
-    "content"
-  );
-  if (!description) {
-    description = metaSelector('meta[property="og:description"]')?.getAttribute(
-      "content"
-    );
-    if (!description) {
-      description = metaSelector(
-        'meta[property="twitter:description"]'
-      )?.getAttribute("content");
-      if (!description) {
-        description = "";
-      }
-    }
+/**
+ * Returns the content of a meta tag
+ * 
+ * @param {string} selector
+ * @returns {string} content of the meta tag
+ */
+const getMetaContent = (selector) => {
+  if (!selector) {
+    return '';
   }
+   
+  if (document.querySelector(selector)) {
+    return document.querySelector(selector).getAttribute("content");
+  }
+  
+  return '';
+}
+
+const pageInfo = () => {
+  const description = getMetaContent('meta[name="description"]')
+    || getMetaContent('meta[property="og:description"]')
+    || getMetaContent('meta[property="twitter:description"]');
 
   return {
     title: document.title,
@@ -353,13 +358,24 @@ const createSmartpastContent = () => {
 
   document.getElementById(elBrainLoaderID).style.display = "flex";
   chrome.runtime.sendMessage(
-    { action: "get-smartpast", data: {} },
+    { action: "get-smartpast", data: {
+      access_token: accessToken,
+      id: pageData.id,
+      is_new: 1,
+      text: pageData.title,
+      limit: 10,
+    }
+  },
     (response) => {
       document.getElementById(elBrainLoaderID).style.display = "none";
       if (response) {
         pageSmartPast = response;
-        Object.keys(pageSmartPast).forEach((key) => {
-          const item = pageSmartPast[key];
+        console.log("pageSmartPast", pageSmartPast);
+        pageSmartPast.forEach((item) => {
+          if (!item.favicon_url) {
+            item.favicon_url = "https://www.google.com/s2/favicons?domain=" + item.url + "&sz=64";
+          }
+          
           let elSmartpastItem = document.createElement("div");
           elSmartpastItem.style.position = "relative";
           elSmartpastItem.style.border = "1px solid rgba(200, 200, 200, 0.4)";
@@ -376,22 +392,20 @@ const createSmartpastContent = () => {
             window.open(item.url, "_blank");
           };
 
-          const favIcon = item.favicon
-            ? `<div style="width:32px;min-width:32px;"><img src="` +
-              item.favicon +
-              `" width="24" height="24" /></div>`
-            : "";
+          const favIcon = `
+            <div style="width:32px;min-width:32px;">
+              <img src="${item.favicon_url}" width="24" height="24" />
+            </div>
+          `
 
           const title =
             item.title.length > 75
               ? item.title.substring(0, 75) + "..."
               : item.title;
 
-          const screenshot = item.screenshot
-            ? `<img src="` +
-              item.screenshot +
-              `" width="100%" height="140px" />`
-            : "";
+          const screenshot_url = item.screenshot_url ? item.screenshot_url : item.favicon_url;
+          const blur_effect = screenshot_url == item.favicon_url ? "style='filter: blur(15px);'" : "";
+          const screenshot = `<img src="${screenshot_url}" width="100%" height="140px" ${blur_effect}>`
 
           const descriptionImgSrc = chrome.runtime.getURL(
             "assets/images/description.png"
@@ -402,20 +416,18 @@ const createSmartpastContent = () => {
               ? item.description
               : item.title;
 
-          const descriptionContent =
-            `<div class="flex flex-row w-full p-1 space-x-2" style="font-size:12px;">
-          <div class="shrink-0"><img src="` +
-            descriptionImgSrc +
-            `" width="24px" height="24px" /></div>
-        <div>` +
-            descriptionText +
-            `</div>
-        </div>`;
+          const descriptionContent = `
+            <div class="flex flex-row w-full p-1 space-x-2" style="font-size:12px;">
+              <div class="shrink-0"><img src="${descriptionImgSrc}" width="24px" height="24px" /></div>
+              <div>${descriptionText}</div>
+            </div>
+          `;
 
           var dateContent = "";
-          if (item.date) {
-            var date = new Date(item.date);
-            var dateStr =
+
+          if (item.__timestamp) {
+            const date = new Date(item.__timestamp);
+            const dateStr =
               date.getDate() +
               "/" +
               (date.getMonth() + 1) +

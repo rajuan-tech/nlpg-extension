@@ -32,12 +32,26 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       });
     return true;
   } else if (request.action === "get-smartpast") {
-    fetch(
-      "https://s3.eu-west-2.amazonaws.com/nlpgraph.com/ttttemp0921/document-embedding-related.json"
-    )
+    const url = new URL(baseURL + "/brain/embeddings/related")
+
+    url.search = new URLSearchParams({
+      id: request.data.id,
+      text: request.data.text,
+      is_new: request.data.is_new ? 1 : 0,
+      limit: request.data.limit || 10,
+    });
+
+    console.log(request.data.access_token);
+    
+    fetch(url.toString(), {
+      headers: {
+        "Content-Type": "application/json",
+        api_key: request.data.access_token,
+      }
+    })
       .then((response) => response.json())
       .then((data) => {
-        sendResponse(data);
+        sendResponse(data.response);
       });
     return true;
   } else if (request.action === "update-notes") {
