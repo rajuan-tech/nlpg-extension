@@ -202,10 +202,34 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         isLoadingAutocomplete = false;
       });
     return true;
+  } else if (request.action === "sync-history") {
+    getHistory()
+    .then((history) => {
+      sendResponse(history);
+    });
+
+    return true;
   } else {
     sendResponse({});
   }
 });
+
+// get all chrome history
+const getHistory = () => {
+  return new Promise((resolve, reject) => {
+    chrome.history.search(
+      {
+        text: "",
+        startTime: 0,
+        endTime: Date.now(),
+        maxResults: 100000,
+      },
+      (historyItems) => {
+        resolve(historyItems);
+      }
+    );
+  });
+};
 
 chrome.storage.onChanged.addListener(function (changes, namespace) {
   for (let key in changes) {
