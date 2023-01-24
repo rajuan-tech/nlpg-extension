@@ -445,6 +445,19 @@ const createSmartpastContent = () => {
               `</div>`;
           }
 
+          let domain = item.domain;
+          let url = item.url;
+          
+          // replace www. with empty string if www. only occurs once
+          // once because there might be such domain: "www.examplewww.com"
+          if (domain && domain.split("www.").length === 2) {
+            domain = domain.replace("www.", "");
+          }
+
+          if (domain && url) {
+            domain = url.split('//')[0] + '//' + domain;
+          }
+
           elSmartpastItem.innerHTML =
             `
             <div style="position: relative; display: flex; flex-direction: column; justify-content: space-between; font-size: 16px;" class="space-y-4">
@@ -459,7 +472,7 @@ const createSmartpastContent = () => {
                   </div>
                 </div>
                 <div style="margin-left:40px;font-size:12px;opacity:0.5;">` +
-            item.domain +
+            domain +
             `</div>
               </div>
               ` +
