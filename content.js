@@ -56,6 +56,7 @@ const pageInfo = () => {
     title: document.title,
     url: window.location.href,
     description: description,
+    domain: window.location.hostname,
   };
 };
 // helpers --end
@@ -244,6 +245,7 @@ const init = () => {
       data: {
         access_token: accessToken,
         page_description: pageInfo().description,
+        domain: pageInfo().domain,
       },
     },
     (response) => {
@@ -361,7 +363,7 @@ const createSmartpastContent = () => {
     { action: "get-smartpast", data: {
       access_token: accessToken,
       id: pageData.id,
-      is_new: 1,
+      is_new: pageData.is_new,
       text: pageData.title,
       limit: 10,
     }
@@ -494,9 +496,7 @@ const createTagsContent = () => {
   tabContent.style.flexDirection = "column";
   tabContent.className = "space-y-4";
 
-  const favIcon = pageData.favicon
-    ? `<div><img src="` + pageData.favicon + `" width="32" height="32" /></div>`
-    : "";
+  const favIcon = `<div><img src="${pageData.favicon_url}" width="32" height="32" /></div>`
 
   const title =
     pageData.title.length > 35
@@ -882,9 +882,12 @@ const createNotesContent = () => {
   tabContent.id = elBrainContentID + "-notes-content";
   tabContent.style.position = "relative";
   tabContent.style.height = "100%";
-  const favIcon = pageData.favicon
-    ? `<div><img src="` + pageData.favicon + `" width="32" height="32" /></div>`
-    : "";
+
+  const favIcon = `
+    <div>
+      <img src="${pageData.favicon_url}" width="32" height="32" />
+    </div>
+  `
 
   const title =
     pageData.title.length > 35

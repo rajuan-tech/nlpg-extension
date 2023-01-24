@@ -11,7 +11,7 @@ chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
   }
 });
 
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {  
   if (request.action === "get-url-data") {
     fetch(baseURL + "/brain/get_url_data", {
       method: "POST",
@@ -21,13 +21,17 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       },
       body: JSON.stringify({
         url: sender.url,
-        domain: sender.origin,
         title: sender.tab.title,
+        domain: request.data.domain,
         description: request.data.page_description,
       }),
     })
       .then((response) => response.json())
       .then((data) => {
+        if (!'favicon' in (data.response || {})) {
+          data.response.favicon = sender.tab.favIconUrl;
+        }
+        
         sendResponse(data.response);
       });
     return true;
@@ -51,6 +55,10 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     })
       .then((response) => response.json())
       .then((data) => {
+        if (!'favicon' in (data.response || {})) {
+          data.response.favicon = sender.tab.favIconUrl;
+        }
+        
         sendResponse(data.response);
       });
     return true;
