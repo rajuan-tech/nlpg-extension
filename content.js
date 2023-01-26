@@ -406,7 +406,7 @@ const createSmartpastContent = () => {
               : item.title;
 
           const screenshot_url = item.screenshot_url ? item.screenshot_url : item.favicon_url;
-          const blur_effect = screenshot_url == !item.screenshot_url ? "style='filter: blur(15px);'" : "";
+          const blur_effect = !item.screenshot_url ? "style='filter: blur(15px);'" : "";
           const screenshot = `<img src="${screenshot_url}" width="100%" height="140px" ${blur_effect}>`
 
           const descriptionImgSrc = chrome.runtime.getURL(
