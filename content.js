@@ -29,28 +29,34 @@ const metaSelector = (name) => {
   return null;
 };
 
-const pageInfo = () => {
-  var description = metaSelector('meta[name="description"]')?.getAttribute(
-    "content"
-  );
-  if (!description) {
-    description = metaSelector('meta[property="og:description"]')?.getAttribute(
-      "content"
-    );
-    if (!description) {
-      description = metaSelector(
-        'meta[property="twitter:description"]'
-      )?.getAttribute("content");
-      if (!description) {
-        description = "";
-      }
-    }
+/**
+ * Returns the content of a meta tag
+ * 
+ * @param {string} selector
+ * @returns {string} content of the meta tag
+ */
+const getMetaContent = (selector) => {
+  if (!selector) {
+    return '';
   }
+   
+  if (document.querySelector(selector)) {
+    return document.querySelector(selector).getAttribute("content");
+  }
+  
+  return '';
+}
+
+const pageInfo = () => {
+  const description = getMetaContent('meta[name="description"]')
+    || getMetaContent('meta[property="og:description"]')
+    || getMetaContent('meta[property="twitter:description"]');
 
   return {
     title: document.title,
     url: window.location.href,
     description: description,
+    domain: window.location.hostname,
   };
 };
 // helpers --end
@@ -239,6 +245,7 @@ const init = () => {
       data: {
         access_token: accessToken,
         page_description: pageInfo().description,
+        domain: pageInfo().domain,
       },
     },
     (response) => {
@@ -353,13 +360,24 @@ const createSmartpastContent = () => {
 
   document.getElementById(elBrainLoaderID).style.display = "flex";
   chrome.runtime.sendMessage(
-    { action: "get-smartpast", data: {} },
+    { action: "get-smartpast", data: {
+      access_token: accessToken,
+      id: pageData.id,
+      is_new: pageData.is_new,
+      text: pageData.title,
+      limit: 10,
+    }
+  },
     (response) => {
       document.getElementById(elBrainLoaderID).style.display = "none";
       if (response) {
         pageSmartPast = response;
-        Object.keys(pageSmartPast).forEach((key) => {
-          const item = pageSmartPast[key];
+        console.log("pageSmartPast", pageSmartPast);
+        pageSmartPast.forEach((item) => {
+          if (!item.favicon_url) {
+            item.favicon_url = "https://www.google.com/s2/favicons?domain=" + item.url + "&sz=64";
+          }
+          
           let elSmartpastItem = document.createElement("div");
           elSmartpastItem.style.position = "relative";
           elSmartpastItem.style.border = "1px solid rgba(200, 200, 200, 0.4)";
@@ -376,22 +394,20 @@ const createSmartpastContent = () => {
             window.open(item.url, "_blank");
           };
 
-          const favIcon = item.favicon
-            ? `<div style="width:32px;min-width:32px;"><img src="` +
-              item.favicon +
-              `" width="24" height="24" /></div>`
-            : "";
+          const favIcon = `
+            <div style="width:32px;min-width:32px;">
+              <img src="${item.favicon_url}" width="24" height="24" />
+            </div>
+          `
 
           const title =
             item.title.length > 75
               ? item.title.substring(0, 75) + "..."
               : item.title;
 
-          const screenshot = item.screenshot
-            ? `<img src="` +
-              item.screenshot +
-              `" width="100%" height="140px" />`
-            : "";
+          const screenshot_url = item.screenshot_url ? item.screenshot_url : item.favicon_url;
+          const blur_effect = !item.screenshot_url ? "style='filter: blur(15px);'" : "";
+          const screenshot = `<img src="${screenshot_url}" width="100%" height="140px" ${blur_effect}>`
 
           const descriptionImgSrc = chrome.runtime.getURL(
             "assets/images/description.png"
@@ -402,20 +418,18 @@ const createSmartpastContent = () => {
               ? item.description
               : item.title;
 
-          const descriptionContent =
-            `<div class="flex flex-row w-full p-1 space-x-2" style="font-size:12px;">
-          <div class="shrink-0"><img src="` +
-            descriptionImgSrc +
-            `" width="24px" height="24px" /></div>
-        <div>` +
-            descriptionText +
-            `</div>
-        </div>`;
+          const descriptionContent = `
+            <div class="flex flex-row w-full p-1 space-x-2" style="font-size:12px;">
+              <div class="shrink-0"><img src="${descriptionImgSrc}" width="24px" height="24px" /></div>
+              <div>${descriptionText}</div>
+            </div>
+          `;
 
           var dateContent = "";
-          if (item.date) {
-            var date = new Date(item.date);
-            var dateStr =
+
+          if (item.__timestamp) {
+            const date = new Date(item.__timestamp);
+            const dateStr =
               date.getDate() +
               "/" +
               (date.getMonth() + 1) +
@@ -429,6 +443,19 @@ const createSmartpastContent = () => {
               `<div style="margin-left:32px;font-size:12px;opacity:0.5;">` +
               dateStr +
               `</div>`;
+          }
+
+          let domain = item.domain;
+          let url = item.url;
+          
+          // replace www. with empty string if www. only occurs once
+          // once because there might be such domain: "www.examplewww.com"
+          if (domain && domain.split("www.").length === 2) {
+            domain = domain.replace("www.", "");
+          }
+
+          if (domain && url) {
+            domain = url.split('//')[0] + '//' + domain;
           }
 
           elSmartpastItem.innerHTML =
@@ -445,7 +472,7 @@ const createSmartpastContent = () => {
                   </div>
                 </div>
                 <div style="margin-left:40px;font-size:12px;opacity:0.5;">` +
-            item.domain +
+            domain +
             `</div>
               </div>
               ` +
@@ -482,9 +509,7 @@ const createTagsContent = () => {
   tabContent.style.flexDirection = "column";
   tabContent.className = "space-y-4";
 
-  const favIcon = pageData.favicon
-    ? `<div><img src="` + pageData.favicon + `" width="32" height="32" /></div>`
-    : "";
+  const favIcon = `<div><img src="${pageData.favicon_url}" width="32" height="32" /></div>`
 
   const title =
     pageData.title.length > 35
@@ -871,9 +896,12 @@ const createNotesContent = () => {
   tabContent.id = elBrainContentID + "-notes-content";
   tabContent.style.position = "relative";
   tabContent.style.height = "100%";
-  const favIcon = pageData.favicon
-    ? `<div><img src="` + pageData.favicon + `" width="32" height="32" /></div>`
-    : "";
+
+  const favIcon = `
+    <div>
+      <img src="${pageData.favicon_url}" width="32" height="32" />
+    </div>
+  `
 
   const title =
     pageData.title.length > 35

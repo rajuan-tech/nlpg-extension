@@ -34,7 +34,8 @@
     "contextMenus",
     "declarativeContent",
     "storage",
-    "webNavigation"
+    "webNavigation",
+    "unlimitedStorage"
   ],
   "web_accessible_resources": [
     {
