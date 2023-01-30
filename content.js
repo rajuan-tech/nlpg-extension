@@ -701,6 +701,7 @@ const loadRecommendedTags = () => {
     },
     (response) => {
       if (response) {
+        pageTagsRecommendations = [];
         Object.keys(response.response).forEach((key) => {
           var r = response.response[key];
           r.local_type = "recommended";
