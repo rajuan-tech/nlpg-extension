@@ -789,7 +789,8 @@ const fillTagsContent = () => {
     var emptyStateHTML = "";
     emptyStateHTML +=
       '<div class="flex flex-col items-center justify-center text-md font-semibold" style="align-self: center;width: 100%;height: 100%;">';
-    emptyStateHTML += "No tags yet.";
+    emptyStateHTML += "<p style='margin-bottom: 0px;'>No tags yet. 😔</p>";
+    emptyStateHTML += "<p>Add tags from our suggestions.</p>";
     emptyStateHTML += "</div>";
     document.getElementById(
       elBrainContentID + "-tags-content-active-tags-list"
