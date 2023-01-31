@@ -998,12 +998,10 @@ const createNotesContent = () => {
     `
           </div>
         </div>
-        <div class="flex flex-grow">
+        <div class="flex flex-grow fields">
           <textarea class="w-full h-full border border-gray-100 rounded-lg p-2 text-md" style="background: white;" id="` +
     elBrainContentID +
-    `-notes-textarea">` +
-    pageData.notes +
-    `</textarea>
+    `-notes-textarea"></textarea>
         </div>
         <div class="flex flex-row space-x-2 items-center">
           <div class="flex-grow" id="` +
@@ -1029,18 +1027,29 @@ const createNotesContent = () => {
   document
     .getElementById(elBrainContentID + "-notes-save-button")
     .addEventListener("click", saveNotes, false);
+
+  // notes wysiwyg editor
+  simpleEditor.init({
+    selector: ".fields textarea",
+    pastePlain: true,
+  });
+
+  document.querySelector(".text").innerHTML = pageData.notes_html;
 };
 
 const saveNotes = () => {
+  console.log("save notes");
+  simpleEditor.save();
+  let notes = document.querySelector(".text").innerText;
+  let notes_html = document.querySelector(".text").innerHTML;
+
   if (
     document.getElementById(elBrainContentID + "-notes-save-button")
       .innerText === "SAVING"
   ) {
     return;
   }
-  const notes = document.getElementById(
-    elBrainContentID + "-notes-textarea"
-  ).value;
+
   document.getElementById(elBrainContentID + "-notes-save-button").innerText =
     "SAVING";
   chrome.runtime.sendMessage(
@@ -1050,11 +1059,13 @@ const saveNotes = () => {
         access_token: accessToken,
         id: pageData.id,
         notes: notes,
+        notes_html: notes_html,
       },
     },
     (response) => {
       if (response) {
         pageData.notes = notes;
+        pageData.notes_html = notes_html;
         document.getElementById(
           elBrainContentID + "-notes-save-button"
         ).innerText = "SAVE";

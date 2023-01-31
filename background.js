@@ -65,6 +65,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   } else if (request.action === "update-notes") {
     var id = request.data.id;
     var notes = request.data.notes;
+    var notes_html = request.data.notes_html;
 
     fetch(baseURL + "/brain/update_url_document", {
       method: "POST",
@@ -75,7 +76,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       body: JSON.stringify({
         id: id,
         notes: notes,
-        notes_html: "<p>" + notes + "</p>",
+        notes_html: notes_html,
       }),
     })
       .then((response) => response.json())
