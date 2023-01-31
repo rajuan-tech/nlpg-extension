@@ -31,26 +31,27 @@ const metaSelector = (name) => {
 
 /**
  * Returns the content of a meta tag
- * 
+ *
  * @param {string} selector
  * @returns {string} content of the meta tag
  */
 const getMetaContent = (selector) => {
   if (!selector) {
-    return '';
+    return "";
   }
-   
+
   if (document.querySelector(selector)) {
     return document.querySelector(selector).getAttribute("content");
   }
-  
-  return '';
-}
+
+  return "";
+};
 
 const pageInfo = () => {
-  const description = getMetaContent('meta[name="description"]')
-    || getMetaContent('meta[property="og:description"]')
-    || getMetaContent('meta[property="twitter:description"]');
+  const description =
+    getMetaContent('meta[name="description"]') ||
+    getMetaContent('meta[property="og:description"]') ||
+    getMetaContent('meta[property="twitter:description"]');
 
   return {
     title: document.title,
@@ -316,6 +317,9 @@ const selectTabItem = (tabID) => {
     document
       .getElementById(elBrainContentID + "-tags-content-input")
       .removeEventListener("keyup", tagInputKeyup);
+    document
+      .getElementById(elBrainContentID + "-tags-content-tag-input-clear")
+      .removeEventListener("click", onResetTagInput, false);
 
     // remove tag item remove click listener
     if (document.getElementsByClassName("remove-tag-item").length > 0) {
@@ -360,14 +364,16 @@ const createSmartpastContent = () => {
 
   document.getElementById(elBrainLoaderID).style.display = "flex";
   chrome.runtime.sendMessage(
-    { action: "get-smartpast", data: {
-      access_token: accessToken,
-      id: pageData.id,
-      is_new: pageData.is_new,
-      text: pageData.title,
-      limit: 10,
-    }
-  },
+    {
+      action: "get-smartpast",
+      data: {
+        access_token: accessToken,
+        id: pageData.id,
+        is_new: pageData.is_new,
+        text: pageData.title,
+        limit: 10,
+      },
+    },
     (response) => {
       document.getElementById(elBrainLoaderID).style.display = "none";
       if (response) {
@@ -375,9 +381,12 @@ const createSmartpastContent = () => {
         console.log("pageSmartPast", pageSmartPast);
         pageSmartPast.forEach((item) => {
           if (!item.favicon_url) {
-            item.favicon_url = "https://www.google.com/s2/favicons?domain=" + item.url + "&sz=64";
+            item.favicon_url =
+              "https://www.google.com/s2/favicons?domain=" +
+              item.url +
+              "&sz=64";
           }
-          
+
           let elSmartpastItem = document.createElement("div");
           elSmartpastItem.style.position = "relative";
           elSmartpastItem.style.border = "1px solid rgba(200, 200, 200, 0.4)";
@@ -398,16 +407,20 @@ const createSmartpastContent = () => {
             <div style="width:32px;min-width:32px;">
               <img src="${item.favicon_url}" width="24" height="24" />
             </div>
-          `
+          `;
 
           const title =
             item.title.length > 75
               ? item.title.substring(0, 75) + "..."
               : item.title;
 
-          const screenshot_url = item.screenshot_url ? item.screenshot_url : item.favicon_url;
-          const blur_effect = !item.screenshot_url ? "style='filter: blur(15px);'" : "";
-          const screenshot = `<img src="${screenshot_url}" width="100%" height="140px" ${blur_effect}>`
+          const screenshot_url = item.screenshot_url
+            ? item.screenshot_url
+            : item.favicon_url;
+          const blur_effect = !item.screenshot_url
+            ? "style='filter: blur(15px);'"
+            : "";
+          const screenshot = `<img src="${screenshot_url}" width="100%" height="140px" ${blur_effect}>`;
 
           const descriptionImgSrc = chrome.runtime.getURL(
             "assets/images/description.png"
@@ -447,7 +460,7 @@ const createSmartpastContent = () => {
 
           let domain = item.domain;
           let url = item.url;
-          
+
           // replace www. with empty string if www. only occurs once
           // once because there might be such domain: "www.examplewww.com"
           if (domain && domain.split("www.").length === 2) {
@@ -455,7 +468,7 @@ const createSmartpastContent = () => {
           }
 
           if (domain && url) {
-            domain = url.split('//')[0] + '//' + domain;
+            domain = url.split("//")[0] + "//" + domain;
           }
 
           elSmartpastItem.innerHTML =
@@ -509,7 +522,7 @@ const createTagsContent = () => {
   tabContent.style.flexDirection = "column";
   tabContent.className = "space-y-4";
 
-  const favIcon = `<div><img src="${pageData.favicon_url}" width="32" height="32" /></div>`
+  const favIcon = `<div><img src="${pageData.favicon_url}" width="32" height="32" /></div>`;
 
   const title =
     pageData.title.length > 35
@@ -531,12 +544,19 @@ const createTagsContent = () => {
     elBrainContentID +
     `-tags-content-active-tags-list">
     </div>
-    <div class="flex ">
+    <div class="flex">
+      <div style="position:absolute;right: 20px;margin-top: 8px;font-size: 16px;cursor: pointer;display: none;" id="` +
+    elBrainContentID +
+    `-tags-content-tag-input-clear">
+        <img src="` +
+    chrome.runtime.getURL("assets/images/tag-input-clear.png") +
+    `" width="24" height="24" />
+      </div>
       <input type="text" id="` +
     elBrainContentID +
     `-tags-content-input" 
       class="flex-grow px-4 py-2 border border-gray-300 rounded-full" 
-      style="background: white;"
+      style="background: white; padding-right: 50px;"
       placeholder="Add a tag" />
     </div>
     <div class="flex flex-grow flex-wrap" style="align-content: baseline;" id="` +
@@ -555,6 +575,9 @@ const createTagsContent = () => {
   document
     .getElementById(elBrainContentID + "-tags-content-input")
     .addEventListener("keyup", tagInputKeyup, false);
+  document
+    .getElementById(elBrainContentID + "-tags-content-tag-input-clear")
+    .addEventListener("click", onResetTagInput, false);
 
   if (pageTagsSuggestions.length > 0) {
     fillSuggestionsContent();
@@ -616,7 +639,14 @@ const tagInputKeyup = (e) => {
     const tag = el.value.trim();
     if (tag.length === 0) {
       fillSuggestionsContent();
+      document.getElementById(
+        elBrainContentID + "-tags-content-tag-input-clear"
+      ).style.display = "none";
       return;
+    } else {
+      document.getElementById(
+        elBrainContentID + "-tags-content-tag-input-clear"
+      ).style.display = "initial";
     }
     if (document.getElementById(elBrainContentID + "-tags-content-suggested")) {
       document.getElementById(
@@ -651,6 +681,14 @@ const tagInputKeyup = (e) => {
   }
 };
 
+const onResetTagInput = () => {
+  document.getElementById(elBrainContentID + "-tags-content-input").value = "";
+  fillSuggestionsContent();
+  document.getElementById(
+    elBrainContentID + "-tags-content-tag-input-clear"
+  ).style.display = "none";
+};
+
 const addTag = (tag) => {
   const tags = pageData.tags;
   tags.push(tag);
@@ -661,6 +699,10 @@ const addTag = (tag) => {
     }
   });
   fillTagsContent();
+  document.getElementById(elBrainContentID + "-tags-content-input").value = "";
+  document.getElementById(
+    elBrainContentID + "-tags-content-tag-input-clear"
+  ).style.display = "none";
   chrome.runtime.sendMessage(
     {
       action: "add-tags",
@@ -901,7 +943,7 @@ const createNotesContent = () => {
     <div>
       <img src="${pageData.favicon_url}" width="32" height="32" />
     </div>
-  `
+  `;
 
   const title =
     pageData.title.length > 35
