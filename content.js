@@ -418,7 +418,7 @@ const createSmartpastContent = () => {
             ? item.screenshot_url
             : item.favicon_url;
           const blur_effect = !item.screenshot_url
-            ? "style='filter: blur(15px);'"
+            ? "style='filter: blur(6px);max-height: 140px;object-fit: contain; margin: auto;'"
             : "";
           const screenshot = `<img src="${screenshot_url}" width="100%" height="140px" ${blur_effect}>`;
 
@@ -430,6 +430,11 @@ const createSmartpastContent = () => {
             item.description && item.description.length > 0
               ? item.description
               : item.title;
+
+          descriptionText =
+            descriptionText.length > 150
+              ? descriptionText.substring(0, 150) + "..."
+              : descriptionText;
 
           const descriptionContent = `
             <div class="flex flex-row w-full p-1 space-x-2" style="font-size:12px;">
