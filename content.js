@@ -158,6 +158,9 @@ const init = () => {
   elBrainRootDismissButton.style.cursor = "pointer";
   elBrainRootDismissButton.onclick = () => {
     elBrainRoot.style.transform = "translateX(100%)";
+    document.getElementById("brain-drawer-no-hands-image").style.display =
+      "initial";
+    document.getElementById("brain-drawer-image").style.display = "none";
   };
 
   let elBrainRootDismissButtonImage = document.createElement("img");
