@@ -75,12 +75,17 @@ const init = () => {
   elBrainDrawer.style.zIndex = "99999";
   elBrainDrawer.style.cursor = "pointer";
   elBrainDrawer.onclick = () => {
-    // chrome.runtime.sendMessage({ action: "open-drawer" });
     let elBrainRoot = document.getElementById(elBrainRootID);
     if (elBrainRoot.style.transform === "translateX(100%)") {
       elBrainRoot.style.transform = "translateX(0%)";
+      document.getElementById("brain-drawer-no-hands-image").style.display =
+        "none";
+      document.getElementById("brain-drawer-image").style.display = "initial";
     } else {
       elBrainRoot.style.transform = "translateX(100%)";
+      document.getElementById("brain-drawer-no-hands-image").style.display =
+        "initial";
+      document.getElementById("brain-drawer-image").style.display = "none";
     }
   };
 
@@ -88,9 +93,24 @@ const init = () => {
   elBrainDrawerImage.src = chrome.runtime.getURL(
     "assets/icons/brain-drawer-160.png"
   );
+  elBrainDrawerImage.setAttribute("id", "brain-drawer-image");
   elBrainDrawerImage.style.width = "80px";
   elBrainDrawerImage.style.height = "80px";
+  elBrainDrawerImage.style.display = "none";
   elBrainDrawer.appendChild(elBrainDrawerImage);
+
+  let elBrainDrawerNoHandsImage = document.createElement("img");
+  elBrainDrawerNoHandsImage.src = chrome.runtime.getURL(
+    "assets/icons/brain-drawer-no-hands.png"
+  );
+  elBrainDrawerNoHandsImage.style.width = "73px";
+  elBrainDrawerNoHandsImage.style.height = "62.5px";
+  elBrainDrawerNoHandsImage.style.position = "absolute";
+  elBrainDrawerNoHandsImage.style.top = "0px";
+  elBrainDrawerNoHandsImage.style.right = "7px";
+  elBrainDrawerNoHandsImage.style.display = "initial";
+  elBrainDrawerNoHandsImage.setAttribute("id", "brain-drawer-no-hands-image");
+  elBrainDrawer.appendChild(elBrainDrawerNoHandsImage);
 
   document.body.appendChild(elBrainDrawer);
   // brain drawer --end
