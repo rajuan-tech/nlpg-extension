@@ -127,7 +127,7 @@ const init = () => {
   elBrainRoot.style.width = "100%";
   elBrainRoot.style.height = "100%";
   elBrainRoot.style.zIndex = "99998";
-  elBrainRoot.style.backgroundColor = "rgba(243, 243, 243, 0.2)";
+  elBrainRoot.style.backgroundColor = "rgba(243, 243, 243, 0.8)";
   elBrainRoot.style.backdropFilter = "blur(10px)";
   elBrainRoot.style.border = "1px solid rgba(200, 200, 200, 0.4)";
   elBrainRoot.style.borderRightWidth = "0";
@@ -207,7 +207,7 @@ const init = () => {
   // brain root tab first --start
   let elBrainRootTabItemFirst = createTabItem(tabFirstItemID, "SMARTPAST");
   elBrainRootTabItemFirst.style.height = tabItemHeight + "px";
-  elBrainRootTabItemFirst.style.backgroundColor = "rgba(243, 243, 243, 0.2)";
+  elBrainRootTabItemFirst.style.backgroundColor = "rgba(243, 243, 243, 0.8)";
   elBrainRootTabItemFirst.style.color = tabItemDeactiveBackground;
   elBrainRootTabItemFirst.onclick = () => {
     selectTabItem(tabFirstItemID);
@@ -334,7 +334,7 @@ const selectTabItem = (tabID) => {
     elTabItemContainerChildren[i].style.backgroundColor = "#0A0458";
     elTabItemContainerChildren[i].style.color = "#fff";
   }
-  elTabItem.style.backgroundColor = "rgba(243, 243, 243, 0.2)";
+  elTabItem.style.backgroundColor = "rgba(243, 243, 243, 0.8)";
   elTabItem.style.color = "#0A0458";
   document.getElementById(elBrainLoaderID).style.display = "none";
 
