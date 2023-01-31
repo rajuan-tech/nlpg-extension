@@ -256,6 +256,12 @@ const init = () => {
       if (response) {
         pageData = response;
         console.log("pageData", pageData);
+        if (!pageData.favicon_url) {
+          pageData.favicon_url =
+            "https://www.google.com/s2/favicons?domain=" +
+            pageData.url +
+            "&sz=64";
+        }
         selectTabItem(tabFirstItemID);
         if (!pageData.screenshot_url || pageData.screenshot_url.length === 0) {
           chrome.runtime.sendMessage(
