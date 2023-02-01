@@ -110,6 +110,7 @@ const init = () => {
   elBrainDrawerNoHandsImage.style.right = "7px";
   elBrainDrawerNoHandsImage.style.display = "initial";
   elBrainDrawerNoHandsImage.setAttribute("id", "brain-drawer-no-hands-image");
+  elBrainDrawerNoHandsImage.style.transition = "all 0.5s ease-in-out";
   elBrainDrawer.appendChild(elBrainDrawerNoHandsImage);
 
   document.body.appendChild(elBrainDrawer);
@@ -297,6 +298,19 @@ const init = () => {
             },
             (response) => {}
           );
+        }
+
+        if (pageData.tags.length > 0 || pageData.notes.length > 0) {
+          let elBrainDrawerNoHandsImageWithMarker = document.getElementById(
+            "brain-drawer-no-hands-image"
+          );
+          elBrainDrawerNoHandsImageWithMarker.src = chrome.runtime.getURL(
+            "assets/icons/brain-with-marker.png"
+          );
+          elBrainDrawerNoHandsImageWithMarker.style.width = "80px";
+          elBrainDrawerNoHandsImageWithMarker.style.height = "67px";
+          elBrainDrawerNoHandsImageWithMarker.style.top = "0px";
+          elBrainDrawerNoHandsImageWithMarker.style.right = "10px";
         }
       }
     }
