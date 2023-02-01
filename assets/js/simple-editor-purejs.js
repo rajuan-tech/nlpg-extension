@@ -14,12 +14,12 @@ var simpleEditor = (function () {
 
   var template =
     " \
-        <div class='simpledit te-wrapper' style='background: white; width: 99%; padding: 12px; border-radius: 12px;'> \
-            <div class='text' contentEditable='true' spellcheck='false' style='height: 90%; outline: none;'></div> \
-            <div class='buttons' style='background: rgb(243, 243, 243, 0.7); border-radius: 12px; padding: 5px 12px;'> \
-                <span class='btn bold cursor-pointer'>bold</span> \
-                <span class='btn italic cursor-pointer'>italic</span> \
-                <span class='btn underline cursor-pointer'>underline</span> \
+        <div class='simpledit te-wrapper' style='background: white; width: 99%; border-radius: 12px;'> \
+            <div class='text' contentEditable='true' spellcheck='false' style='height: 90%; outline: none; padding: 12px;'></div> \
+            <div class='buttons' style='border-radius: 12px; padding: 5px 12px; border: 1px solid #F1F1F1;'> \
+                <span class='hyb-nt-btn bold cursor-pointer' style='font-weight: bold;'>B</span> \
+                <span class='hyb-nt-btn italic cursor-pointer' style='font-weight: lighter; font-style: italic; margin-left: 7px; margin-right: 7px;'>I</span> \
+                <span class='hyb-nt-btn underline cursor-pointer' style='font-weight: lighter; text-decoration: underline;'>U</span> \
             </div> \
         </div> \
     ";

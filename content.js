@@ -1034,7 +1034,9 @@ const createNotesContent = () => {
     pastePlain: true,
   });
 
-  document.querySelector(".text").innerHTML = pageData.notes_html;
+  if (pageData.notes_html) {
+    document.querySelector(".text").innerHTML = pageData.notes_html;
+  }
 };
 
 const saveNotes = () => {
