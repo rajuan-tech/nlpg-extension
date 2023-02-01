@@ -11,7 +11,7 @@ chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
   }
 });
 
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {  
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === "get-url-data") {
     fetch(baseURL + "/brain/get_url_data", {
       method: "POST",
@@ -28,15 +28,15 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     })
       .then((response) => response.json())
       .then((data) => {
-        if (!'favicon' in (data.response || {})) {
+        if (!"favicon" in (data.response || {})) {
           data.response.favicon = sender.tab.favIconUrl;
         }
-        
+
         sendResponse(data.response);
       });
     return true;
   } else if (request.action === "get-smartpast") {
-    const url = new URL(baseURL + "/brain/embeddings/related")
+    const url = new URL(baseURL + "/brain/embeddings/related");
 
     url.search = new URLSearchParams({
       id: request.data.id,
@@ -45,20 +45,18 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       limit: request.data.limit || 10,
     });
 
-    console.log(request.data.access_token);
-    
     fetch(url.toString(), {
       headers: {
         "Content-Type": "application/json",
         api_key: request.data.access_token,
-      }
+      },
     })
       .then((response) => response.json())
       .then((data) => {
-        if (!'favicon' in (data.response || {})) {
+        if (!"favicon" in (data.response || {})) {
           data.response.favicon = sender.tab.favIconUrl;
         }
-        
+
         sendResponse(data.response);
       });
     return true;
