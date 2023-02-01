@@ -407,137 +407,139 @@ const createSmartpastContent = () => {
       document.getElementById(elBrainLoaderID).style.display = "none";
       if (response) {
         pageSmartPast = response;
-        console.log("pageSmartPast", pageSmartPast);
-        pageSmartPast.forEach((item) => {
-          if (!item.favicon_url) {
-            item.favicon_url =
-              "https://www.google.com/s2/favicons?domain=" +
-              item.url +
-              "&sz=64";
-          }
 
-          let elSmartpastItem = document.createElement("div");
-          elSmartpastItem.style.position = "relative";
-          elSmartpastItem.style.border = "1px solid rgba(200, 200, 200, 0.4)";
-          elSmartpastItem.style.borderRadius = "12px";
-          elSmartpastItem.style.margin = "8px";
-          elSmartpastItem.style.padding = "8px";
-          elSmartpastItem.style.display = "flex";
-          elSmartpastItem.style.flexDirection = "column";
-          elSmartpastItem.style.justifyContent = "space-between";
-          elSmartpastItem.style.cursor = "pointer";
-          elSmartpastItem.style.boxSizing = "border-box";
-          elSmartpastItem.style.backgroundColor = "white";
-          elSmartpastItem.onclick = () => {
-            window.open(item.url, "_blank");
-          };
+        let smartPastContentEl = document.getElementById(
+          elBrainContentID + "-smartpast-content"
+        );
+        if (smartPastContentEl) {
+          pageSmartPast.forEach((item) => {
+            if (!item.favicon_url) {
+              item.favicon_url =
+                "https://www.google.com/s2/favicons?domain=" +
+                item.url +
+                "&sz=64";
+            }
 
-          const favIcon = `
-            <div style="width:32px;min-width:32px;">
-              <img src="${item.favicon_url}" width="24" height="24" />
-            </div>
-          `;
+            let elSmartpastItem = document.createElement("div");
+            elSmartpastItem.style.position = "relative";
+            elSmartpastItem.style.border = "1px solid rgba(200, 200, 200, 0.4)";
+            elSmartpastItem.style.borderRadius = "12px";
+            elSmartpastItem.style.margin = "8px";
+            elSmartpastItem.style.padding = "8px";
+            elSmartpastItem.style.display = "flex";
+            elSmartpastItem.style.flexDirection = "column";
+            elSmartpastItem.style.justifyContent = "space-between";
+            elSmartpastItem.style.cursor = "pointer";
+            elSmartpastItem.style.boxSizing = "border-box";
+            elSmartpastItem.style.backgroundColor = "white";
+            elSmartpastItem.onclick = () => {
+              window.open(item.url, "_blank");
+            };
 
-          const title =
-            item.title.length > 75
-              ? item.title.substring(0, 75) + "..."
-              : item.title;
-
-          const screenshot_url = item.screenshot_url
-            ? item.screenshot_url
-            : item.favicon_url;
-          const blur_effect = !item.screenshot_url
-            ? "style='filter: blur(6px);max-height: 140px;object-fit: contain; margin: auto;'"
-            : "";
-          const screenshot = `<img src="${screenshot_url}" width="100%" height="140px" ${blur_effect}>`;
-
-          const descriptionImgSrc = chrome.runtime.getURL(
-            "assets/images/description.png"
-          );
-
-          var descriptionText =
-            item.description && item.description.length > 0
-              ? item.description
-              : item.title;
-
-          descriptionText =
-            descriptionText.length > 150
-              ? descriptionText.substring(0, 150) + "..."
-              : descriptionText;
-
-          const descriptionContent = `
-            <div class="flex flex-row w-full p-1 space-x-2" style="font-size:12px;">
-              <div class="shrink-0"><img src="${descriptionImgSrc}" width="24px" height="24px" /></div>
-              <div>${descriptionText}</div>
-            </div>
-          `;
-
-          var dateContent = "";
-
-          if (item.__timestamp) {
-            const date = new Date(item.__timestamp);
-            const dateStr =
-              date.getDate() +
-              "/" +
-              (date.getMonth() + 1) +
-              "/" +
-              date.getFullYear() +
-              " " +
-              date.getHours() +
-              ":" +
-              date.getMinutes();
-            dateContent =
-              `<div style="margin-left:32px;font-size:12px;opacity:0.5;">` +
-              dateStr +
-              `</div>`;
-          }
-
-          let domain = item.domain;
-          let url = item.url;
-
-          // replace www. with empty string if www. only occurs once
-          // once because there might be such domain: "www.examplewww.com"
-          if (domain && domain.split("www.").length === 2) {
-            domain = domain.replace("www.", "");
-          }
-
-          if (domain && url) {
-            domain = url.split("//")[0] + "//" + domain;
-          }
-
-          elSmartpastItem.innerHTML =
-            `
-            <div style="position: relative; display: flex; flex-direction: column; justify-content: space-between; font-size: 16px;" class="space-y-4">
-            <div class="flex flex-col">
-              <div class="flex flex-row space-x-2">
-              ` +
-            favIcon +
-            `
-                  <div class="font-semibold">` +
-            title +
-            `
-                  </div>
-                </div>
-                <div style="margin-left:40px;font-size:12px;opacity:0.5;">` +
-            domain +
-            `</div>
+            const favIcon = `
+              <div style="width:32px;min-width:32px;">
+                <img src="${item.favicon_url}" width="24" height="24" />
               </div>
-              ` +
-            screenshot +
-            `  
-            ` +
-            descriptionContent +
-            `
-            ` +
-            dateContent +
-            `
-            </div>
             `;
 
-          document
-            .getElementById(elBrainContentID + "-smartpast-content")
-            .appendChild(elSmartpastItem);
-        });
+            const title =
+              item.title.length > 75
+                ? item.title.substring(0, 75) + "..."
+                : item.title;
+
+            const screenshot_url = item.screenshot_url
+              ? item.screenshot_url
+              : item.favicon_url;
+            const blur_effect = !item.screenshot_url
+              ? "style='filter: blur(6px);max-height: 140px;object-fit: contain; margin: auto;'"
+              : "";
+            const screenshot = `<img src="${screenshot_url}" width="100%" height="140px" ${blur_effect}>`;
+
+            const descriptionImgSrc = chrome.runtime.getURL(
+              "assets/images/description.png"
+            );
+
+            var descriptionText =
+              item.description && item.description.length > 0
+                ? item.description
+                : item.title;
+
+            descriptionText =
+              descriptionText.length > 150
+                ? descriptionText.substring(0, 150) + "..."
+                : descriptionText;
+
+            const descriptionContent = `
+              <div class="flex flex-row w-full p-1 space-x-2" style="font-size:12px;">
+                <div class="shrink-0"><img src="${descriptionImgSrc}" width="24px" height="24px" /></div>
+                <div>${descriptionText}</div>
+              </div>
+            `;
+
+            var dateContent = "";
+
+            if (item.__timestamp) {
+              const date = new Date(item.__timestamp);
+              const dateStr =
+                date.getDate() +
+                "/" +
+                (date.getMonth() + 1) +
+                "/" +
+                date.getFullYear() +
+                " " +
+                date.getHours() +
+                ":" +
+                date.getMinutes();
+              dateContent =
+                `<div style="margin-left:32px;font-size:12px;opacity:0.5;">` +
+                dateStr +
+                `</div>`;
+            }
+
+            let domain = item.domain;
+            let url = item.url;
+
+            // replace www. with empty string if www. only occurs once
+            // once because there might be such domain: "www.examplewww.com"
+            if (domain && domain.split("www.").length === 2) {
+              domain = domain.replace("www.", "");
+            }
+
+            if (domain && url) {
+              domain = url.split("//")[0] + "//" + domain;
+            }
+
+            elSmartpastItem.innerHTML =
+              `
+              <div style="position: relative; display: flex; flex-direction: column; justify-content: space-between; font-size: 16px;" class="space-y-4">
+              <div class="flex flex-col">
+                <div class="flex flex-row space-x-2">
+                ` +
+              favIcon +
+              `
+                    <div class="font-semibold">` +
+              title +
+              `
+                    </div>
+                  </div>
+                  <div style="margin-left:40px;font-size:12px;opacity:0.5;">` +
+              domain +
+              `</div>
+                </div>
+                ` +
+              screenshot +
+              `  
+              ` +
+              descriptionContent +
+              `
+              ` +
+              dateContent +
+              `
+              </div>
+              `;
+            smartPastContentEl.appendChild(elSmartpastItem);
+          });
+        }
       }
     }
   );
@@ -637,9 +639,12 @@ const createTagsContent = () => {
             r.local_type = "suggested";
             pageTagsSuggestions.push(r);
           });
-          document.getElementById(
+          let tagsContentSuggestedEl = document.getElementById(
             elBrainContentID + "-tags-content-suggested"
-          ).innerHTML = "";
+          );
+          if (tagsContentSuggestedEl) {
+            tagsContentSuggestedEl.innerHTML = "";
+          }
           fillSuggestionsContent();
         }
       }
@@ -874,14 +879,19 @@ const fillTagsContent = () => {
 };
 
 const fillSuggestionsContent = () => {
+  let tagsContentSuggestedEl = document.getElementById(
+    elBrainContentID + "-tags-content-suggested"
+  );
+  if (!tagsContentSuggestedEl) {
+    return;
+  }
+
   const el = document.getElementById(elBrainContentID + "-tags-content-input");
   if (el.value.length > 0) {
     return;
   }
 
-  document.getElementById(
-    elBrainContentID + "-tags-content-suggested"
-  ).innerHTML = "";
+  tagsContentSuggestedEl.innerHTML = "";
 
   if (
     pageTagsSuggestions.length === 0 &&
@@ -1040,7 +1050,6 @@ const createNotesContent = () => {
 };
 
 const saveNotes = () => {
-  console.log("save notes");
   simpleEditor.save();
   let notes = document.querySelector(".text").innerText;
   let notes_html = document.querySelector(".text").innerHTML;
