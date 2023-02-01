@@ -899,7 +899,20 @@ const fillSuggestionsContent = () => {
   ) {
     return;
   }
-  const combined = pageTagsSuggestions.concat(pageTagsRecommendations);
+
+  var combined = [...pageTagsRecommendations];
+  var i = 0;
+  var k = 2;
+  while (i < pageTagsSuggestions.length) {
+    if (combined[k] !== undefined) {
+      combined.splice(k, 0, pageTagsSuggestions[i]);
+      k += 3;
+    } else {
+      combined.push(pageTagsSuggestions[i]);
+    }
+    i++;
+  }
+
   Object.keys(combined).forEach((key, index) => {
     const item = combined[key];
     const tag = item.id;
