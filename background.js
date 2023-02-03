@@ -85,7 +85,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   } else if (request.action === "save-screenshot") {
     var id = request.data.id;
     const getScreenshot = new Promise((res, rej) => {
-      chrome.tabs.captureVisibleTab(null, {}, function (dataUrl) {
+      chrome.tabs.captureVisibleTab(sender.tab.windowId, {}, function (dataUrl) {
         res(dataUrl);
       });
     });
