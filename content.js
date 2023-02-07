@@ -60,6 +60,43 @@ const pageInfo = () => {
 };
 // helpers --end
 
+chrome.runtime.sendMessage({ action: "sync-history"}, (response) => {
+  // response is an array of history items
+  // make them a csv
+
+  // get headers
+  const headers = Object.keys(response[0]);
+  
+  const csv = response.map((item) => {
+    const names = Object.keys(item);
+
+    return names.map((name) => {
+      return `"${item[name]}"`;
+    }).join(",");
+  }).join("\n");
+
+  const csvWithHeaders = [headers.join(","), csv].join("\n");
+
+  // save csv to file
+  const blob = new Blob([csvWithHeaders], { type: "text/csv" });
+  const url = URL.createObjectURL(blob);
+
+  // somehow get the url for put to s3
+  // ...
+
+  // upload to s3
+  // ...
+
+  // enjoy the party
+  
+  
+  // const a = document.createElement("a");
+  // a.href = url;
+  // a.download = "history.csv";
+  // a.click();
+  // URL.revokeObjectURL(url);
+});
+
 // init --start
 const init = () => {
   // brain drawer --start
