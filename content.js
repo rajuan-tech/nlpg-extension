@@ -1041,6 +1041,7 @@ const createNotesContent = () => {
     `-notes-textarea"></textarea>
         </div>
         <div class="flex flex-row space-x-2 items-center">
+          <a href="https://heybrain.ai/?filter=modified_urls" target="_blank">See all notes</a>
           <div class="flex-grow" id="` +
     elBrainContentID +
     `-notes-footer">
@@ -1109,7 +1110,7 @@ const saveNotes = () => {
         ).innerText = "SAVE";
         document.getElementById(
           elBrainContentID + "-notes-footer"
-        ).innerHTML = `<div class="text-xs text-green-500">Notes saved successfully.</div>`;
+        ).innerHTML = `<div class="text-xs text-green-600">Saved.</div>`;
         setTimeout(() => {
           document.getElementById(
             elBrainContentID + "-notes-footer"
