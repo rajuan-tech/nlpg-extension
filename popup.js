@@ -196,4 +196,29 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     };
   }); // End of sign up button event listener.
+
+  var syncHistoryButton = document.getElementById("sync-history-button");
+  console.log('hello jud')
+  console.log(syncHistoryButton)
+  syncHistoryButton.addEventListener("click", function () {
+    console.log('clicked on sync');
+    const nonSyncText = "SYNC HISTORY";
+    const syncText = "SYNCING...";
+    if (syncHistoryButton.innerHTML == syncText) {
+      return;
+    }
+    chrome.storage.local.get(["access_token", "user"], (data) => {
+      console.log('before sync hestory');
+      syncHistoryButton.innerHTML = syncText
+      chrome.runtime.sendMessage({ 
+        action: "sync-history",
+        data: data
+      }, (response) => {
+          console.log(response);
+          syncHistoryButton.innerHTML = nonSyncText;
+        });
+    })
+  }); // End of sync-history button event listener.
+
+
 }); // End of DOMContentLoaded event listener.
