@@ -124,11 +124,28 @@ document.addEventListener("DOMContentLoaded", function () {
       alert("Email is required.");
       return;
     }
+    // Define the regular expression to match the email
+    const emailRegex = /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/;
+
+    // Check if the email meets the regular expression
+    if (!emailRegex.test(email.value)) {
+      alert("Please enter a valid email address.");
+      return;
+    }
 
     if (password.value == "") {
       alert("Password is required.");
       return;
     }
+
+    // Define the regular expression to match the password
+    const regex = /(?=^.{8,}$)((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$/;
+
+    // Check if the password meets the regular expression
+    if (!regex.test(password.value)) {
+      alert("Password must contain at least 8 characters, including at least one uppercase letter, one lowercase letter, one number or special character.");
+      return;
+}
 
     if (password.value !== passwordConfirm.value) {
       alert("Passwords do not match.");
