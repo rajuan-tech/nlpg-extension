@@ -58,6 +58,8 @@ document.addEventListener("DOMContentLoaded", function () {
   var signInButton = document.getElementById("sign-in-button");
   signInButton.addEventListener("click", function () {
     const signingInText = "SIGNING YOU IN...";
+    let alertShown = false; // Initialize flag to track whether the alert has been shown
+
     if (signInButton.innerHTML == signingInText) {
       return;
     }
@@ -81,7 +83,8 @@ document.addEventListener("DOMContentLoaded", function () {
       })
     );
     req.onreadystatechange = function () {
-      if (req.readyState == 4 && req.status == 200) {
+      if (req.readyState == 4) {
+       if (req.status == 200) {
         const response = JSON.parse(req.responseText);
         chrome.storage.local.set({
           access_token: response.response.user.api_key,
@@ -93,13 +96,23 @@ document.addEventListener("DOMContentLoaded", function () {
         document.getElementById("signed-in").style.display = "flex";
         // load user
         loadUser();
-      } else {
+        signInButton.innerHTML = "SIGN IN";
+        email.disabled = false;
+        password.disabled = false;
+        signInButton.disabled = false;
+
+      } else if (!alertShown) {
         email.disabled = false;
         password.disabled = false;
         signInButton.disabled = false;
         signInButton.innerHTML = "SIGN IN";
+        
+        alert("Wrong username or password, please try again")
+        alertShown = true; // Set the flag to indicate that the alert has been shown
+    
       }
-    };
+    }
+  };
     // End of sign in, up & out actions.
   }); // End of sign in button event listener.
 
@@ -229,12 +242,14 @@ document.addEventListener("DOMContentLoaded", function () {
     chrome.storage.local.get(["access_token", "user"], (data) => {
       console.log('before sync hestory');
       syncHistoryButton.innerHTML = syncText
+      syncHistoryButton.disabled = true; 
       chrome.runtime.sendMessage({ 
         action: "sync-history",
         data: data
       }, (response) => {
           console.log(response);
           syncHistoryButton.innerHTML = nonSyncText;
+          alert("This could take up to a few hours but this shouldn’t stop you from start using Brain!")
         });
     })
   }); // End of sync-history button event listener.
