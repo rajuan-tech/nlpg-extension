@@ -137,7 +137,6 @@ document.addEventListener("DOMContentLoaded", function () {
       alert("Email is required.");
       return;
     }
-
     // Define the regular expression to match the email
     const emailRegex = /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/;
 
@@ -151,7 +150,6 @@ document.addEventListener("DOMContentLoaded", function () {
       alert("Password is required.");
       return;
     }
-
 
     // Define the regular expression to match the password
     const regex = /(?=^.{8,}$)((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$/;
