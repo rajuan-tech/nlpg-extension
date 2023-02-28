@@ -63,7 +63,7 @@ document.addEventListener("DOMContentLoaded", function () {
     if (signInButton.innerHTML == signingInText) {
       return;
     }
-    var email = document.getElementById("sign-in-email");
+    var email = document.getElementById("sign-in-username");
     var password = document.getElementById("sign-in-password");
 
     email.disabled = true;
