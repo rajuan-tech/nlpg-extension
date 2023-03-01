@@ -107,7 +107,7 @@ const init = () => {
   elBrainDrawerNoHandsImage.style.height = "62.5px";
   elBrainDrawerNoHandsImage.style.position = "absolute";
   elBrainDrawerNoHandsImage.style.top = "0px";
-  elBrainDrawerNoHandsImage.style.right = "7px";
+  elBrainDrawerNoHandsImage.style.right = "0px";
   elBrainDrawerNoHandsImage.style.display = "initial";
   elBrainDrawerNoHandsImage.setAttribute("id", "brain-drawer-no-hands-image");
   elBrainDrawerNoHandsImage.style.transition = "all 0.5s ease-in-out";
