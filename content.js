@@ -67,6 +67,7 @@ const init = () => {
   // brain drawer --start
   let elBrainDrawer = document.createElement("div");
   elBrainDrawer.id = elBrainDrawerID;
+  elBrainDrawer.classList.add('hey-brain-main')
   elBrainDrawer.style.position = "fixed";
   elBrainDrawer.style.bottom = kBrainRootHeight - 40 + "px";
   elBrainDrawer.style.right = "-36px";
@@ -122,6 +123,7 @@ const init = () => {
   // brain root --start
   let elBrainRoot = document.createElement("div");
   elBrainRoot.id = elBrainRootID;
+  elBrainRoot.classList.add('hey-brain-main')
   elBrainRoot.style.position = "fixed";
   elBrainRoot.style.bottom = "0";
   elBrainRoot.style.right = "0";
