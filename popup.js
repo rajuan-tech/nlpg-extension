@@ -11,6 +11,11 @@ function loadUser() {
 }
 
 document.addEventListener("DOMContentLoaded", function () {
+  ////  NATALIA code starts here --->
+  const switchButton = document.querySelector('input[type="checkbox"]');
+  checkSetting();
+  // //  NATALIA code ends here --->
+
   //TODO: Maybe a tiny loader, while fetching access_token?
   document.getElementById("sign-in").style.display = "none";
   document.getElementById("sign-up").style.display = "none";
@@ -56,6 +61,7 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
   var signInButton = document.getElementById("sign-in-button");
+
   signInButton.addEventListener("click", function () {
     const signingInText = "SIGNING YOU IN...";
     let alertShown = false; // Initialize flag to track whether the alert has been shown
@@ -96,20 +102,22 @@ document.addEventListener("DOMContentLoaded", function () {
         document.getElementById("signed-in").style.display = "flex";
         // load user
         loadUser();
+//  NATALIA code starts here --->
+          checkSetting();
+          storeSetting();
+//  NATALIA code ends here --->
         signInButton.innerHTML = "SIGN IN";
         email.disabled = false;
         password.disabled = false;
         signInButton.disabled = false;
-
       } else if (!alertShown) {
         email.disabled = false;
         password.disabled = false;
         signInButton.disabled = false;
         signInButton.innerHTML = "SIGN IN";
         
-        alert("Wrong username or password, please try again")
+          alert("Wrong username or password, please try again");
         alertShown = true; // Set the flag to indicate that the alert has been shown
-    
       }
     }
   };
@@ -152,11 +160,14 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     // Define the regular expression to match the password
-    const regex = /(?=^.{8,}$)((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$/;
+    const regex =
+      /(?=^.{8,}$)((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$/;
 
     // Check if the password meets the regular expression
     if (!regex.test(password.value)) {
-      alert("Password must contain at least 8 characters, including at least one uppercase letter, one lowercase letter, one number or special character.");
+      alert(
+        "Password must contain at least 8 characters, including at least one uppercase letter, one lowercase letter, one number or special character."
+      );
       return;
 }
 
@@ -228,29 +239,52 @@ document.addEventListener("DOMContentLoaded", function () {
   }); // End of sign up button event listener.
 
   var syncHistoryButton = document.getElementById("sync-history-button");
-  console.log('hello jud')
-  console.log(syncHistoryButton)
+  console.log(syncHistoryButton);
   syncHistoryButton.addEventListener("click", function () {
-    console.log('clicked on sync');
+    console.log("clicked on sync");
     const nonSyncText = "SYNC HISTORY";
     const syncText = "SYNCING...";
     if (syncHistoryButton.innerHTML == syncText) {
       return;
     }
     chrome.storage.local.get(["access_token", "user"], (data) => {
-      console.log('before sync hestory');
-      syncHistoryButton.innerHTML = syncText
+      console.log("before sync hestory");
+      syncHistoryButton.innerHTML = syncText;
       syncHistoryButton.disabled = true; 
-      chrome.runtime.sendMessage({ 
+      chrome.runtime.sendMessage(
+        {
         action: "sync-history",
-        data: data
-      }, (response) => {
+          data: data,
+        },
+        (response) => {
           console.log(response);
           syncHistoryButton.innerHTML = nonSyncText;
-          alert("This could take up to a few hours but this shouldn’t stop you from start using Brain!")
+          alert(
+            "This could take up to a few hours but this shouldn’t stop you from start using Brain!"
+          );
+        }
+      );
         });
-    })
   }); // End of sync-history button event listener.
 
+  //NATALIA code starts here --->
+  switchButton.addEventListener("click", function () {
+    storeSetting();
+    checkSetting();
+  }); // End of switchButton event listener.
 
+  function storeSetting() {
+    const isEnabled = switchButton.checked; //true or false
+    console.log(`now the button is enabled? ${isEnabled}`);
+    const setting = { enabled: isEnabled };
+    chrome.storage.local.set(setting);
+  }
+
+  function checkSetting() {
+    chrome.storage.local.get(["enabled"]).then((result) => {
+      const isEnabled = result.enabled;
+      switchButton.checked = isEnabled;
+    });
+  }
+  //<-----NATALIA code ends here
 }); // End of DOMContentLoaded event listener.

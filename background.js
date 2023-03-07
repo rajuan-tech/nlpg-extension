@@ -1,15 +1,50 @@
 const baseURL = "https://api.nlpgraph.com/stage/api";
 var autoCompleteControllers = [];
+//  NATALIA code starts here --->
+let enabled; // shows if app's toggle is switched on or off: true or false
+checkEnable();
+
+function checkEnable() {
+  chrome.storage.local.get(["enabled"], (result) => {
+    enabled = result.enabled;  
+    
+  });
+}
+
+async function getCurrentTab() {
+  let queryOptions = { active: true, lastFocusedWindow: true };
+  let [tab] = await chrome.tabs.query(queryOptions);
+  return tab;
+}
+//  NATALIA code ends here --->
 
 chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
+  checkEnable();  //NATALIA code here 
   if (
-    changeInfo.status === "complete" &&
-    tab.url !== "chrome://newtab/" &&
-    tab.active
+    // changeInfo.status === "complete" &&
+    tab.active && 
+    enabled //NATALIA code here 
   ) {
     chrome.tabs.sendMessage(tabId, { action: "init" });
   }
 });
+//NATALIA code starts here --->
+// to sent data about url after value of enabled was changed  -- not working yet
+// chrome.storage.onChanged.addListener(changes => {
+//   if (changes?.enabled) {
+//     if (changes.enabled.newValue  || !changes.enabled.newValue) {
+//       console.log(`new value: ${changes.enabled.newValue}`);
+//       let tabId;
+//       getCurrentTab().then(result => {
+//         tabId = result.id;
+//         console.log(`inside promise ${result.id}`); 
+//       });
+//       console.log(`after promise ${tabId}`); // why undefined?
+//       chrome.tabs.sendMessage(tabId, { action: "init" });
+//     }
+//   }
+// });
+//NATALIA code ends here --->
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === "get-url-data") {
@@ -31,7 +66,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         if (!"favicon" in (data.response || {})) {
           data.response.favicon = sender.tab.favIconUrl;
         }
-
         sendResponse(data.response);
       });
     return true;
