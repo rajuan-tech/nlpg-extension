@@ -1,14 +1,11 @@
 /*
 ! tailwindcss v3.0.24 | MIT License | https://tailwindcss.com
 */
-*,
+.hey-brain-main,
 :after,
 :before {
   border: 0 solid #e5e7eb;
   box-sizing: border-box;
-}
-:after,
-:before {
   --tw-content: "";
 }
 .hey-brain-main {
@@ -18,24 +15,7 @@
     Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji;
   line-height: 1.5;
   tab-size: 4;
-  transition: 300;
-}
-/* html {
-  -webkit-text-size-adjust: 100%;
-  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
-    Segoe UI, Roboto, Helvetica Neue, Arial, Noto Sans, sans-serif,
-    Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji;
-  line-height: 1.5;
-  tab-size: 4;
-} */
-
-/* body {
-  line-height: inherit;
-  margin: 0; line-height: inherit;
-  margin: 0;
-} */
-
-.hey-brain-main {
+  transition: 500ms;
   line-height: inherit;
   margin: 0; line-height: inherit;
   margin: 0;
@@ -451,9 +431,6 @@
     var(--tw-sepia) var(--tw-drop-shadow);
 }
 
-.hey-brain-main .ease-in-out {
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-}
 /* body {
   font-family: Montserrat, sans-serif;
 } */
@@ -492,15 +469,7 @@
   background-color: rgb(43 0 123 / var(--tw-bg-opacity));
 }
 
-.hey-brain-main .active\:shadow-lg:active {
-  --tw-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
-    0 4px 6px -4px rgba(0, 0, 0, 0.1);
-  --tw-shadow-colored: 0 10px 15px -3px var(--tw-shadow-color),
-    0 4px 6px -4px var(--tw-shadow-color);
-  box-shadow: 0 0 #0000, 0 0 #0000, var(--tw-shadow);
-  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000),
-    var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
-}
+
 
 @-webkit-keyframes rotating {
   0% {
@@ -569,7 +538,7 @@
   display: grid;
   grid-template-areas: ". . brain toggle"
 }
-#brainImg {
+.hey-brain-main #brainImg {
     grid-area: brain;
     justify-self:center;
 }
@@ -611,15 +580,15 @@
   border-radius: 50%;
 }
 /* active input*/
-input:checked + .slider {
+.hey-brain-main input:checked +  .slider {
   background-color: #DCD0FC;
 }
 /*  circle in active input*/
-input:checked + .slider:before {
+.hey-brain-main input:checked + .slider:before {
   background-color: #8962F4;
 }
 /* for movement*/
-input:checked + .slider:before {
+.hey-brain-main input:checked +  .slider:before {
   -webkit-transform: translateX(16px);
   -ms-transform: translateX(16px);
   transform: translateX(16px);

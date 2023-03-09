@@ -1,50 +1,34 @@
 const baseURL = "https://api.nlpgraph.com/stage/api";
 var autoCompleteControllers = [];
-//  NATALIA code starts here --->
 let enabled; // shows if app's toggle is switched on or off: true or false
 checkEnable();
 
 function checkEnable() {
   chrome.storage.local.get(["enabled"], (result) => {
-    enabled = result.enabled;  
-    
+    enabled = result.enabled;
   });
 }
 
-async function getCurrentTab() {
-  let queryOptions = { active: true, lastFocusedWindow: true };
-  let [tab] = await chrome.tabs.query(queryOptions);
-  return tab;
-}
-//  NATALIA code ends here --->
-
 chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
-  checkEnable();  //NATALIA code here 
-  if (
-    // changeInfo.status === "complete" &&
-    tab.active && 
-    enabled //NATALIA code here 
-  ) {
+  checkEnable();
+  if (enabled && changeInfo.status === "complete" && tab.active) {
     chrome.tabs.sendMessage(tabId, { action: "init" });
   }
 });
-//NATALIA code starts here --->
-// to sent data about url after value of enabled was changed  -- not working yet
-// chrome.storage.onChanged.addListener(changes => {
-//   if (changes?.enabled) {
-//     if (changes.enabled.newValue  || !changes.enabled.newValue) {
-//       console.log(`new value: ${changes.enabled.newValue}`);
-//       let tabId;
-//       getCurrentTab().then(result => {
-//         tabId = result.id;
-//         console.log(`inside promise ${result.id}`); 
-//       });
-//       console.log(`after promise ${tabId}`); // why undefined?
-//       chrome.tabs.sendMessage(tabId, { action: "init" });
-//     }
-//   }
-// });
-//NATALIA code ends here --->
+
+chrome.storage.onChanged.addListener((changes) => {
+  if (changes?.enabled) {
+    let newValue = changes.enabled.newValue;
+    chrome.tabs.query({ currentWindow: true }, function (tabs) {
+      tabs.forEach((tab) => {
+        chrome.tabs.sendMessage(tab.id, {
+          action: newValue ? "init" : "deinit",
+        });
+      });
+    });
+  }
+});
+
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === "get-url-data") {
@@ -119,9 +103,13 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   } else if (request.action === "save-screenshot") {
     var id = request.data.id;
     const getScreenshot = new Promise((res, rej) => {
-      chrome.tabs.captureVisibleTab(sender.tab.windowId, {}, function (dataUrl) {
-        res(dataUrl);
-      });
+      chrome.tabs.captureVisibleTab(
+        sender.tab.windowId,
+        {},
+        function (dataUrl) {
+          res(dataUrl);
+        }
+      );
     });
     getScreenshot.then((data) => {
       fetch(baseURL + "/brain/update_url_document", {
@@ -244,20 +232,23 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       });
     return true;
   } else if (request.action === "sync-history") {
-    getHistory()
-    .then((history) => {
+    getHistory().then((history) => {
       // response is an array of history items
       // make them a csv
       // get headers
       const headers = Object.keys(history[0]);
-      
-      const csv = history.map((item) => {
-        const names = Object.keys(item);
 
-        return names.map((name) => {
-          return `"${item[name]}"`;
-        }).join(",");
-      }).join("\n");
+      const csv = history
+        .map((item) => {
+          const names = Object.keys(item);
+
+          return names
+            .map((name) => {
+              return `"${item[name]}"`;
+            })
+            .join(",");
+        })
+        .join("\n");
 
       const csvWithHeaders = [headers.join(","), csv].join("\n");
 
@@ -274,9 +265,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       })
         .then((response) => response.json())
         .then((data) => {
-          uploadFile(blob, data.response).then((result)=>{
+          uploadFile(blob, data.response).then((result) => {
             sendResponse(result);
-          })
+          });
         });
       // somehow get the url for put to s3
       // ...
@@ -285,8 +276,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       // ...
 
       // enjoy the party
-      
-      
+
       // const a = document.createElement("a");
       // a.href = url;
       // a.download = "history.csv";
@@ -321,8 +311,8 @@ async function uploadFile(file, presignedPost) {
   const formData = new FormData();
   //formData.append("Content-Type", file.type);
   Object.entries(presignedPost.fields).forEach(([key, value]) => {
-    if(key == 'key'){
-      value = value.replace("${filename}", 'history.csv');
+    if (key == "key") {
+      value = value.replace("${filename}", "history.csv");
     }
     formData.append(key, value);
   });
@@ -336,7 +326,6 @@ async function uploadFile(file, presignedPost) {
   const location = res.headers.get("Location"); // get the final url of our uploaded file
   return decodeURIComponent(location);
 }
-
 
 chrome.storage.onChanged.addListener(function (changes, namespace) {
   for (let key in changes) {
