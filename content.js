@@ -64,67 +64,66 @@ const pageInfo = () => {
 // init --start
 const init = () => {
   // brain drawer --start
-  if( document.getElementById("hey-brain-drawer") === null) {
+  if (document.getElementById("hey-brain-drawer") === null) {
+    let elBrainDrawer = document.createElement("div");
+    elBrainDrawer.id = elBrainDrawerID;
+    elBrainDrawer.classList.add("hey-brain-main");
+    elBrainDrawer.style.position = "fixed";
+    elBrainDrawer.style.bottom = kBrainRootHeight - 40 + "px";
+    elBrainDrawer.style.right = "-36px";
+    elBrainDrawer.style.width = "80px";
+    elBrainDrawer.style.height = "80px";
+    elBrainDrawer.style.zIndex = "99999";
+    elBrainDrawer.style.cursor = "pointer";
+    elBrainDrawer.onclick = () => {
+      let elBrainRoot = document.getElementById(elBrainRootID);
+      if (elBrainRoot.style.transform === "translateX(100%)") {
+        elBrainRoot.style.transform = "translateX(0%)";
+        document.getElementById("brain-drawer-no-hands-image").style.display =
+          "none";
+        document.getElementById("brain-drawer-image").style.display = "initial";
+      } else {
+        elBrainRoot.style.transform = "translateX(100%)";
+        document.getElementById("brain-drawer-no-hands-image").style.display =
+          "initial";
+        document.getElementById("brain-drawer-image").style.display = "none";
+      }
+    };
 
-  let elBrainDrawer = document.createElement("div");
-  elBrainDrawer.id = elBrainDrawerID;
-  elBrainDrawer.classList.add('hey-brain-main')
-  elBrainDrawer.style.position = "fixed";
-  elBrainDrawer.style.bottom = kBrainRootHeight - 40 + "px";
-  elBrainDrawer.style.right = "-36px";
-  elBrainDrawer.style.width = "80px";
-  elBrainDrawer.style.height = "80px";
-  elBrainDrawer.style.zIndex = "99999";
-  elBrainDrawer.style.cursor = "pointer";
-  elBrainDrawer.onclick = () => {
-    let elBrainRoot = document.getElementById(elBrainRootID);
-    if (elBrainRoot.style.transform === "translateX(100%)") {
-      elBrainRoot.style.transform = "translateX(0%)";
-      document.getElementById("brain-drawer-no-hands-image").style.display =
-        "none";
-      document.getElementById("brain-drawer-image").style.display = "initial";
-    } else {
-      elBrainRoot.style.transform = "translateX(100%)";
-      document.getElementById("brain-drawer-no-hands-image").style.display =
-        "initial";
-      document.getElementById("brain-drawer-image").style.display = "none";
-    }
-  };
+    let elBrainDrawerImage = document.createElement("img");
+    elBrainDrawerImage.src = chrome.runtime.getURL(
+      "assets/icons/brain-drawer-160.png"
+    );
+    elBrainDrawerImage.setAttribute("id", "brain-drawer-image");
+    elBrainDrawerImage.style.width = "80px";
+    elBrainDrawerImage.style.height = "80px";
+    elBrainDrawerImage.style.display = "none";
+    elBrainDrawer.appendChild(elBrainDrawerImage);
 
-  let elBrainDrawerImage = document.createElement("img");
-  elBrainDrawerImage.src = chrome.runtime.getURL(
-    "assets/icons/brain-drawer-160.png"
-  );
-  elBrainDrawerImage.setAttribute("id", "brain-drawer-image");
-  elBrainDrawerImage.style.width = "80px";
-  elBrainDrawerImage.style.height = "80px";
-  elBrainDrawerImage.style.display = "none";
-  elBrainDrawer.appendChild(elBrainDrawerImage);
+    let elBrainDrawerNoHandsImage = document.createElement("img");
+    elBrainDrawerNoHandsImage.src = chrome.runtime.getURL(
+      "assets/icons/brain-drawer-no-hands.png"
+    );
+    elBrainDrawerNoHandsImage.style.width = "73px";
+    elBrainDrawerNoHandsImage.style.height = "62.5px";
+    elBrainDrawerNoHandsImage.style.position = "absolute";
+    elBrainDrawerNoHandsImage.style.top = "0px";
+    elBrainDrawerNoHandsImage.style.right = "0px";
+    elBrainDrawerNoHandsImage.style.display = "initial";
+    elBrainDrawerNoHandsImage.setAttribute("id", "brain-drawer-no-hands-image");
+    elBrainDrawerNoHandsImage.style.transition = "all 0.5s ease-in-out";
+    elBrainDrawer.appendChild(elBrainDrawerNoHandsImage);
 
-  let elBrainDrawerNoHandsImage = document.createElement("img");
-  elBrainDrawerNoHandsImage.src = chrome.runtime.getURL(
-    "assets/icons/brain-drawer-no-hands.png"
-  );
-  elBrainDrawerNoHandsImage.style.width = "73px";
-  elBrainDrawerNoHandsImage.style.height = "62.5px";
-  elBrainDrawerNoHandsImage.style.position = "absolute";
-  elBrainDrawerNoHandsImage.style.top = "0px";
-  elBrainDrawerNoHandsImage.style.right = "0px";
-  elBrainDrawerNoHandsImage.style.display = "initial";
-  elBrainDrawerNoHandsImage.setAttribute("id", "brain-drawer-no-hands-image");
-  elBrainDrawerNoHandsImage.style.transition = "all 0.5s ease-in-out";
-  elBrainDrawer.appendChild(elBrainDrawerNoHandsImage);
-
-  document.body.appendChild(elBrainDrawer);
-  // brain drawer --end
-  } 
+    document.body.appendChild(elBrainDrawer);
+    // brain drawer --end
+  }
   // const metadata = await fetchMetadata(sender.tab.url);
   // sendResponse(metadata);
 
   // brain root --start
   let elBrainRoot = document.createElement("div");
   elBrainRoot.id = elBrainRootID;
-  elBrainRoot.classList.add('hey-brain-main')
+  elBrainRoot.classList.add("hey-brain-main");
   elBrainRoot.style.position = "fixed";
   elBrainRoot.style.bottom = "0";
   elBrainRoot.style.right = "0";
@@ -1137,10 +1136,12 @@ chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
       }
     });
   } else if (request.action === "deinit") {
-    if( document.getElementById("hey-brain-drawer") !== null) {
-    document.body.removeChild(document.getElementById(elBrainDrawerID));
+    if (document.getElementById("hey-brain-drawer") !== null) {
+      document.body.removeChild(document.getElementById(elBrainDrawerID));
     }
-    document.body.removeChild(document.getElementById(elBrainRootID));
+    if (document.getElementById("hey-brain-root") !== null) {
+      document.body.removeChild(document.getElementById(elBrainRootID));
+    }
   }
 });
 

@@ -18,17 +18,55 @@ chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
 
 chrome.storage.onChanged.addListener((changes) => {
   if (changes?.enabled) {
-    let newValue = changes.enabled.newValue;
-    chrome.tabs.query({ currentWindow: true }, function (tabs) {
-      tabs.forEach((tab) => {
-        chrome.tabs.sendMessage(tab.id, {
-          action: newValue ? "init" : "deinit",
+    chrome.storage.local.get(["enabled"]).then((result) => {
+      chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+        chrome.tabs.sendMessage(tabs[0].id, {
+          action: result.enabled ? "init" : "deinit",
         });
       });
     });
   }
 });
 
+// chrome.storage.onChanged.addListener((changes) => {
+//   if (changes?.enabled) {
+//     let newValue = changes.enabled.newValue;
+//     chrome.tabs.query({  "active": true, currentWindow: true }, function (tabs) {
+
+//         chrome.tabs.sendMessage(tabs[0].id, {
+//           action: newValue ? "init" : "deinit",
+//         });
+
+//     });
+//   }
+// });
+
+chrome.tabs.onActivated.addListener((activeInfo) => {
+  chrome.storage.local.get(["enabled"]).then((result) => {
+    chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+      if (result.enabled) {
+        chrome.tabs.sendMessage(tabs[0].id, { action: "init" });
+      } else {
+        chrome.tabs.sendMessage(tabs[0].id, { action: "deinit" });
+      }
+    });
+  });
+});
+
+// for sending request about all opened tabs when storage changed
+
+// chrome.storage.onChanged.addListener((changes) => {
+//   if (changes?.enabled) {
+//     let newValue = changes.enabled.newValue;
+//     chrome.tabs.query({ currentWindow: true }, function (tabs) {
+//       tabs.forEach((tab) => {
+//         chrome.tabs.sendMessage(tab.id, {
+//           action: newValue ? "init" : "deinit",
+//         });
+//       });
+//     });
+//   }
+// });
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === "get-url-data") {
