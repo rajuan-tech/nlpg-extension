@@ -5,9 +5,18 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="stylesheet" href="assets/style.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat&display=swap"
+      rel="stylesheet"
+    />
   </head>
   <body class="m-0 hey-brain-main">
-    <div class="p-4 m-2" style="width: 275px">
+    <div
+      id="dialogoverlay"
+      style="width: 294px; height: 323px; padding: 0 0px 15px 0px"
+    >
       <!-- SIGN IN -->
       <div class="flex flex-col items-center space-y-4" id="sign-in">
         <img src="assets/icons/brain-48.png" class="h-12 w-12" />
@@ -16,7 +25,7 @@
           <input
             type="text"
             class="px-4 py-2 rounded-md border border-gray-200 focus:border-gray-400 focus:outline-none text-base font-normal"
-            placeholder="Username"  
+            placeholder="Username"
             id="sign-in-username"
             name="sign-in-username"
           />
@@ -85,42 +94,142 @@
       </div>
       <!-- /SIGN UP -->
       <!-- SIGNED IN -->
-      <div class="flex flex-col items-center space-y-4 hidden" id="signed-in">
-  <!-- NATALIA change starts here-->
-  <div class="logo-switch"> 
-                 
-    <img id ="brainImg" src="assets/icons/brain-48.png" class="h-12 w-12"/> 
-                             
-     <label class="switch">
-        <input type="checkbox" checked/>
-        <span class="slider round"></span>
-      </label>
-                      
- </div>
-     <!-- NATALIA change ends here-->
-        <div class="flex flex-row space-x-1 items-start w-full">
-          <p class="text-xs font-bold">Name:</p>
-          <p class="text-xs" id="user-username"></p>
+      <div
+        class="flex flex-col items-center space-y-4 hidden"
+        id="signed-in"
+        style="position: relative; height: 286px"
+      >
+        <!-- NATALIA change starts here-->
+        <div class="logo-switch">
+          <img id="brainImg" src="assets/icons/brainnn.svg" />
+          <label
+            class="switch"
+            style="position: absolute; left: 235px; top: 34px"
+          >
+            <input type="checkbox" checked />
+            <span class="slider round"></span>
+          </label>
         </div>
-        <div class="flex flex-row space-x-1 items-start w-full">
-          <p class="text-xs font-bold">E-mail:</p>
-          <p class="text-xs" id="user-email"></p>
+
+        <div
+          class="sync-history popup-flex"
+          style="position: absolute; height: 50px; top: 65px"
+        >
+          <div class="sync-history_left">
+            <img src="assets/icons/sync.svg" style="width: 24px" />
+            <p style="font-weight: 600; align-self: center">Sync history</p>
+          </div>
         </div>
-        <button
-          class="w-full px-2 py-2 rounded-full outline-none border-0 text-xs font-semibold bg-purple hover:shadow-md active:bg-purple-darker active:shadow-lg text-white"
-          id="sign-out-button"
+
+        <div
+          class="snooze popup-flex"
+          style="height: 50px; position: absolute; top: 115px"
         >
-          SIGN OUT
-        </button>
-        <button
-          class="w-full px-2 py-2 rounded-full outline-none border-0 text-xs font-semibold bg-blue-800 hover:shadow-md active:bg-blue-800 active:shadow-lg text-white"
-          id="sync-history-button"
+          <div class="snooze_left">
+            <img src="assets/icons/snooze.svg" style="width: 24px" />
+            <p style="font-weight: 600; align-self: center">Snooze 60 mins</p>
+          </div>
+        </div>
+
+        <div
+          class="block-the-page popup-flex"
+          id = "addpage-button"
+          style="height: 50px; position: absolute; top: 165px"
         >
-          SYNC HISTORY
+          <div class="block-the-page_left">
+            <img src="assets/icons/block.svg" style="width: 24px" />
+            <p style="font-weight: 600; align-self: center">Block this page</p>
+          </div>
+        </div>
+
+        <button id="go-to-heybrain" style="position: absolute; top: 230px">
+          <a href="https://heybrain.ai/" target="_blank">GO TO HEYBRAIN</a>
         </button>
+
+        <div class="popup-flex" style="position: absolute; top: 285px">
+          <div
+            class="flex flex-row space-x-1 items-start w-full username"
+            style="position: absolute; left: 25px"
+          >
+            <p class="text-xs">signed in as:</p>
+            <p class="text-xs" id="user-username"></p>
+          </div>
+          <a id="sign-out-button" style="position: absolute; right: 25px"
+            >signout</a
+          >
+        </div>
       </div>
-      <!-- /SIGNED IN -->
+
+      <!-- PAGE: IF BLOCKED -->
+      <div class="flex flex-col items-center space-y-4" id="heybrain-blocked">
+        <img src="assets/icons/brain_block.svg" id="blocked-brain" style="width:64px" />
+
+        <p class="text-xs font-bold" id="page-is-blocked">
+          This page is blocked
+        </p>
+        <p class="text-xs font-bold" id="domain-is-blocked">
+          This domain is blocked
+        </p>
+        <p class="text-xs font-bold" id="wrong-page">Error!</p>
+
+        <button
+          class="w-full px-2 py-2 rounded-full outline-none border-0 text-xs font-semibold bg-red hover:shadow-md active:bg-red-darker active:shadow-lg text-white"
+          id="delpage-button"
+        >
+          UNBLOCK
+        </button>
+
+        <p
+          id="adddom-button"
+        >
+          block all pages in this domain
+        </p>
+
+        <button
+          class="w-full px-2 py-2 rounded-full outline-none border-0 text-xs font-semibold bg-red hover:shadow-md active:bg-red-darker active:shadow-lg text-white"
+          id="deldom-button"
+        >
+          UNBLOCK
+        </button>
+
+        <div class="popup-flex" style="position: absolute; top: 285px">
+          <div
+            class="flex flex-row space-x-1 items-start w-full username"
+            style="position: absolute; left: 25px"
+          >
+            <p class="text-xs">signed in as:</p>
+            <p class="text-xs" id="user-username-2"></p>
+      </div>
+          <a id="sign-out-button-2" style="position: absolute; right: 25px"
+            >signout</a
+          >
+        </div>
+      </div>
+      <!-- CHANGED on 2023-03-20. END -->
+
+      <!-- SETTINGS -->
+      <div class="flex flex-col items-center space-y-4" id="heybrain-settings">
+        <img src="assets/icons/brain-48.png" class="h-12 w-12" />
+
+        <p>Here will be settings</p>
+      </div>
     </div>
+
+    <!-- NATALIA change ends here-->
+
+    <!-- /SIGNED IN -->
+
+    <!-- NASTYA'S WRITING A CODE FOR ALERT WINDOWS ---------------------------------------------------------------- -->
+    <div id="dialogbox">
+      <div>
+        <div id="dialogboxhead">Hey Brain!</div>
+        <br />
+        <div id="dialogboxbody"></div>
+        <br />
+        <button id="dialogboxfoot">ok</button>
+      </div>
+    </div>
+
     <script src="popup.js"></script>
   </body>
 </html>

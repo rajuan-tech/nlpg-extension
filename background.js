@@ -1,74 +1,140 @@
+try {importScripts("assets/js/black_list.js")} catch (e) {console.log(e);} // 2023-03-12 #1 added by Stanislav
+
 const baseURL = "https://api.nlpgraph.com/stage/api";
 var autoCompleteControllers = [];
 let enabled; // shows if app's toggle is switched on or off: true or false
 checkEnable();
+getBlackList(); // 2023-03-12 #10 added by Stanislav
+let current_page = {url: '', id: ''}; // 2023-03-14 #10 added by Stanislav
 
 function checkEnable() {
-  chrome.storage.local.get(["enabled"], (result) => {
+  chrome.storage.local.get(["enabled"]).then((result) => {
     enabled = result.enabled;
   });
 }
 
+// 2023-03-12 #6 added by Stanislav: BEGIN  ------------------------
+let startOrStop = () => {
+  chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) 
+  {
+    let url = current_page.url;
+    let id = current_page.id;
+    console.log(current_page);
+    chrome.storage.local.get(["enabled"]).then((result) => 
+    {
+      refreshBlackList().then(() => {
+       
+        let blackListIdx = isInBlacklist(url, true, false)
+        console.log('--- INTING START OR STOP ---');
+        let needToInit = result.enabled
+                        && blackListIdx < 0;  /// ToDo: add the condition for Snoose
+        console.log(blackListIdx);
+        console.log(needToInit);
+
+        chrome.tabs.sendMessage(id, {
+          action:
+            needToInit
+              ? "init"
+              : "deinit",
+        });
+
+        console.log('--- INTING START OR STOP DONE ---'); 
+
+      }); // refreshBlacklist end
+
+    });
+    
+  })
+}
+// 2023-03-12 #6 added by Stanislav: END  ------------------------
+
 chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
-  checkEnable();
-  if (enabled && changeInfo.status === "complete" && tab.active) {
-    chrome.tabs.sendMessage(tabId, { action: "init" });
+  updateCurrentUrl();  // 2023-03-12 #2 added by Stanislav
+  if (changeInfo.status === "complete" && tab.active) { // 2023-03-19 changed by Stanislav
+    startOrStop();  // 2023-03-13 #7 changed by Stanislav
   }
 });
 
 chrome.storage.onChanged.addListener((changes) => {
-  if (changes?.enabled) {
-    chrome.storage.local.get(["enabled"]).then((result) => {
-      chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-        chrome.tabs.sendMessage(tabs[0].id, {
-          action: result.enabled ? "init" : "deinit",
-        });
-      });
-    });
+  if (changes?.enabled || changes?.heybrain_black_list) {  // 2023-03-20 changed by Stanislav
+      console.log('!!! storage was changed')
+      startOrStop(); // 2023-03-13 #8 changed by Stanislav
   }
 });
 
-// chrome.storage.onChanged.addListener((changes) => {
-//   if (changes?.enabled) {
-//     let newValue = changes.enabled.newValue;
-//     chrome.tabs.query({  "active": true, currentWindow: true }, function (tabs) {
-
-//         chrome.tabs.sendMessage(tabs[0].id, {
-//           action: newValue ? "init" : "deinit",
-//         });
-
-//     });
-//   }
-// });
-
-chrome.tabs.onActivated.addListener((activeInfo) => {
-  chrome.storage.local.get(["enabled"]).then((result) => {
-    chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-      if (result.enabled) {
-        chrome.tabs.sendMessage(tabs[0].id, { action: "init" });
-      } else {
-        chrome.tabs.sendMessage(tabs[0].id, { action: "deinit" });
-      }
-    });
-  });
+chrome.tabs.onActivated.addListener(() => {
+  updateCurrentUrl();  // 2023-03-12 #3 added by Stanislav
+  startOrStop(); // 2023-03-13 #9 changed by Stanislav
 });
 
-// for sending request about all opened tabs when storage changed
+// 2023-03-12 #4 added by Stanislav: BEGIN  ------------------------
+function updateCurrentUrl()   // Save the current url to local storage for sharing it between modules
+{
+  chrome.tabs.query({active: true, lastFocusedWindow: true}, tabs =>   
+  {
+      if (tabs[0].url != '' && tabs[0].url !== undefined && tabs[0].url !== null) 
+      {
+        chrome.storage.local.set({'heybrain_current_url': tabs[0].url})
+        current_page.url = tabs[0].url;
+        current_page.id = tabs[0].id;
+      }
+      else
+        chrome.storage.local.set({'heybrain_current_url': ''})
+  } );
+  getBlackList;
+}
+// 2023-03-12 #4 added by Stanislav: END  --------------------------
 
-// chrome.storage.onChanged.addListener((changes) => {
-//   if (changes?.enabled) {
-//     let newValue = changes.enabled.newValue;
-//     chrome.tabs.query({ currentWindow: true }, function (tabs) {
-//       tabs.forEach((tab) => {
-//         chrome.tabs.sendMessage(tab.id, {
-//           action: newValue ? "init" : "deinit",
-//         });
-//       });
-//     });
-//   }
-// });
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+ // 2023-03-12 #5 added by Stanislav: BEGIN  ------------------------  
+ if (request.action === "getBlackList")   // Getting the response for the content (is the URL in the black list)
+  
+ {   
+   let resp_data = isInBlacklist(request.key, true, false);
+   console.log('Sending the BlackList response for Page: '+ resp_data);
+   sendResponse({data:  [resp_data] });   
+ } else
+ // 2023-03-12 #5 added by Stanislav: END  --------------------------
+ 
+ // 2023-03-14 #11 added by Stanislav: BEGIN  ------------------------  
+ if (request.action === "getBlackListDom")   // Getting the response for the content (is the DOM URL in the black list)
+   {
+     let resp_data = isInBlacklist(request.key, true, true);
+     console.log('Sending the BlackList response for Domain: '+ resp_data);
+     sendResponse({data:  [resp_data] });
+   } else
+ // 2023-03-14 #11 added by Stanislav: END  --------------------------
+
+ // 2023-03-15 #12 added by Stanislav: BEGIN  ------------------------  
+ if (request.action === "addPageToBlackList")
+   {
+       let resp_data = addPageToBlackList(request.key, false);
+       sendResponse({data:  [resp_data] });
+   } else
+ 
+ if (request.action === "addDomainToBlackList")
+   {
+     let resp_data = addPageToBlackList(request.key, true);
+     sendResponse({data:  [resp_data] });
+   } else
+
+ if (request.action === "delPageFromBlackList")
+   {
+       let resp_data = deletePageFromBlackList(request.key, false);
+       sendResponse({data:  [resp_data] });
+   } else
+ 
+ if (request.action === "delDomainFromBlackList")
+   {
+     let resp_data = deletePageFromBlackList(request.key, true);
+     sendResponse({data:  [resp_data] });
+   } else
+
+ // 2023-03-15 #12 added by Stanislav: END -------------------------- 
+
+
+
   if (request.action === "get-url-data") {
     fetch(baseURL + "/brain/get_url_data", {
       method: "POST",
@@ -365,17 +431,17 @@ async function uploadFile(file, presignedPost) {
   return decodeURIComponent(location);
 }
 
-chrome.storage.onChanged.addListener(function (changes, namespace) {
-  for (let key in changes) {
-    if (key === "access_token") {
-      chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-        chrome.tabs.sendMessage(tabs[0].id, {
-          action:
-            changes[key].newValue && changes[key].newValue.length > 0
-              ? "init"
-              : "deinit",
-        });
-      });
-    }
-  }
-});
+// chrome.storage.onChanged.addListener(function (changes, namespace) {
+//   for (let key in changes) {
+//     if (key === "access_token") {
+//       chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+//         chrome.tabs.sendMessage(tabs[0].id, {
+//           action:
+//             changes[key].newValue && changes[key].newValue.length > 0
+//               ? "init"
+//               : "deinit",
+//         });
+//       });
+//     }
+//   }
+// });

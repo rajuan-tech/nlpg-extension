@@ -1063,6 +1063,11 @@ const createNotesContent = () => {
   document.getElementById(elBrainContentID).innerHTML = "";
   document.getElementById(elBrainContentID).appendChild(tabContent);
 
+  // NATALIA: not to affect content in browser while typing notes
+  tabContent.addEventListener("keydown", (e) => {
+    e.stopPropagation();
+  })
+
   // save notes button click listener
   document
     .getElementById(elBrainContentID + "-notes-save-button")

@@ -17,6 +17,7 @@
     {
       "matches": ["<all_urls>"],
       "exclude_matches": ["file:///*/*"],
+      "exclude_globs": ["*chrome://extensions/*"],
       "js": ["content.js", "assets/js/simple-editor-purejs.js"],
       "css": ["assets/style.css"]
     }

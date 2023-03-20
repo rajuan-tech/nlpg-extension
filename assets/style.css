@@ -17,7 +17,8 @@
   tab-size: 4;
   transition: 500ms;
   line-height: inherit;
-  margin: 0; line-height: inherit;
+  margin: 0;
+  line-height: inherit;
   margin: 0;
 }
 
@@ -25,9 +26,9 @@
   color: inherit;
   text-decoration: inherit;
 }
-.hey-brain-main b{
+.hey-brain-main b {
   font-weight: bolder;
-}                                               
+}
 
 .hey-brain-main button,
 .hey-brain-main input {
@@ -74,8 +75,7 @@
   font: inherit;
 }
 
-.hey-brain-main p
-{
+.hey-brain-main p {
   margin: 0;
 }
 .hey-brain-main ol,
@@ -93,7 +93,7 @@
   color: #9ca3af;
   opacity: 1;
 }
-.hey-brain-main input::placeholder{
+.hey-brain-main input::placeholder {
   color: #9ca3af;
   opacity: 1;
 }
@@ -162,8 +162,6 @@
   --tw-backdrop-saturate: ;
   --tw-backdrop-sepia: ;
 }
-
-
 
 .hey-brain-main .m-2 {
   margin: 0.5rem;
@@ -469,8 +467,6 @@
   background-color: rgb(43 0 123 / var(--tw-bg-opacity));
 }
 
-
-
 @-webkit-keyframes rotating {
   0% {
     -webkit-transform: rotate(0deg);
@@ -532,17 +528,22 @@
   }
 }
 
-/* NATALIA code starts here-->--> */
 .hey-brain-main .logo-switch {
   width: 100%;
   display: grid;
-  grid-template-areas: ". . brain toggle"
+  grid-template-areas: ". . brain toggle";
+  margin-bottom: 2px;
 }
 .hey-brain-main #brainImg {
-    grid-area: brain;
-    justify-self:center;
+  position: absolute; 
+  left:115px;
+   top:12px;
+  width: 64px;
+  height: 64px;
 }
+
 .hey-brain-main .switch {
+ 
   position: relative;
   display: inline-block;
   width: 34px;
@@ -555,7 +556,16 @@
   opacity: 0;
   width: 0;
   height: 0;
+  position: relative;
 }
+.timer {
+  color: red;
+  font-weight: bold;
+  position: absolute;
+  top: 20px;
+  left: 2px;
+}
+
 /* non active input*/
 .hey-brain-main .slider {
   position: absolute;
@@ -580,15 +590,16 @@
   border-radius: 50%;
 }
 /* active input*/
-.hey-brain-main input:checked +  .slider {
-  background-color: #DCD0FC;
+.hey-brain-main input:checked + .slider {
+  background-color: #dcd0fc;
 }
 /*  circle in active input*/
 .hey-brain-main input:checked + .slider:before {
-  background-color: #8962F4;
+  background-color: #8962f4;
 }
+
 /* for movement*/
-.hey-brain-main input:checked +  .slider:before {
+.hey-brain-main input:checked + .slider:before {
   -webkit-transform: translateX(16px);
   -ms-transform: translateX(16px);
   transform: translateX(16px);
@@ -597,4 +608,225 @@
 .hey-brain-main .slider.round {
   border-radius: 34px;
 }
-/* -- NATALIA code ends here-->--
+
+.hey-brain-main .popup-flex {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+
+  /* border: 1px solid orange; */
+}
+
+.hey-brain-main #go-to-heybrain {
+  color: white;
+  border: none;
+  width: 177px;
+  height: 36px;
+  padding: 10px 24px 10px 24px;
+  background-color: #6416f3;
+  border-radius: 100px;
+}
+
+.hey-brain-main #signed-in {
+  position: relative; height: 286px;
+  font-family: Montserrat, sans-serif;
+  font-size: 12px;
+}
+
+.hey-brain-main .username p {
+  color: #718096;
+}
+
+.hey-brain-main #sign-out-button {
+  color: #8962f4;
+  cursor: pointer;
+}
+
+.hey-brain-main button#go-to-heybrain {
+  margin-bottom: 7px;
+ 
+}
+
+.hey-brain-main .sync-history_left,
+.hey-brain-main .block-the-page_left,
+.hey-brain-main .snooze_left {
+  display: flex;
+  gap: 10px;
+  margin-left: 25px;
+}
+
+.hey-brain-main #sync-content button {
+  padding: 10px 24px 10px 24px;
+  background-color: #6416f3;
+  border-radius: 10%;
+  margin: 20px;
+  color: white;
+}
+
+.hey-brain-main #sync-content button:hover {
+  transition: all 0.5s;
+  transform: scale(1.05);
+}
+
+div.sync-history.popup-flex:hover, 
+div.block-the-page.popup-flex:hover, 
+div.snooze.popup-flex:hover {
+  background-color: #F3F3FD;
+  cursor: pointer;
+}
+
+
+
+/* ALERT STYLE BY NASTYA */
+.hey-brain-main #dialogoverlay {
+  z-index: 1000;
+}
+.hey-brain-main #dialogbox {
+ padding: 1.5vmin;
+ position: absolute;
+ top: 40vmin;
+ left: 10vmin;
+ background:#FFF;
+ border-radius: 1vmin;
+ filter: drop-shadow(0.5vmin 0.5vmin 0.5vmin rgb(31, 67, 125) );
+ font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+    Segoe UI, Roboto, Helvetica Neue, Arial, Noto Sans, sans-serif,
+    Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji;
+}
+
+.hey-brain-main #dialogboxhead {
+  color: rgb(100 22 243);
+  font-size: 6vmin;
+  text-align: center;
+  font-weight: 600;
+}
+
+.hey-brain-main #dialogboxfoot {
+  position: relative;
+  text-align: center;
+  text-transform: uppercase;
+  color: #fff;
+  background-color: rgb(100 22 243);
+  border:rgb(100 22 243);
+  border-radius: 1vmin;
+  padding: 1vmin;
+  left: 36vmin;
+  font-weight: 600;
+  font-size: 5vmin;
+  
+
+}
+
+.hey-brain-main #dialogboxfoot:hover {
+  box-shadow: 0 0 #0000, 0 0 #0000, 0 0 #0000;
+}
+
+.hey-brain-main #dialogboxfoot:active {
+  background-color: rgb(43 0 123);
+}
+
+/* NSTYA'S FINISHED CODING*/
+
+/*Added by Stanislav: BEGIN */
+
+.hey-brain-main .bg-red {
+  --tw-bg-opacity: 1;
+  background-color: rgb(240 22 22 / var(--tw-bg-opacity));
+}
+
+.hey-brain-main .bg-red-darker {
+  --tw-bg-opacity: 1;
+  background-color: rgb(190 0 0 / var(--tw-bg-opacity));
+}
+
+/* 2023-03-20 added*/
+.hey-brain-main #blocked-brain {
+  position: absolute;
+  width: 64px;
+  height: 64px;
+  left: 115px;
+  top: 12px;
+}
+
+
+.hey-brain-main #delpage-button, .hey-brain-main #deldom-button {
+  /* display: flex; */
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 10px 24px;
+  gap: 10px;
+
+  position: absolute;
+  width: 177px;
+  height: 36px;
+  left: 59px;
+  top: 166px;
+
+  background: #27B358;
+  border-radius: 100px;
+}
+
+
+.hey-brain-main #page-is-blocked, .hey-brain-main #domain-is-blocked {
+  position: absolute;
+  width: 201px;
+  height: 21px;
+  left: 46px;
+  top: 121px;
+
+  font-family: 'Montserrat';
+  font-style: normal;
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 130%;
+  /* identical to box height, or 21px */
+
+  /* display: flex; */
+  align-items: center;
+  text-align: center;
+  letter-spacing: 0.25px;
+  text-transform: uppercase;
+
+  color: #FF706C;
+}
+
+.hey-brain-main #domain-is-blocked {
+  top: 101px;
+}
+
+.hey-brain-main #adddom-button {
+
+  position: absolute;
+  width: 185px;
+  height: 15px;
+  left: 55px;
+  top: 226px;
+
+  font-family: 'Montserrat';
+  font-style: normal;
+  font-weight: 600;
+  font-size: 12px;
+  line-height: 15px;
+
+  text-align: center;
+  cursor: pointer;
+  color: #FF706C;
+}
+
+.hey-brain-main #adddom-button:hover{
+  text-decoration: underline;
+}
+
+.hey-brain-main .hidden {
+  display: none;
+}
+
+.hey-brain-main #sign-out-button-2 {
+  color: #8962f4;
+  cursor: pointer;
+}
+
+/* 2023-03-20 added END*/
+
+/* Added by Stanislav: END */
