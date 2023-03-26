@@ -1,11 +1,15 @@
-try {importScripts("assets/js/black_list.js")} catch (e) {console.log(e);} // 2023-03-12 #1 added by Stanislav
+try {
+  importScripts("assets/js/black_list.js");
+} catch (e) {
+  console.log(e);
+} // 2023-03-12 #1 added by Stanislav
 
 const baseURL = "https://api.nlpgraph.com/stage/api";
 var autoCompleteControllers = [];
 let enabled; // shows if app's toggle is switched on or off: true or false
 checkEnable();
 getBlackList(); // 2023-03-12 #10 added by Stanislav
-let current_page = {url: '', id: ''}; // 2023-03-14 #10 added by Stanislav
+let current_page = { url: "", id: "" }; // 2023-03-14 #10 added by Stanislav
 
 function checkEnable() {
   chrome.storage.local.get(["enabled"]).then((result) => {
@@ -15,127 +19,105 @@ function checkEnable() {
 
 // 2023-03-12 #6 added by Stanislav: BEGIN  ------------------------
 let startOrStop = () => {
-  chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) 
-  {
+  chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
     let url = current_page.url;
     let id = current_page.id;
-    console.log(current_page);
-    chrome.storage.local.get(["enabled"]).then((result) => 
-    {
+    // console.log(current_page);
+    chrome.storage.local.get(["enabled"]).then((result) => {
       refreshBlackList().then(() => {
-       
-        let blackListIdx = isInBlacklist(url, true, false)
-        console.log('--- INTING START OR STOP ---');
-        let needToInit = result.enabled
-                        && blackListIdx < 0;  /// ToDo: add the condition for Snoose
-        console.log(blackListIdx);
-        console.log(needToInit);
+        let blackListIdx = isInBlacklist(url, true, false);
+        // console.log('--- INTING START OR STOP ---');
+        let needToInit = result.enabled && blackListIdx < 0; /// ToDo: add the condition for Snoose
+        // console.log(blackListIdx);
+        // console.log(needToInit);
 
         chrome.tabs.sendMessage(id, {
-          action:
-            needToInit
-              ? "init"
-              : "deinit",
+          action: needToInit ? "init" : "deinit",
         });
 
-        console.log('--- INTING START OR STOP DONE ---'); 
-
+        // console.log('--- INTING START OR STOP DONE ---');
       }); // refreshBlacklist end
-
     });
-    
-  })
-}
+  });
+};
 // 2023-03-12 #6 added by Stanislav: END  ------------------------
 
 chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
-  updateCurrentUrl();  // 2023-03-12 #2 added by Stanislav
-  if (changeInfo.status === "complete" && tab.active) { // 2023-03-19 changed by Stanislav
-    startOrStop();  // 2023-03-13 #7 changed by Stanislav
+  updateCurrentUrl(); // 2023-03-12 #2 added by Stanislav
+  if (changeInfo.status === "complete" && tab.active) {
+    // 2023-03-19 changed by Stanislav
+    startOrStop(); // 2023-03-13 #7 changed by Stanislav
   }
 });
 
 chrome.storage.onChanged.addListener((changes) => {
-  if (changes?.enabled || changes?.heybrain_black_list) {  // 2023-03-20 changed by Stanislav
-      console.log('!!! storage was changed')
-      startOrStop(); // 2023-03-13 #8 changed by Stanislav
+  if (changes?.enabled || changes?.heybrain_black_list) {
+    // 2023-03-20 changed by Stanislav
+    // console.log('!!! storage was changed')
+    startOrStop(); // 2023-03-13 #8 changed by Stanislav
   }
 });
 
 chrome.tabs.onActivated.addListener(() => {
-  updateCurrentUrl();  // 2023-03-12 #3 added by Stanislav
+  updateCurrentUrl(); // 2023-03-12 #3 added by Stanislav
   startOrStop(); // 2023-03-13 #9 changed by Stanislav
 });
 
 // 2023-03-12 #4 added by Stanislav: BEGIN  ------------------------
-function updateCurrentUrl()   // Save the current url to local storage for sharing it between modules
-{
-  chrome.tabs.query({active: true, lastFocusedWindow: true}, tabs =>   
-  {
-      if (tabs[0].url != '' && tabs[0].url !== undefined && tabs[0].url !== null) 
-      {
-        chrome.storage.local.set({'heybrain_current_url': tabs[0].url})
-        current_page.url = tabs[0].url;
-        current_page.id = tabs[0].id;
-      }
-      else
-        chrome.storage.local.set({'heybrain_current_url': ''})
-  } );
+function updateCurrentUrl() {
+  // Save the current url to local storage for sharing it between modules
+  chrome.tabs.query({ active: true, lastFocusedWindow: true }, (tabs) => {
+    if (
+      tabs[0].url != "" &&
+      tabs[0].url !== undefined &&
+      tabs[0].url !== null
+    ) {
+      chrome.storage.local.set({ heybrain_current_url: tabs[0].url });
+      current_page.url = tabs[0].url;
+      current_page.id = tabs[0].id;
+    } else chrome.storage.local.set({ heybrain_current_url: "" });
+  });
   getBlackList;
 }
 // 2023-03-12 #4 added by Stanislav: END  --------------------------
 
-
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
- // 2023-03-12 #5 added by Stanislav: BEGIN  ------------------------  
- if (request.action === "getBlackList")   // Getting the response for the content (is the URL in the black list)
-  
- {   
-   let resp_data = isInBlacklist(request.key, true, false);
-   console.log('Sending the BlackList response for Page: '+ resp_data);
-   sendResponse({data:  [resp_data] });   
- } else
- // 2023-03-12 #5 added by Stanislav: END  --------------------------
- 
- // 2023-03-14 #11 added by Stanislav: BEGIN  ------------------------  
- if (request.action === "getBlackListDom")   // Getting the response for the content (is the DOM URL in the black list)
-   {
-     let resp_data = isInBlacklist(request.key, true, true);
-     console.log('Sending the BlackList response for Domain: '+ resp_data);
-     sendResponse({data:  [resp_data] });
-   } else
- // 2023-03-14 #11 added by Stanislav: END  --------------------------
+  // 2023-03-12 #5 added by Stanislav: BEGIN  ------------------------
+  if (request.action === "getBlackList") {
+    // Getting the response for the content (is the URL in the black list)
 
- // 2023-03-15 #12 added by Stanislav: BEGIN  ------------------------  
- if (request.action === "addPageToBlackList")
-   {
-       let resp_data = addPageToBlackList(request.key, false);
-       sendResponse({data:  [resp_data] });
-   } else
- 
- if (request.action === "addDomainToBlackList")
-   {
-     let resp_data = addPageToBlackList(request.key, true);
-     sendResponse({data:  [resp_data] });
-   } else
+    let resp_data = isInBlacklist(request.key, true, false);
+    //  console.log('Sending the BlackList response for Page: '+ resp_data);
+    sendResponse({ data: [resp_data] });
+  }
+  // 2023-03-12 #5 added by Stanislav: END  --------------------------
 
- if (request.action === "delPageFromBlackList")
-   {
-       let resp_data = deletePageFromBlackList(request.key, false);
-       sendResponse({data:  [resp_data] });
-   } else
- 
- if (request.action === "delDomainFromBlackList")
-   {
-     let resp_data = deletePageFromBlackList(request.key, true);
-     sendResponse({data:  [resp_data] });
-   } else
+  // 2023-03-14 #11 added by Stanislav: BEGIN  ------------------------
+  else if (request.action === "getBlackListDom") {
+    // Getting the response for the content (is the DOM URL in the black list)
+    let resp_data = isInBlacklist(request.key, true, true);
+    //  console.log('Sending the BlackList response for Domain: '+ resp_data);
+    sendResponse({ data: [resp_data] });
+  }
+  // 2023-03-14 #11 added by Stanislav: END  --------------------------
 
- // 2023-03-15 #12 added by Stanislav: END -------------------------- 
+  // 2023-03-15 #12 added by Stanislav: BEGIN  ------------------------
+  else if (request.action === "addPageToBlackList") {
+    let resp_data = addPageToBlackList(request.key, false);
+    sendResponse({ data: [resp_data] });
+  } else if (request.action === "addDomainToBlackList") {
+    let resp_data = addPageToBlackList(request.key, true);
+    sendResponse({ data: [resp_data] });
+  } else if (request.action === "delPageFromBlackList") {
+    let resp_data = deletePageFromBlackList(request.key, false);
+    sendResponse({ data: [resp_data] });
+  } else if (request.action === "delDomainFromBlackList") {
+    let resp_data = deletePageFromBlackList(request.key, true);
+    sendResponse({ data: [resp_data] });
+  }
 
-
-
-  if (request.action === "get-url-data") {
+  // 2023-03-15 #12 added by Stanislav: END --------------------------
+  else if (request.action === "get-url-data") {
     fetch(baseURL + "/brain/get_url_data", {
       method: "POST",
       headers: {
@@ -431,17 +413,51 @@ async function uploadFile(file, presignedPost) {
   return decodeURIComponent(location);
 }
 
-// chrome.storage.onChanged.addListener(function (changes, namespace) {
-//   for (let key in changes) {
-//     if (key === "access_token") {
-//       chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-//         chrome.tabs.sendMessage(tabs[0].id, {
-//           action:
-//             changes[key].newValue && changes[key].newValue.length > 0
-//               ? "init"
-//               : "deinit",
-//         });
-//       });
-//     }
-//   }
-// });
+// open the tab after install
+chrome.runtime.onInstalled.addListener(() => {
+    chrome.tabs.create({
+        url: "https://heybrain.ai/register"
+      });
+});
+
+chrome.alarms.onAlarm.addListener(() => {
+
+  console.log("alarm executed its work"); // will be done in 'delayminutes' time
+  chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+    chrome.storage.local.set({ enabled: true });
+
+  });
+});
+
+let timerr = null;
+
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  if (request.action === "timer") {
+    let time = request.time;
+    updateTimer();
+    timerr = setInterval(updateTimer, 1000);
+
+    let timetext;
+
+    sendResponse({ data: [timetext] });
+
+    function updateTimer() {
+      let minutes = Math.floor(time / 60);
+      let seconds = Math.floor(time % 60);
+      minutes = minutes < 10 ? "0" + minutes : minutes;
+      seconds = seconds < 10 ? "0" + seconds : seconds;
+      let timerText = `${minutes} : ${seconds}`;
+      // console.log(timerText);
+      if (timerText === "00 : 00") {
+        clearInterval(timerr);
+        chrome.storage.local.set({ timer: false });
+      }
+      time--;
+    }
+  }
+
+  if (request.action === "stop-timer") {
+    chrome.storage.local.set({ timer: false });
+    clearInterval(timerr);
+  }
+});

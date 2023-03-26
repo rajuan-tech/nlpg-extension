@@ -63,8 +63,22 @@ const pageInfo = () => {
 
 // init --start
 const init = () => {
-  // brain drawer --start
-  if (document.getElementById("hey-brain-drawer") === null) {
+  // 2023-03-20 Added by Stanislav: Delete elements if they're already exist
+  if (document.getElementById("hey-brain-drawer") !== null) {
+    document.body.removeChild(document.getElementById(elBrainDrawerID));
+  }
+  if (document.getElementById("hey-brain-root") !== null) {
+    document.body.removeChild(document.getElementById(elBrainRootID));
+  }
+  if (document.getElementById("hey-brain-root") !== null) {
+    document.body.removeChild(
+      document.getElementById(elBrainRootDismissButton)
+    );
+  }
+
+  // brain drawer --star
+  if (document.getElementById(elBrainDrawerID) === null) {
+    // changed 2023-03-20 by Stanislav
     let elBrainDrawer = document.createElement("div");
     elBrainDrawer.id = elBrainDrawerID;
     elBrainDrawer.classList.add("hey-brain-main");
@@ -151,6 +165,7 @@ const init = () => {
   // brain root --end
 
   // brain root dismiss button --start
+
   let elBrainRootDismissButton = document.createElement("div");
   elBrainRootDismissButton.style.position = "absolute";
   elBrainRootDismissButton.style.top = "-10px";
@@ -174,6 +189,7 @@ const init = () => {
   elBrainRootDismissButtonImage.style.height = "32px";
   elBrainRootDismissButton.appendChild(elBrainRootDismissButtonImage);
   elBrainRoot.appendChild(elBrainRootDismissButton);
+
   // brain root dismiss button --end
 
   // brain content --start
@@ -281,7 +297,7 @@ const init = () => {
       elBrainLoader.style.display = "none";
       if (response) {
         pageData = response;
-        console.log("pageData", pageData);
+        // console.log("pageData", pageData);
         if (!pageData.favicon_url) {
           pageData.favicon_url =
             "https://www.google.com/s2/favicons?domain=" +
@@ -486,7 +502,7 @@ const createSmartpastContent = () => {
                 : descriptionText;
 
             const descriptionContent = `
-              <div class="flex flex-row w-full p-1 space-x-2" style="font-size:12px;">
+              <div class="brain-flex brain-flex-row w-full p-1 space-x-2" style="font-size:12px;">
                 <div class="shrink-0"><img src="${descriptionImgSrc}" width="24px" height="24px" /></div>
                 <div>${descriptionText}</div>
               </div>
@@ -528,8 +544,8 @@ const createSmartpastContent = () => {
             elSmartpastItem.innerHTML =
               `
               <div style="position: relative; display: flex; flex-direction: column; justify-content: space-between; font-size: 16px;" class="space-y-4">
-              <div class="flex flex-col">
-                <div class="flex flex-row space-x-2">
+              <div class="brain-flex brain-flex-col">
+                <div class="brain-flex brain-flex-row space-x-2">
                 ` +
               favIcon +
               `
@@ -583,7 +599,7 @@ const createTagsContent = () => {
 
   tabContent.innerHTML =
     `
-    <div class="flex flex-row space-x-2">
+    <div class="brain-flex brain-flex-row space-x-2">
     ` +
     favIcon +
     `
@@ -592,11 +608,11 @@ const createTagsContent = () => {
     `
         </div>
       </div>
-    <div class="flex flex-grow flex-wrap" style="align-content: baseline;" id="` +
+    <div class="brain-flex brain-flex-grow brain-flex-wrap" style="align-content: baseline;" id="` +
     elBrainContentID +
     `-tags-content-active-tags-list">
     </div>
-    <div class="flex">
+    <div class="brain-flex">
       <div style="position:absolute;right: 20px;margin-top: 8px;font-size: 16px;cursor: pointer;display: none;" id="` +
     elBrainContentID +
     `-tags-content-tag-input-clear">
@@ -607,11 +623,11 @@ const createTagsContent = () => {
       <input type="text" id="` +
     elBrainContentID +
     `-tags-content-input" 
-      class="flex-grow px-4 py-2 border border-gray-300 rounded-full" 
+      class="brain-flex-grow px-4 py-2 border border-gray-300 rounded-full" 
       style="background: white; padding-right: 50px;"
       placeholder="Add a tag" />
     </div>
-    <div class="flex flex-grow flex-wrap" style="align-content: baseline;" id="` +
+    <div class="brain-flex brain-flex-grow brain-flex-wrap" style="align-content: baseline;" id="` +
     elBrainContentID +
     `-tags-content-suggested">
     
@@ -843,7 +859,7 @@ const fillTagsContent = () => {
     ).innerHTML = "";
     var emptyStateHTML = "";
     emptyStateHTML +=
-      '<div class="flex flex-col items-center justify-center text-md font-semibold" style="align-self: center;width: 100%;height: 100%;">';
+      '<div class="brain-flex brain-flex-col items-center justify-center text-md font-semibold" style="align-self: center;width: 100%;height: 100%;">';
     emptyStateHTML += "<p style='margin-bottom: 0px;'>No tags yet 😔</p>";
     emptyStateHTML +=
       "<p class='font-normal text-gray-500'>Add tags from our suggestions</p>";
@@ -856,13 +872,13 @@ const fillTagsContent = () => {
   var tagsHTML = "";
   tags.forEach((tag, index) => {
     tagsHTML +=
-      '<div class="flex flex-row items-center justify-center px-2 py-1 space-x-1 mr-1 mb-1 text-sm font-medium rounded-full" style="background-color: #E7E8FC; height:24px;">';
-    tagsHTML += '<div class="flex-shrink-0"><img src="';
+      '<div class="brain-flex brain-flex-row items-center justify-center px-2 py-1 space-x-1 mr-1 mb-1 text-sm font-medium rounded-full" style="background-color: #E7E8FC; height:24px;">';
+    tagsHTML += '<div class="brain-flex-shrink-0"><img src="';
     tagsHTML += chrome.runtime.getURL("assets/images/tag.png");
     tagsHTML += '" width="16px" height="16px" /></div>';
     tagsHTML += "<div id='tag-item-" + index + "'>" + tag + "</div>";
     tagsHTML +=
-      '<div class="flex-shrink-0 cursor-pointer remove-tag-item" id="tag-remove-item-id-' +
+      '<div class="brain-flex-shrink-0 cursor-pointer remove-tag-item" id="tag-remove-item-id-' +
       index +
       '"><img idx="' +
       index +
@@ -946,12 +962,12 @@ const fillSuggestionsContent = () => {
 
       const el = document.createElement("div");
       el.className =
-        "flex flex-row items-center justify-center px-2 py-1 space-x-1 mr-1 mb-1 text-sm font-medium rounded-full cursor-pointer tag-suggestion-item-" +
+        "brain-flex brain-flex-row items-center justify-center px-2 py-1 space-x-1 mr-1 mb-1 text-sm font-medium rounded-full cursor-pointer tag-suggestion-item-" +
         index;
       el.style.backgroundColor = bgColor;
       el.style.height = "24px";
       el.innerHTML =
-        '<div class="flex-shrink-0"><img src="' +
+        '<div class="brain-flex-shrink-0"><img src="' +
         chrome.runtime.getURL("assets/images/" + iconSrc + ".png") +
         '" width="16px" height="16px" /></div>';
       el.innerHTML += "<div>" + tag + "</div>";
@@ -986,12 +1002,12 @@ const fillAutoCompleteContent = (items) => {
 
       const el = document.createElement("div");
       el.className =
-        "flex flex-row items-center justify-center px-2 py-1 space-x-1 mr-1 mb-1 text-sm font-medium rounded-full cursor-pointer tag-suggestion-item-" +
+        "brain-flex brain-flex-row items-center justify-center px-2 py-1 space-x-1 mr-1 mb-1 text-sm font-medium rounded-full cursor-pointer tag-suggestion-item-" +
         index;
       el.style.backgroundColor = bgColor;
       el.style.height = "24px";
       el.innerHTML =
-        '<div class="flex-shrink-0"><img src="' +
+        '<div class="brain-flex-shrink-0"><img src="' +
         chrome.runtime.getURL("assets/images/" + iconSrc + ".png") +
         '" width="16px" height="16px" /></div>';
       el.innerHTML += "<div>" + tag + "</div>";
@@ -1027,8 +1043,8 @@ const createNotesContent = () => {
 
   tabContent.innerHTML =
     `
-      <div class="flex flex-col space-y-2 h-full">
-        <div class="flex flex-row space-x-2">
+      <div class="brain-flex brain-flex-col space-y-2 h-full">
+        <div class="brain-flex brain-flex-row space-x-2">
       ` +
     favIcon +
     `
@@ -1037,14 +1053,14 @@ const createNotesContent = () => {
     `
           </div>
         </div>
-        <div class="flex flex-grow fields">
+        <div class="brain-flex brain-flex-grow fields">
           <textarea class="w-full h-full border border-gray-100 rounded-lg p-2 text-md" style="background: white;" id="` +
     elBrainContentID +
     `-notes-textarea"></textarea>
         </div>
-        <div class="flex flex-row space-x-2 items-center">
+        <div class="brain-flex brain-flex-row space-x-2 items-center">
           <a href="https://heybrain.ai/?filter=modified_urls" target="_blank">See all notes</a>
-          <div class="flex-grow" id="` +
+          <div class="brain-flex-grow" id="` +
     elBrainContentID +
     `-notes-footer">
           </div>
@@ -1066,7 +1082,7 @@ const createNotesContent = () => {
   // NATALIA: not to affect content in browser while typing notes
   tabContent.addEventListener("keydown", (e) => {
     e.stopPropagation();
-  })
+  });
 
   // save notes button click listener
   document
@@ -1146,6 +1162,12 @@ chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
     }
     if (document.getElementById("hey-brain-root") !== null) {
       document.body.removeChild(document.getElementById(elBrainRootID));
+    }
+    if (document.getElementById("hey-brain-root") !== null) {
+      // 2023-03-20 Added by Stanislav
+      document.body.removeChild(
+        document.getElementById(elBrainRootDismissButton)
+      );
     }
   }
 });

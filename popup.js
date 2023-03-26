@@ -1,29 +1,38 @@
 const baseURL = "https://api.nlpgraph.com/stage/api";
 var isLoggedIn = false;
 
+//  NATALIA code to avoid lethargy
+// chrome.storage.local.set({timer: false}); 
+
+const snoozeAlert = document.querySelector("#snooze-content");
+snoozeAlert.style.display = "none";
+const wakeupButton = document.querySelector("button#wakeup");
+
+document.addEventListener("DOMContentLoaded", function () {
+  // replaced here 2023-03-22
 function loadUser() {
   chrome.storage.local.get(["user"], (data) => {
     if (data.user) {
       const user = JSON.parse(data.user);
       document.getElementById("user-username").innerHTML = user.username;
-      document.getElementById("user-username-2").innerHTML = user.username;  /// Added 2023-03-20 by Stanislav
+      document.getElementById("user-username-2").innerHTML = user.username; /// Added 2023-03-20 by Stanislav
       // document.getElementById("user-email").innerHTML = user.email; // NATALIA CODE
       checkBlackList();
+        // console.log('loadUser')
     }
   });
 }
 
-document.addEventListener("DOMContentLoaded", function () {
   //to delete synchistory button if it was pushed once, and adjust the popup main page:
   chrome.storage.local.get(["synchistory"]).then((result) => {
-    if(result.synchistory) {
-    document.querySelector(".sync-history").style.visibility = "hidden";
-    document.querySelector("div.snooze.popup-flex").style.top = "75px";
-    document.querySelector("div.block-the-page.popup-flex").style.top = "125px";
+    if (result.synchistory) {
+      document.querySelector(".sync-history").style.visibility = "hidden";
+      document.querySelector("div.snooze.popup-flex").style.top = "75px";
+      document.querySelector("div.block-the-page.popup-flex").style.top =
+        "125px";
     }
   });
 
-  const blockButton = document.querySelector("div.block-the-page.popup-flex");
   const switchButton = document.querySelector(
     '.logo-switch input[type="checkbox"]'
   );
@@ -34,8 +43,7 @@ document.addEventListener("DOMContentLoaded", function () {
   document.getElementById("sign-up").style.display = "none";
   document.getElementById("signed-in").style.display = "none";
   document.getElementById("heybrain-settings").style.display = "none"; /// 2023-03-13 Added by Stanislav
-  document.getElementById("heybrain-blocked").style.display = "none"; /// 2023-03-19 Added by Stanislav 
-
+  document.getElementById("heybrain-blocked").style.display = "none"; /// 2023-03-19 Added by Stanislav
 
   // Check if user is logged in
   chrome.storage.local.get(["access_token", "user"], (data) => {
@@ -55,7 +63,7 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
   // Sign in, up & out actions.
-  
+
   // Added on 2023-03-30 by Stanislav ------------------------------------------------------------
   function signOutClick() {
     // localStorage.removeItem("access_token");
@@ -71,7 +79,6 @@ document.addEventListener("DOMContentLoaded", function () {
     document.getElementById("heybrain-settings").style.display = "none"; /// 2023-03-13 Added by Stanislav
     document.getElementById("heybrain-blocked").style.display = "none"; /// 2023-03-19 Added by Stanislav
 
-
     //to turn off the app
     switchButton.checked = false; // NATALIA code:after sign out toggle is always off
     storeSetting(); // NATALIA code:after sign out toggle is always off
@@ -81,17 +88,18 @@ document.addEventListener("DOMContentLoaded", function () {
         chrome.tabs.sendMessage(tab.id, { message: "deinit" });
       });
     });
-  };
-
- 
+  }
 
   // END of Adding 2023-03-20 ----------------------------------------------------------------
 
-
   // Modified on 2023-03-20 by Stanislav
 
-  document.getElementById("sign-out-button").addEventListener("click", signOutClick);
-  document.getElementById("sign-out-button-2").addEventListener("click", signOutClick);
+  document
+    .getElementById("sign-out-button")
+    .addEventListener("click", signOutClick);
+  document
+    .getElementById("sign-out-button-2")
+    .addEventListener("click", signOutClick);
 
   /// end of modification 2023-03-20
 
@@ -101,7 +109,6 @@ document.addEventListener("DOMContentLoaded", function () {
     document.getElementById("sign-up").style.display = "none";
     document.getElementById("heybrain-settings").style.display = "none"; /// 2023-03-13 Added by Stanislav
     document.getElementById("heybrain-blocked").style.display = "none"; /// 2023-03-19 Added by Stanislav
-
   });
 
   var showSignUpButton = document.getElementById("show-sign-up-button");
@@ -110,32 +117,30 @@ document.addEventListener("DOMContentLoaded", function () {
     document.getElementById("sign-up").style.display = "flex";
     document.getElementById("heybrain-settings").style.display = "none"; /// 2023-03-13 Added by Stanislav
     document.getElementById("heybrain-blocked").style.display = "none"; /// 2023-03-19 Added by Stanislav
-
   });
 
   var signInButton = document.getElementById("sign-in-button"); // sign in button
 
+  // NASTYA'S CODING FOR ALERT WINDOWS ----------------------------------------------------------------
+  let dialogoverlay = document.getElementById("dialogoverlay");
+  let dialogbox = document.getElementById("dialogbox");
+  let dialogboxbody = document.getElementById("dialogboxbody");
+  dialogbox.style.display = "none";
+  let btnOk = document.getElementById("dialogboxfoot");
 
-     // NASTYA'S CODING FOR ALERT WINDOWS ----------------------------------------------------------------
- let dialogoverlay = document.getElementById('dialogoverlay');
- let dialogbox = document.getElementById('dialogbox');
- let dialogboxbody = document.getElementById('dialogboxbody');
- dialogbox.style.display = 'none';
- let btnOk = document.getElementById('dialogboxfoot');
+  function alertWinow(str) {
+    dialogbox.style.display = "block";
+    btnOk.style.padding = '1vmin'
+    dialogoverlay.style.opacity = "0.1";
+    dialogboxbody.innerHTML = str;
+  }
 
- function alertWinow(str) {
-   dialogbox.style.display = 'flex';
-   dialogoverlay.style.opacity = '0.1'
-   dialogboxbody.innerHTML = str;
- }
+  btnOk.addEventListener("click", function () {
+    dialogbox.style.display = "none";
+    dialogoverlay.style.opacity = "100%";
+  });
 
- btnOk.addEventListener('click', function() {
-    dialogbox.style.display = 'none';
-    dialogoverlay.style.opacity ='100%'
- })
- 
- // NASTYA'S FINISHED CODING ----------------------------------------------------------
-
+  // NASTYA'S FINISHED CODING ----------------------------------------------------------
 
   signInButton.addEventListener("click", function () {
     const signingInText = "SIGNING YOU IN...";
@@ -252,7 +257,9 @@ document.addEventListener("DOMContentLoaded", function () {
       // alert(
       //   "Password must contain at least 8 characters, including at least one uppercase letter, one lowercase letter, one number or special character."
       // );
-      alertWinow("Password must contain at least 8 characters, including at least one uppercase letter, one lowercase letter, one number or special character.");
+      alertWinow(
+        "Password must contain at least 8 characters, including at least one uppercase letter, one lowercase letter, one number or special character."
+      );
       return;
     }
 
@@ -324,7 +331,9 @@ document.addEventListener("DOMContentLoaded", function () {
     };
   }); // End of sign up button event listener.
 
-  const syncHistoryButton = document.querySelector("div.sync-history.popup-flex");
+  const syncHistoryButton = document.querySelector(
+    "div.sync-history.popup-flex"
+  );
 
   syncHistoryButton.addEventListener("click", function () {
     const syncHistoryAlert = document.createElement("div");
@@ -383,8 +392,8 @@ document.addEventListener("DOMContentLoaded", function () {
           },
           (response) => {
             syncProcessText.innerHTML = `${nonSyncText} <br><br>
-              This could take up to a few hours but this shouldn’t stop you from start using Brain!`
-          
+              This could take up to a few hours but this shouldn’t stop you from start using Brain!`;
+
             document.querySelector("button.ok").style.display = "block";
           }
         );
@@ -392,11 +401,6 @@ document.addEventListener("DOMContentLoaded", function () {
       document.querySelector(".sync-history").style.visibility = "hidden"; // to hide sync-history block
       let removed = true;
       chrome.storage.local.set({ synchistory: removed });
-
-   
-    
-
-
     });
   }); // End of sync-history button event listener.
 
@@ -416,202 +420,300 @@ document.addEventListener("DOMContentLoaded", function () {
       const isEnabled = result.enabled;
       switchButton.checked = isEnabled;
     });
+    chrome.storage.local.get(["timer"]).then((result) => {
+      if (result.timer) {
+        drawSnoozeAlert();
+      } else {
+        hideSnoozeAlert();
+      }
+    });
   }
- 
 
- /// 2023-03-13 Added by Stanislav: BEGIN ----------------------------------------------------------------
+  /// 2023-03-13 Added by Stanislav: BEGIN ----------------------------------------------------------------
 
   checkBlackList(); // ON EACH POPUP'S OPEN IF IT'S LOGGED IN
 
   let addpage_button = document.getElementById("addpage-button");
-  let adddom_button  = document.getElementById("adddom-button");
+  let adddom_button = document.getElementById("adddom-button");
   let delpage_button = document.getElementById("delpage-button");
-  let deldom_button  = document.getElementById("deldom-button");
-  let delpage_label  = document.getElementById("page-is-blocked");
-  let deldom_label  = document.getElementById("domain-is-blocked");
-  let kaputt_label  = document.getElementById("wrong-page");
+  let deldom_button = document.getElementById("deldom-button");
+  let delpage_label = document.getElementById("page-is-blocked");
+  let deldom_label = document.getElementById("domain-is-blocked");
+  let kaputt_label = document.getElementById("wrong-page");
 
   function applyBlockToPopup(status) {
-   if (status === 0)
-   {
-     document.getElementById("sign-in").style.display = "none";
-     document.getElementById("sign-up").style.display = "none";
-     document.getElementById("signed-in").style.display = "flex";
-     document.getElementById("heybrain-settings").style.display = "none";
-     document.getElementById("heybrain-blocked").style.display = "none";
-   } else
-   {
-     document.getElementById("sign-in").style.display = "none";
-     document.getElementById("sign-up").style.display = "none";
-     document.getElementById("signed-in").style.display = "none";
-     document.getElementById("heybrain-settings").style.display = "none";
-     document.getElementById("heybrain-blocked").style.display = "flex";
-   }
-   applyBlackListButtons(status)
+    if (status === 0) {
+      document.getElementById("sign-in").style.display = "none";
+      document.getElementById("sign-up").style.display = "none";
+      document.getElementById("signed-in").style.display = "flex";
+      document.getElementById("heybrain-settings").style.display = "none";
+      document.getElementById("heybrain-blocked").style.display = "none";
+    } else {
+      document.getElementById("sign-in").style.display = "none";
+      document.getElementById("sign-up").style.display = "none";
+      document.getElementById("signed-in").style.display = "none";
+      document.getElementById("heybrain-settings").style.display = "none";
+      document.getElementById("heybrain-blocked").style.display = "flex";
+    }
+    applyBlackListButtons(status);
   }
-  function doHide(obj){
-    if (!obj.classList.contains("hidden"))
-      obj.classList.add("hidden");
+  function doHide(obj) {
+    if (!obj.classList.contains("hidden")) obj.classList.add("hidden");
   }
-  function doUnHide(obj){
+  function doUnHide(obj) {
     obj.classList.remove("hidden");
   }
 
   /// Changed 2023-03-20 by Stanislav --------------------------------------------------
   function applyBlackListButtons(status) {
-    console.log('BlackList status code: '+status)
+    // console.log('BlackList status code: '+status)
     switch (status) {
-      case -1:  
-            doHide(delpage_button);   doHide(adddom_button);    doHide(deldom_button);
-            doHide(deldom_label);     doHide(kaputt_label);
+      case -1:
+        doHide(delpage_button);
+        doHide(adddom_button);
+        doHide(deldom_button);
+        doHide(deldom_label);
+        doHide(kaputt_label);
+        doUnHide(delpage_label);
+        break;
+      case 1:
+        doHide(deldom_label);
+        doHide(deldom_button);
+        doHide(kaputt_label);
+        doUnHide(delpage_button);
+        doUnHide(adddom_button);
+        doUnHide(delpage_label);
+        break;
+      case 2:
+        doHide(delpage_button);
+        doHide(adddom_button);
+        doHide(delpage_label);
+        doHide(kaputt_label);
 
-            doUnHide(delpage_label);
-             break;
-      case 1:  
-            doHide(deldom_label);     doHide(deldom_button);    doHide(kaputt_label);
-            doUnHide(delpage_button); doUnHide(adddom_button);  doUnHide(delpage_label);
-             break;
-      case 2:  
-            doHide(delpage_button);   doHide(adddom_button);    doHide(delpage_label);
-            doHide(kaputt_label);
-
-            doUnHide(deldom_label);   doUnHide(deldom_button);
-             break;
+        doUnHide(deldom_label);
+        doUnHide(deldom_button);
+        break;
       case 0:
-            doHide(delpage_button);   doHide(adddom_button);    doHide(deldom_button);
-            doHide(deldom_label);     doHide(delpage_label);    doHide(delpage_label);
+        doHide(delpage_button);
+        doHide(adddom_button);
+        doHide(deldom_button);
+        doHide(deldom_label);
+        doHide(delpage_label);
+        doHide(delpage_label);
 
-            doUnHide(kaputt_label);
-             break;
-      default: 
-            doHide(delpage_button);   doHide(adddom_button);    doHide(deldom_button);
-            doHide(deldom_label);     doHide(delpage_label);    doHide(kaputt_label);
+        doUnHide(kaputt_label);
+        break;
+      default:
+        doHide(delpage_button);
+        doHide(adddom_button);
+        doHide(deldom_button);
+        doHide(deldom_label);
+        doHide(delpage_label);
+        doHide(kaputt_label);
     }
   }
-  
+
   /// END: Changed 2023-03-20 by Stanislav -----------------------------------------------
 
   function checkBlackList() {
-    console.log('--- DOING INIT OF BLACKLIST MENU ------');
+    // console.log('--- DOING INIT OF BLACKLIST MENU ------');
 
-    chrome.storage.local.get(["access_token", 'heybrain_current_url']).then( (obj) => 
-    { 
-      if (!obj.access_token) return 0;
-      
-      let my_url = obj.heybrain_current_url;
+    chrome.storage.local
+      .get(["access_token", "heybrain_current_url"])
+      .then((obj) => {
+        if (!obj.access_token) return 0;
 
-      if (my_url === undefined || my_url === '') 
-      {
-        applyBlockToPopup(-1); 
-        return 0;
-      }
+        let my_url = obj.heybrain_current_url;
 
-      let checkIsInBlacklist = new Promise((resolve)  => 
-      {
-        chrome.runtime.sendMessage(
-          {action: "getBlackList", key: my_url}, 
+        if (my_url === undefined || my_url === "") {
+          applyBlockToPopup(-1);
+          return 0;
+        }
+
+        let checkIsInBlacklist = new Promise((resolve) => {
+          chrome.runtime.sendMessage(
+            { action: "getBlackList", key: my_url },
             (response) => {
-              console.log('Page message recieved: '+ response.data);
-              resolve(response.data) 
-            });
-      });
-      
-      let checkDomIsInBlacklist =  new Promise((resolve)  => 
-      {
+              // console.log('Page message recieved: '+ response.data);
+              resolve(response.data);
+            }
+          );
+        });
+
+        let checkDomIsInBlacklist = new Promise((resolve) => {
+          chrome.runtime.sendMessage(
+            { action: "getBlackListDom", key: my_url },
+            (response) => {
+              // console.log('Dom message recieved: '+ response.data);
+              resolve(response.data);
+            }
+          );
+        });
+
+        checkIsInBlacklist.then((inBlackListResponse) => {
+          let isURLinBL = inBlackListResponse[0];
+          checkDomIsInBlacklist.then((DomInBlackListResponse) => {
+            let isDomInBL = DomInBlackListResponse[0];
+
+            let black_list_state =
+              isDomInBL > -1
+                ? 2 // Domain is not in the blacklist
+                : isURLinBL > -1
+                ? 1 // Page is in the blacklist
+                : 0; // Nothing is in the blacklist
+
+            applyBlockToPopup(black_list_state);
+          });
+        });
+      }); // getting end
+    //  console.log('--- INIT OF BLACKLIST MENU IS DONE ------');
+  }
+
+  //  var GoSettingsButton = document.getElementById("heybrain-settings-button");
+
+  //  GoSettingsButton.addEventListener("click", function () {
+  //    document.getElementById("sign-in").style.display = "none";
+  //    document.getElementById("sign-up").style.display = "none";
+  //    document.getElementById("signed-in").style.display = "none";
+  //    document.getElementById("heybrain-settings").style.display = "flex";
+  //    // checkBlackList();
+  //  });
+
+  addpage_button.addEventListener("click", function () {
+    chrome.storage.local.get(["heybrain_current_url"]).then((obj) => {
+      let url = obj.heybrain_current_url;
+      if (url !== null || url !== undefined || url !== "") {
         chrome.runtime.sendMessage(
-            {action: "getBlackListDom", key: my_url}, 
-              (response) => {
-                console.log('Dom message recieved: '+ response.data);
-                resolve(response.data) 
-              });
-      });
+          { action: "addPageToBlackList", key: url },
+          (response) => {
+            checkBlackList();
+          }
+        );
+      }
+    });
+  });
 
-      checkIsInBlacklist.then((inBlackListResponse) => 
-      {
-        let isURLinBL = inBlackListResponse[0];
-        checkDomIsInBlacklist.then((DomInBlackListResponse) => 
+  adddom_button.addEventListener("click", function () {
+    chrome.storage.local.get(["heybrain_current_url"]).then((obj) => {
+      let url = obj.heybrain_current_url;
+      if (url !== null || url !== undefined || url !== "") {
+        chrome.runtime.sendMessage(
+          { action: "addDomainToBlackList", key: url },
+          (response) => {
+            checkBlackList();
+          }
+        );
+      }
+    });
+  });
+
+  delpage_button.addEventListener("click", function () {
+    chrome.storage.local.get(["heybrain_current_url"]).then((obj) => {
+      let url = obj.heybrain_current_url;
+      if (url !== null || url !== undefined || url !== "") {
+        chrome.runtime.sendMessage(
+          { action: "delPageFromBlackList", key: url },
+          (response) => {
+            checkBlackList();
+          }
+        );
+      }
+    });
+  });
+
+  deldom_button.addEventListener("click", function () {
+    chrome.storage.local.get(["heybrain_current_url"]).then((obj) => {
+      let url = obj.heybrain_current_url;
+      if (url !== null || url !== undefined || url !== "") {
+        chrome.runtime.sendMessage(
+          { action: "delDomainFromBlackList", key: url },
+          (response) => {
+            checkBlackList();
+          }
+        );
+      }
+    });
+  });
+  /// 2023-03-13 Added byStanislav: END ----------------------------------------------------------------
+
+  ///2023-03-21 Added by Natalia START ----------------------------------------------------------------
+  const snoozeButton = document.querySelector("div.snooze.popup-flex");
+
+  snoozeButton.addEventListener("click", () => {
+    // to remove timer and shown text after second click if timer is already running
+    chrome.alarms.get("timerAlarm", function (alarm) {
+      if (alarm) {
+   
+        chrome.runtime.sendMessage(
+          {
+            action: "stop-timer",
+          },
+          (response) => {
+            console.log("message was received: " + response);
+          }
+        );
+        countdown.remove();
+        chrome.alarms.clear("timerAlarm");
+        switchButton.checked = true;
+        storeSetting();
+        checkSetting();
+      } else {
+        //initialize timer
+        switchButton.checked = false;
+        storeSetting();
+        checkSetting();
+        setTimer();
+        chrome.runtime.sendMessage(
+          {
+            action: "timer",
+            time: 3600,
+          },
+          (response) => {
+            console.log("message was received: " + response);
+          }
+        );
+      }
+    });
+  });
+
+  ///// timer  NATALIA
+  function setTimer() {
+    //create alarm
+    chrome.alarms.create("timerAlarm", { delayInMinutes: 60 }); // 60min
+    chrome.storage.local.set({ timer: true });
+    drawSnoozeAlert();
+  }
+
+  function drawSnoozeAlert() {
+
+    snoozeAlert.style.display = "block";
+    snoozeAlert.style.zIndex = "999999";
+    snoozeAlert.style.position = "absolute";
+    snoozeAlert.style.background = "white";
+    snoozeAlert.style.bottom = "0px";
+    snoozeAlert.style.right = "0px";
+    snoozeAlert.style.width = "100%";
+    snoozeAlert.style.height = "100%";
+
+    wakeupButton.addEventListener("click", () => {
+      snoozeAlert.style.display = "none";
+      chrome.runtime.sendMessage(
         {
-          let isDomInBL = DomInBlackListResponse[0];
+          action: "stop-timer",
+        },
+        (response) => {
+          console.log("message was received: " + response);
+        }
+      );
+      chrome.alarms.clear("timerAlarm");
+      switchButton.checked = true;
+      storeSetting();
+      // checkSetting();
+    });
+  }
 
-          let black_list_state = isDomInBL > -1
-                            ?  2  // Domain is not in the blacklist
-                            : isURLinBL > -1
-                              ? 1  // Page is in the blacklist
-                              : 0; // Nothing is in the blacklist
-          
-          applyBlockToPopup(black_list_state); 
-
-        });  
-      });   
- 
-   }); // getting end
-   console.log('--- INIT OF BLACKLIST MENU IS DONE ------');
- }
-
-//  var GoSettingsButton = document.getElementById("heybrain-settings-button");
- 
-//  GoSettingsButton.addEventListener("click", function () {
-//    document.getElementById("sign-in").style.display = "none";
-//    document.getElementById("sign-up").style.display = "none";
-//    document.getElementById("signed-in").style.display = "none";
-//    document.getElementById("heybrain-settings").style.display = "flex";
-//    // checkBlackList();
-//  });
-
- addpage_button.addEventListener("click", function () 
- {
-   chrome.storage.local.get(['heybrain_current_url']).then( (obj) => 
-   { 
-     let url = obj.heybrain_current_url;
-     if (url !== null || url !== undefined || url !== '') 
-     {
-       chrome.runtime.sendMessage(
-         {action: "addPageToBlackList", key: url}, 
-           (response) => { checkBlackList() });  
-     }
-   });
- });
-
- adddom_button.addEventListener("click", function () {
-   chrome.storage.local.get(['heybrain_current_url']).then( (obj) => 
-   { 
-     let url = obj.heybrain_current_url;
-     if (url !== null || url !== undefined || url !== '') 
-     {
-       chrome.runtime.sendMessage(
-         {action: "addDomainToBlackList", key: url}, 
-           (response) => { checkBlackList() });  
-     }
-   });
- }); 
-
- delpage_button.addEventListener("click", function () 
- {
-   chrome.storage.local.get(['heybrain_current_url']).then( (obj) => 
-   { 
-     let url = obj.heybrain_current_url;
-     if (url !== null || url !== undefined || url !== '') 
-     {
-       chrome.runtime.sendMessage(
-         {action: "delPageFromBlackList", key: url}, 
-           (response) => { checkBlackList() });  
-     }
-   });
- });
-
- deldom_button.addEventListener("click", function () {
-   chrome.storage.local.get(['heybrain_current_url']).then( (obj) => 
-   { 
-     let url = obj.heybrain_current_url;
-     if (url !== null || url !== undefined || url !== '') 
-     {
-       chrome.runtime.sendMessage(
-         {action: "delDomainFromBlackList", key: url}, 
-           (response) => { checkBlackList() });  
-     }
-   });
- }); 
- /// 2023-03-13 Added byStanislav: END ----------------------------------------------------------------
-
-
+  function hideSnoozeAlert () {
+    snoozeAlert.style.display = "none";
+  }
+  ///2023-03-21 Added by Natalia END ----------------------------------------------------------------
 }); // End of DOMContentLoaded event listener.

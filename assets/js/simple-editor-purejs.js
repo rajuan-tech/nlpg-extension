@@ -14,12 +14,12 @@ var simpleEditor = (function () {
 
   var template =
     " \
-        <div class='simpledit te-wrapper' style='background: white; width: 99%; border-radius: 12px;'> \
-            <div class='text' contentEditable='true' spellcheck='false' style='height: 90%; outline: none; '></div> \
-            <div class='peps' style='border-radius: 12px; padding: 5px 12px; border: 1px solid #F1F1F1;'> \
-                <span class=' bold cursor-pointer' style='font-weight: bold;'>B</span> \
-                <span class=' italic cursor-pointer' style='font-weight: lighter; font-style: italic; margin-left: 7px; margin-right: 7px;'>I</span> \
-                <span class=' underline cursor-pointer' style='font-weight: lighter; text-decoration: underline;'>U</span> \
+        <div class='simpledit te-wrapper' style='background: white; width: 100%; border-radius: 12px;'> \
+            <div class=' hey-brain-main text' contentEditable='true' spellcheck='false' style='height: 92%; outline: none; padding: 12px;'></div> \
+            <div class='hey-brain-main tag-buttons' style='border-radius: 12px; padding: 5px 12px; border: 1px solid #F1F1F1; margin-top: 0vmin; position: absolute; width: 100%'> \
+                <span class='hey-brain-main hyb-nt-btn bold cursor-pointer' style='font-weight: bold;'>B</span> \
+                <span class='hey-brain-main hyb-nt-btn italic cursor-pointer' style='font-weight: lighter; font-style: italic; margin-left: 7px; margin-right: 7px;'>I</span> \
+                <span class='hey-brain-main hyb-nt-btn underline cursor-pointer' style='font-weight: lighter; text-decoration: underline;'>U</span> \
             </div> \
         </div> \
     ";
@@ -116,9 +116,9 @@ var simpleEditor = (function () {
 
     // Retrieve all buttons (b, i, u) from the available editors.
     editors.forEach(function (item) {
-      btnsB.push(item.querySelector(".peps span.bold"));
-      btnsI.push(item.querySelector(".peps span.italic"));
-      btnsU.push(item.querySelector(".peps span.underline"));
+      btnsB.push(item.querySelector(".tag-buttons span.bold"));
+      btnsI.push(item.querySelector(".tag-buttons span.italic"));
+      btnsU.push(item.querySelector(".tag-buttons span.underline"));
     });
 
     // Add listeners to btns.

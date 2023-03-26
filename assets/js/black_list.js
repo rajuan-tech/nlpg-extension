@@ -65,7 +65,7 @@ let getBlackList = () =>
     chrome.storage.local.get({heybrain_black_list:[]}, (result) => 
     {
         black_list = result.heybrain_black_list;
-        console.log(result.heybrain_black_list);
+        // console.log(result.heybrain_black_list);
         if (black_list === undefined || black_list === null) black_list = [];
     });
 }
@@ -79,7 +79,7 @@ let refreshBlackList = () =>
         {
             black_list = result.heybrain_black_list;
             if (black_list === undefined) black_list = [];
-            console.log('Black list refreshed');
+            // console.log('Black list refreshed');
             resolve(true);
         });
     });
@@ -122,7 +122,7 @@ function deletePageFromBlackList(page, allDomain)
         return false;
     
     let pos = isInBlacklist(page, true, false);
-    console.log('deletePageFromBlackList:', pos)
+    // console.log('deletePageFromBlackList:', pos)
     if (pos < 0) return false;
 
     black_list.splice(pos, 1);
