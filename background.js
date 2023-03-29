@@ -427,6 +427,7 @@ let timerText; // string with remaining time stored every sec in local storage
 let timeRem; // string with remaining time rendered in pop up
 let time; // remaining time before  the timer is expired
 let endTime; // date when the timer expires (timestamp)
+let timerInterval;
 
 chrome.alarms.onAlarm.addListener(() => {
 
@@ -510,7 +511,7 @@ chrome.runtime.onConnect.addListener(function(port) {
     if(result.timer && port.name === "popup" ) {
       // popup is opened, timer is running
       drawTimer();
-      let timerInterval = setInterval(drawTimer, 1000);
+     timerInterval = setInterval(drawTimer, 1000);
 
       port.onDisconnect.addListener(function() {
       //popup has been closed
