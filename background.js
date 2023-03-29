@@ -420,44 +420,127 @@ chrome.runtime.onInstalled.addListener(() => {
       });
 });
 
+
+///2023-03-26 Added by Natalia START-----------------------------------
+let timer; // main timer
+let timerText; // string with remaining time stored every sec in local storage
+let timeRem; // string with remaining time rendered in pop up
+let time; // remaining time before  the timer is expired
+let endTime; // date when the timer expires (timestamp)
+
 chrome.alarms.onAlarm.addListener(() => {
 
-  console.log("alarm executed its work"); // will be done in 'delayminutes' time
-  chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-    chrome.storage.local.set({ enabled: true });
+  chrome.storage.local.set({ enabled: true });
+  chrome.storage.local.set({ timer: false });
 
-  });
+  if(typeof timer !== undefined) clearInterval(timer);
+  if(typeof timerInterval !== undefined) clearInterval(timerInterval);
+  
+  chrome.storage.local.remove("remainingTime");
+  chrome.storage.local.remove("end");
+  timeRem = null;
+
+  chrome.runtime.sendMessage(
+    {
+      action: "remove-snooze-window", 
+    },
+  );
 });
 
-let timerr = null;
+function updateTimer() {
+ 
+  chrome.storage.local.get(["end"]).then(result => {
+    endTime = result.end;
+  });
+
+  time = (endTime - Date.now()) / 1000 ;
+
+  let minutes = Math.floor(time / 60);
+  let seconds = Math.floor(time % 60);
+  minutes = minutes < 10 ? "0" + minutes : minutes;
+  seconds = seconds < 10 ? "0" + seconds : seconds;
+  timerText = `${minutes} : ${seconds}`;
+
+  chrome.storage.local.set({ remainingTime: timerText });
+  // console.log(timerText);
+}
+
+
+function drawTimer() {
+
+  chrome.storage.local.get(["remainingTime"]).then(result => {
+     timeRem = result.remainingTime;
+     if (timeRem !== null && timeRem !== undefined) {
+        chrome.runtime.sendMessage( 
+          {
+            action: "render-timer",
+            text: timeRem
+          },
+        );
+      }
+  });
+}
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+
   if (request.action === "timer") {
-    let time = request.time;
+
+    endTime = Date.now() + request.time * 60 * 1000; // in Timestamp
+    chrome.storage.local.set( {end:endTime} );
     updateTimer();
-    timerr = setInterval(updateTimer, 1000);
-
-    let timetext;
-
-    sendResponse({ data: [timetext] });
-
-    function updateTimer() {
-      let minutes = Math.floor(time / 60);
-      let seconds = Math.floor(time % 60);
-      minutes = minutes < 10 ? "0" + minutes : minutes;
-      seconds = seconds < 10 ? "0" + seconds : seconds;
-      let timerText = `${minutes} : ${seconds}`;
-      // console.log(timerText);
-      if (timerText === "00 : 00") {
-        clearInterval(timerr);
-        chrome.storage.local.set({ timer: false });
-      }
-      time--;
-    }
+    timer = setInterval(updateTimer, 1000);
+    chrome.storage.local.set( {enabled:false} );
   }
 
   if (request.action === "stop-timer") {
-    chrome.storage.local.set({ timer: false });
-    clearInterval(timerr);
+
+    chrome.storage.local.set({ enabled: true });
+    clearInterval(timer);
+    if(typeof timerInterval !== undefined) clearInterval(timerInterval);
+    chrome.storage.local.remove("remainingTime");
+    chrome.storage.local.remove("end");
+    timeRem = null;
   }
+}); 
+
+chrome.runtime.onConnect.addListener(function(port) {
+
+  chrome.storage.local.get(["timer"]).then((result) => {
+
+    if(result.timer && port.name === "popup" ) {
+      // popup is opened, timer is running
+      drawTimer();
+      let timerInterval = setInterval(drawTimer, 1000);
+
+      port.onDisconnect.addListener(function() {
+      //popup has been closed
+      clearInterval(timerInterval);
+      });
+    }
+  });
 });
+
+
+chrome.windows.onCreated.addListener(function(window) {
+ 
+  chrome.storage.local.get(["timer"]).then((result) => {
+   
+    if(result.timer) {
+      updateTimer();
+      // console.log('new window has been created, timer is running');
+      timer = setInterval(updateTimer, 1000);
+    }
+  });
+});
+
+chrome.windows.onRemoved.addListener(function(window) {
+  
+  chrome.storage.local.get(["timer"]).then((result) => {
+
+    if(result.timer)  {
+      // console.log('window is closed, timer is running');
+      clearInterval(timer);
+    }
+  });
+});
+///2023-03-26 Added by Natalia END ----------------------------------------------------------------

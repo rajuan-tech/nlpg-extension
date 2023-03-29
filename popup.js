@@ -1,13 +1,6 @@
 const baseURL = "https://api.nlpgraph.com/stage/api";
 var isLoggedIn = false;
 
-//  NATALIA code to avoid lethargy
-// chrome.storage.local.set({timer: false}); 
-
-const snoozeAlert = document.querySelector("#snooze-content");
-snoozeAlert.style.display = "none";
-const wakeupButton = document.querySelector("button#wakeup");
-
 document.addEventListener("DOMContentLoaded", function () {
   // replaced here 2023-03-22
 function loadUser() {
@@ -421,11 +414,8 @@ function loadUser() {
       switchButton.checked = isEnabled;
     });
     chrome.storage.local.get(["timer"]).then((result) => {
-      if (result.timer) {
-        drawSnoozeAlert();
-      } else {
-        hideSnoozeAlert();
-      }
+      console.log("timer is switched on: " + result.timer);
+      result.timer ? snoozeAlert.style.display = "flex" : snoozeAlert.style.display = "none";
     });
   }
 
@@ -636,84 +626,74 @@ function loadUser() {
   });
   /// 2023-03-13 Added byStanislav: END ----------------------------------------------------------------
 
-  ///2023-03-21 Added by Natalia START ----------------------------------------------------------------
+  ///2023-03-26 Added by Natalia START ----------------------------------------------------------------
+  
+  //   code to abort timer
+  // chrome.storage.local.set({timer: false}); 
+
+  const snoozeAlert = document.querySelector("#snooze-content");
+  snoozeAlert.style.display = "none";
+  const wakeupButton = document.querySelector("button#wakeup");
   const snoozeButton = document.querySelector("div.snooze.popup-flex");
+  const timetext = document.querySelector("p#timetext");
+  const delayInMinutes = 60;
 
   snoozeButton.addEventListener("click", () => {
-    // to remove timer and shown text after second click if timer is already running
-    chrome.alarms.get("timerAlarm", function (alarm) {
-      if (alarm) {
-   
-        chrome.runtime.sendMessage(
-          {
-            action: "stop-timer",
-          },
-          (response) => {
-            console.log("message was received: " + response);
-          }
-        );
-        countdown.remove();
-        chrome.alarms.clear("timerAlarm");
-        switchButton.checked = true;
-        storeSetting();
-        checkSetting();
-      } else {
-        //initialize timer
-        switchButton.checked = false;
-        storeSetting();
-        checkSetting();
-        setTimer();
-        chrome.runtime.sendMessage(
-          {
-            action: "timer",
-            time: 3600,
-          },
-          (response) => {
-            console.log("message was received: " + response);
-          }
-        );
-      }
-    });
+    //initialize timer
+ 
+    storeSetting();
+    startTimer();
+    chrome.runtime.sendMessage(
+      {
+        action: "timer",
+        time: delayInMinutes,   // minutes
+      },
+    );
   });
 
-  ///// timer  NATALIA
-  function setTimer() {
+  function startTimer() {
     //create alarm
-    chrome.alarms.create("timerAlarm", { delayInMinutes: 60 }); // 60min
+    snoozeAlert.style.display = "flex";
+    switchButton.checked = false;
+    chrome.alarms.create("timerAlarm", { delayInMinutes: delayInMinutes }); // minutes
     chrome.storage.local.set({ timer: true });
-    drawSnoozeAlert();
   }
 
-  function drawSnoozeAlert() {
-
-    snoozeAlert.style.display = "block";
-    snoozeAlert.style.zIndex = "999999";
-    snoozeAlert.style.position = "absolute";
-    snoozeAlert.style.background = "white";
-    snoozeAlert.style.bottom = "0px";
-    snoozeAlert.style.right = "0px";
-    snoozeAlert.style.width = "100%";
-    snoozeAlert.style.height = "100%";
-
-    wakeupButton.addEventListener("click", () => {
-      snoozeAlert.style.display = "none";
-      chrome.runtime.sendMessage(
-        {
-          action: "stop-timer",
-        },
-        (response) => {
-          console.log("message was received: " + response);
-        }
-      );
-      chrome.alarms.clear("timerAlarm");
-      switchButton.checked = true;
-      storeSetting();
-      // checkSetting();
-    });
-  }
-
-  function hideSnoozeAlert () {
+  function stopTimer() {
+    //stop alarm
     snoozeAlert.style.display = "none";
+    switchButton.checked = true;
+    timetext.innerHTML = "";
+    chrome.alarms.clear("timerAlarm");
+    chrome.storage.local.set({ timer: false });
   }
-  ///2023-03-21 Added by Natalia END ----------------------------------------------------------------
+
+  wakeupButton.addEventListener("click", () => {
+
+    storeSetting();
+    stopTimer()
+    chrome.runtime.sendMessage(
+      {
+        action: "stop-timer",
+      },
+    );
+    
+  });
+
+  chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    
+  if (request.action === "remove-snooze-window") {// to remove snooze window if popup is opened
+    snoozeAlert.style.display = "none";
+    switchButton.checked = true;
+    storeSetting();
+    console.log('snooze alert removed')
+  } else if (request.action === "render-timer") { // to display remaining time
+    timetext.innerHTML = request.text;
+  }
+});
+
 }); // End of DOMContentLoaded event listener.
+
+chrome.runtime.connect({ name: "popup" }); // allows to BG to detect if popup is opened 
+///2023-03-26 Added by Natalia END ----------------------------------------------------------------
+

@@ -976,3 +976,21 @@ div.snooze.popup-flex:hover {
 }
 
 /*  Added by NASTYA 22.03: END */
+
+/*  Added by NATALIA 25.03:  */
+
+#snooze-content {
+  z-index: 999999;
+  flex-direction: column;
+  position: absolute;
+  background: white;
+  align-items: center;
+  /* justify-content: center; */
+  bottom: 0px;
+  right: 0px;
+  width: 100%;
+  height: 100%;
+}
+
+
+/*  Added by NATALIA 25.03: END */
