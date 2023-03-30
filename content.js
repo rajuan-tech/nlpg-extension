@@ -419,8 +419,7 @@ const createSmartpastContent = () => {
   tabContent.style.flexDirection = "column";
   tabContent.style.width = "100%";
   tabContent.style.height = "100%";
-  tabContent.innerHTML = "";
-  document.getElementById(elBrainContentID).innerHTML = "";
+  document.getElementById(elBrainContentID).innerHTML = `<a href="https://heybrain.ai/cloud" target="_blank" style="position: relative; bottom: 0; color: #2B007B; ">view all tags</a>`;
   document.getElementById(elBrainContentID).appendChild(tabContent);
 
   document.getElementById(elBrainLoaderID).style.display = "flex";
@@ -525,7 +524,9 @@ const createSmartpastContent = () => {
               dateContent =
                 `<div style="margin-left:32px;font-size:12px;opacity:0.5;">` +
                 dateStr +
-                `</div>`;
+                `</div>
+                
+                `;
             }
 
             let domain = item.domain;
@@ -568,6 +569,7 @@ const createSmartpastContent = () => {
               dateContent +
               `
               </div>
+             
               `;
             smartPastContentEl.appendChild(elSmartpastItem);
           });
@@ -599,6 +601,7 @@ const createTagsContent = () => {
 
   tabContent.innerHTML =
     `
+    
     <div class="brain-flex brain-flex-row space-x-2">
     ` +
     favIcon +
@@ -632,6 +635,7 @@ const createTagsContent = () => {
     `-tags-content-suggested">
     
     </div>
+    <a href="https://heybrain.ai/` + createPeaceOfLink() + `" target="_blank">view all tags</a>
   `;
 
   document.getElementById(elBrainContentID).innerHTML = "";
@@ -851,6 +855,18 @@ const loadRecommendedTags = () => {
   );
 };
 
+const createPeaceOfLink = () => {
+  const tags = pageData.tags;
+  let peace = '';
+  for (let i = 0; i < (tags.length-2); i++) {
+     peace += `${tags[i]} %2C `;
+  }
+
+  peace += tags[tags.length-1];
+  return peace;
+}
+
+
 const fillTagsContent = () => {
   const tags = pageData.tags;
   if (tags.length === 0) {
@@ -886,6 +902,7 @@ const fillTagsContent = () => {
     tagsHTML += chrome.runtime.getURL("assets/images/tag-remove.png");
     tagsHTML += '" width="16px" height="16px" /></div>';
     tagsHTML += "</div>";
+    
   });
   document.getElementById(
     elBrainContentID + "-tags-content-active-tags-list"
