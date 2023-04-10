@@ -9,7 +9,6 @@ const tabFirstItemID = "hey-brain-root-tab-item-first";
 const tabSecondItemID = "hey-brain-root-tab-item-second";
 const tabThirdItemID = "hey-brain-root-tab-item-third";
 // constants --end
-
 var accessToken = "";
 var pageData = null;
 var pageSmartPast = [];
@@ -411,7 +410,13 @@ const selectTabItem = (tabID) => {
 // tab content related actions --start
 
 // tab smartpast content --start
-const createSmartpastContent = () => {
+
+
+  let selectedText = null;  //natalia 02.04
+
+function createSmartpastContent() {
+  console.log(`createSmartpastContent func started. Selected text is ${selectedText}`);
+
   let tabContent = document.createElement("div");
   tabContent.id = elBrainContentID + "-smartpast-content";
   tabContent.style.position = "relative";
@@ -428,13 +433,16 @@ const createSmartpastContent = () => {
       action: "get-smartpast",
       data: {
         access_token: accessToken,
-        id: pageData.id,
-        is_new: pageData.is_new,
-        text: pageData.title,
+        id: selectedText !== null ? null : pageData.id,
+        // is_new: pageData.is_new,    // as now
+        is_new: selectedText !== null ? true : pageData.is_new,
+        // text: pageData.title,  // as now
+        text: selectedText !== null ? selectedText : pageData.title,
         limit: 10,
       },
     },
     (response) => {
+    
       document.getElementById(elBrainLoaderID).style.display = "none";
       if (response) {
         pageSmartPast = response;
@@ -575,6 +583,9 @@ const createSmartpastContent = () => {
           });
         }
       }
+         //natalia 02.04
+         if(selectedText !== null) selectedText = null;
+         //natalia 02.04
     }
   );
 
@@ -1186,6 +1197,10 @@ chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
         document.getElementById(elBrainRootDismissButton)
       );
     }
+  } else if (request.action === "smartpast-selected") {
+    selectedText = request.text;
+    createSmartpastContent();
+    // console.log(`received ${request.text}`);
   }
 });
 

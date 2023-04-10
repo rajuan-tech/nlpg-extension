@@ -11,6 +11,9 @@ checkEnable();
 getBlackList(); // 2023-03-12 #10 added by Stanislav
 let current_page = { url: "", id: "" }; // 2023-03-14 #10 added by Stanislav
 
+
+let text = null;//natalia 3.04
+
 function checkEnable() {
   chrome.storage.local.get(["enabled"]).then((result) => {
     enabled = result.enabled;
@@ -19,7 +22,7 @@ function checkEnable() {
 
 // 2023-03-12 #6 added by Stanislav: BEGIN  ------------------------
 let startOrStop = () => {
-  chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+ chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) { 
     let url = current_page.url;
     let id = current_page.id;
     // console.log(current_page);
@@ -118,6 +121,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
   // 2023-03-15 #12 added by Stanislav: END --------------------------
   else if (request.action === "get-url-data") {
+
     fetch(baseURL + "/brain/get_url_data", {
       method: "POST",
       headers: {
@@ -126,7 +130,10 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       },
       body: JSON.stringify({
         url: sender.url,
-        title: sender.tab.title,
+         //natalia 03.01
+        title:  sender.tab.title,  // as now
+        // title:  text !== null ? text : sender.tab.title,
+         //natalia 03.01
         domain: request.data.domain,
         description: request.data.page_description,
       }),
@@ -138,8 +145,13 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         }
         sendResponse(data.response);
       });
+       //natalia 03.01
+      // if(text !== null )text = null;
+      // console.log(`after ${text}`);
+        //natalia 03.01
     return true;
   } else if (request.action === "get-smartpast") {
+    // console.log(`before ${text}`);
     const url = new URL(baseURL + "/brain/embeddings/related");
 
     url.search = new URLSearchParams({
@@ -148,6 +160,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       is_new: request.data.is_new ? 1 : 0,
       limit: request.data.limit || 10,
     });
+    console.log(`inside get smartpast (bg.js) text = ${request.data.text}, isnew =${request.data.is_new}`);
 
     fetch(url.toString(), {
       headers: {
@@ -160,9 +173,12 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         if (!"favicon" in (data.response || {})) {
           data.response.favicon = sender.tab.favIconUrl;
         }
-
+console.log(data.response);
         sendResponse(data.response);
+
       });
+      //  if(text !== null )text = null;
+      //  console.log(`after ${text}`);
     return true;
   } else if (request.action === "update-notes") {
     var id = request.data.id;
@@ -545,3 +561,20 @@ chrome.windows.onRemoved.addListener(function(window) {
   });
 });
 ///2023-03-26 Added by Natalia END ----------------------------------------------------------------
+
+chrome.contextMenus.create({
+
+  "id": "1",
+  "title": "Update SMARTPAST",
+  "contexts": ["selection"], // Отображать контекстное меню только при выделении текста
+  
+});
+
+chrome.contextMenus.onClicked.addListener((info, tab) => {
+  
+  chrome.tabs.sendMessage(tab.id, {
+    action: "smartpast-selected",
+    text:  info.selectionText
+  });
+
+})
