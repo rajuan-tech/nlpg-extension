@@ -123,7 +123,6 @@ function loadUser() {
 
   function alertWinow(str) {
     dialogbox.style.display = "block";
-    btnOk.style.padding = '1vmin'
     dialogoverlay.style.opacity = "0.1";
     dialogboxbody.innerHTML = str;
   }
