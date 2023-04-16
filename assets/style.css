@@ -698,58 +698,6 @@ div.snooze.popup-flex:hover {
   cursor: pointer;
 }
 
-
-
-/* ALERT STYLE BY NASTYA */
-.hey-brain-main #dialogoverlay {
-  z-index: 1000;
-}
-.hey-brain-main #dialogbox {
- padding: 1.5vmin;
- position: absolute;
- top: 40vmin;
- left: 10vmin;
- background:#FFF;
- border-radius: 1vmin;
- filter: drop-shadow(0.5vmin 0.5vmin 0.5vmin rgb(31, 67, 125) );
- font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
-    Segoe UI, Roboto, Helvetica Neue, Arial, Noto Sans, sans-serif,
-    Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji;
-}
-
-.hey-brain-main #dialogboxhead {
-  color: rgb(100 22 243);
-  font-size: 6vmin;
-  text-align: center;
-  font-weight: 600;
-}
-
-.hey-brain-main #dialogboxfoot {
-  position: relative;
-  text-align: center;
-  text-transform: uppercase;
-  color: #fff;
-  background-color: rgb(100 22 243);
-  border:rgb(100 22 243);
-  border-radius: 1vmin;
-  padding: 1vmin;
-  left: 36vmin;
-  font-weight: 600;
-  font-size: 5vmin;
-  
-
-}
-
-.hey-brain-main #dialogboxfoot:hover {
-  box-shadow: 0 0 #0000, 0 0 #0000, 0 0 #0000;
-}
-
-.hey-brain-main #dialogboxfoot:active {
-  background-color: rgb(43 0 123);
-}
-
-/* NSTYA'S FINISHED CODING*/
-
 /*Added by Stanislav: BEGIN */
 
 .hey-brain-main .bg-red {
@@ -925,57 +873,67 @@ div.snooze.popup-flex:hover {
 
 /* Added by Stanislav: END */
 
-/*  Added by NASTYA 22.03:  */
+/*  Added by NASTYA 03.04:  */
 
 .hey-brain-main #dialogoverlay {
   z-index: 1000;
 }
 .hey-brain-main #dialogbox {
- 
+ top: 0;
+ left: 0;
  padding: 2vmin;
  position: absolute;
- top: 40vmin;
- left: 10vmin;
+ height: 100%;
+ width: 100%;
  background:#FFF;
- border-radius: 1vmin;
+ border-radius: 1%;
  filter: drop-shadow(0.5vmin 0.5vmin 0.5vmin rgb(31, 67, 125) );
- font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
-    Segoe UI, Roboto, Helvetica Neue, Arial, Noto Sans, sans-serif,
-    Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji;
-  width: 70vmin;
+ font-family: Montserrat, sans-serif;
+ text-align: center;
+
 }
 
 .hey-brain-main #dialogboxhead {
-  color: rgb(100 22 243);
-  font-size: 6vmin;
-  text-align: center;
-  font-weight: 600;
+  margin-top: 20vmin;
+}
+.hey-brain-main #dialogboxbody {
+  font-size: 1em;
+  font-weight: normal;
+  line-height: 1.15em;
+}
+
+.hey-brain-main .centered {
+  display: flex;
+  justify-content: center;
 }
 
 .hey-brain-main #dialogboxfoot {
+  
   /* position: relative; */
-  /* text-align: center; */
   text-transform: uppercase;
   color: #fff;
-  background-color: rgb(100 22 243);
-  border:rgb(100 22 243);
-  border-radius: 1vmin;
-  justify-content: center;
-  margin: auto;
-  font-weight: 600;
-  font-size: 5vmin;
-  
+  background-color: #6416f3;
+  border: none;
+  border-radius: 10%;
+  font-size: 12px;
+  font-family: Montserrat, sans-serif;
+  font-weight: 550;
+  cursor: pointer;
+  box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.5); 
+  padding: 10px 24px 10px 24px; 
 }
 
 .hey-brain-main #dialogboxfoot:hover {
   box-shadow: 0 0 #0000, 0 0 #0000, 0 0 #0000;
+  transition: all 0.5s;
+  transform: scale(1.05);
 }
 
 .hey-brain-main #dialogboxfoot:active {
   background-color: rgb(43 0 123);
 }
 
-/*  Added by NASTYA 22.03: END */
+/*  Added by NASTYA 03.04: END */
 
 /*  Added by NATALIA 25.03:  */
 
