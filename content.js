@@ -85,13 +85,18 @@ const init = () => {
     elBrainDrawer.style.bottom = kBrainRootHeight - 40 + "px";
     elBrainDrawer.style.right = "-36px";
     elBrainDrawer.style.width = "80px";
-    elBrainDrawer.style.height = "80px";
+    // natalia 16.04
+    elBrainDrawer.style.height = "67px";
     elBrainDrawer.style.zIndex = "99999";
     elBrainDrawer.style.cursor = "pointer";
+   
+
     elBrainDrawer.onclick = () => {
       let elBrainRoot = document.getElementById(elBrainRootID);
       if (elBrainRoot.style.transform === "translateX(100%)") {
         elBrainRoot.style.transform = "translateX(0%)";
+       
+        elBrainRootDismissButton.style.display = "block"; //natalia 16.04
         document.getElementById("brain-drawer-no-hands-image").style.display =
           "none";
         document.getElementById("brain-drawer-image").style.display = "initial";
@@ -99,6 +104,7 @@ const init = () => {
         elBrainRoot.style.transform = "translateX(100%)";
         document.getElementById("brain-drawer-no-hands-image").style.display =
           "initial";
+        elBrainRootDismissButton.style.display = "none";  //natalia 16.04
         document.getElementById("brain-drawer-image").style.display = "none";
       }
     };
@@ -108,8 +114,9 @@ const init = () => {
       "assets/icons/brain-drawer-160.png"
     );
     elBrainDrawerImage.setAttribute("id", "brain-drawer-image");
-    elBrainDrawerImage.style.width = "80px";
-    elBrainDrawerImage.style.height = "80px";
+    
+    elBrainDrawerImage.style.width = "70px"; //natalia 16.04
+    elBrainDrawerImage.style.height = "67px"; //natalia 16.04
     elBrainDrawerImage.style.display = "none";
     elBrainDrawer.appendChild(elBrainDrawerImage);
 
@@ -117,8 +124,8 @@ const init = () => {
     elBrainDrawerNoHandsImage.src = chrome.runtime.getURL(
       "assets/icons/brain-drawer-no-hands.png"
     );
-    elBrainDrawerNoHandsImage.style.width = "73px";
-    elBrainDrawerNoHandsImage.style.height = "62.5px";
+    elBrainDrawerNoHandsImage.style.width = "67px";
+    elBrainDrawerNoHandsImage.style.height = "54px";
     elBrainDrawerNoHandsImage.style.position = "absolute";
     elBrainDrawerNoHandsImage.style.top = "0px";
     elBrainDrawerNoHandsImage.style.right = "0px";
@@ -173,6 +180,8 @@ const init = () => {
   elBrainRootDismissButton.style.height = "32px";
   elBrainRootDismissButton.style.zIndex = "99999";
   elBrainRootDismissButton.style.cursor = "pointer";
+  elBrainRootDismissButton.style.display = "none"  //natalia 16.04
+
   elBrainRootDismissButton.onclick = () => {
     elBrainRoot.style.transform = "translateX(100%)";
     document.getElementById("brain-drawer-no-hands-image").style.display =
@@ -415,7 +424,7 @@ const selectTabItem = (tabID) => {
   let selectedText = null;  //natalia 02.04
 
 function createSmartpastContent() {
-  console.log(`createSmartpastContent func started. Selected text is ${selectedText}`);
+  // console.log(`createSmartpastContent func started. Selected text is ${selectedText}`);
 
   let tabContent = document.createElement("div");
   tabContent.id = elBrainContentID + "-smartpast-content";
@@ -874,6 +883,9 @@ const createPeaceOfLink = () => {
   }
 
   peace += tags[tags.length-1];
+  if (tags.length === 0){
+    peace = '';
+  }
   return peace;
 }
 
@@ -1124,14 +1136,14 @@ const createNotesContent = () => {
   });
 
   if (pageData.notes_html) {
-    document.querySelector(".text").innerHTML = pageData.notes_html;
+    document.querySelector(".hey-brain-main.text").innerHTML = pageData.notes_html;
   }
 };
 
 const saveNotes = () => {
   simpleEditor.save();
-  let notes = document.querySelector(".text").innerText;
-  let notes_html = document.querySelector(".text").innerHTML;
+  let notes = document.querySelector(".hey-brain-main.text").innerText;
+  let notes_html = document.querySelector(".hey-brain-main.text").innerHTML;
 
   if (
     document.getElementById(elBrainContentID + "-notes-save-button")
