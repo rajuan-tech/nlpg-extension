@@ -134,72 +134,83 @@ function loadUser() {
 
   // NASTYA'S FINISHED CODING ----------------------------------------------------------
 
-  signInButton.addEventListener("click", function () {
-    const signingInText = "SIGNING YOU IN...";
-    let alertShown = false; // Initialize flag to track whether the alert has been shown
+function signIn() {
+  const signingInText = "SIGNING YOU IN...";
+  let alertShown = false; // Initialize flag to track whether the alert has been shown
 
-    if (signInButton.innerHTML == signingInText) {
-      return;
-    }
-    var email = document.getElementById("sign-in-username");
-    var password = document.getElementById("sign-in-password");
+  if (signInButton.innerHTML == signingInText) {
+    return;
+  }
+  var email = document.getElementById("sign-in-username");
+  var password = document.getElementById("sign-in-password");
 
-    email.disabled = true;
-    password.disabled = true;
-    signInButton.disabled = true;
-    signInButton.innerHTML = signingInText;
+  email.disabled = true;
+  password.disabled = true;
+  signInButton.disabled = true;
+  signInButton.innerHTML = signingInText;
 
-    var emailValue = email.value;
-    var passwordValue = password.value;
-    const req = new XMLHttpRequest();
-    req.open("POST", baseURL + "/auth/login", true);
-    req.setRequestHeader("Content-type", "application/json");
-    req.send(
-      JSON.stringify({
-        username: emailValue,
-        password: passwordValue,
-      })
-    );
-    req.onreadystatechange = function () {
-      if (req.readyState == 4) {
-        if (req.status == 200) {
-          const response = JSON.parse(req.responseText);
-          chrome.storage.local.set({
-            access_token: response.response.user.api_key,
-            user: JSON.stringify(response.response.user),
-          });
-          // hide sign in form
-          document.getElementById("sign-in").style.display = "none";
-          // signed in form
-          document.getElementById("signed-in").style.display = "flex";
-          // load user
-          loadUser();
+  var emailValue = email.value;
+  var passwordValue = password.value;
+  const req = new XMLHttpRequest();
+  req.open("POST", baseURL + "/auth/login", true);
+  req.setRequestHeader("Content-type", "application/json");
+  req.send(
+    JSON.stringify({
+      username: emailValue,
+      password: passwordValue,
+    })
+  );
+  req.onreadystatechange = function () {
+    if (req.readyState == 4) {
+      if (req.status == 200) {
+        const response = JSON.parse(req.responseText);
+        chrome.storage.local.set({
+          access_token: response.response.user.api_key,
+          user: JSON.stringify(response.response.user),
+        });
+        // hide sign in form
+        document.getElementById("sign-in").style.display = "none";
+        // signed in form
+        document.getElementById("signed-in").style.display = "flex";
+        // load user
+        loadUser();
 
-          signInButton.innerHTML = "SIGN IN";
-          email.disabled = false;
-          password.disabled = false;
-          signInButton.disabled = false;
+        signInButton.innerHTML = "SIGN IN";
+        email.disabled = false;
+        password.disabled = false;
+        signInButton.disabled = false;
 
-          switchButton.checked = true; // NATALIA code:after sign toggle is always on
-          storeSetting(); // NATALIA code:after sign toggle is always on
-          checkSetting(); // NATALIA code:after sign toggle is always on
-        } else if (!alertShown) {
-          email.disabled = false;
-          password.disabled = false;
-          signInButton.disabled = false;
-          signInButton.innerHTML = "SIGN IN";
+        switchButton.checked = true; // NATALIA code:after sign toggle is always on
+        storeSetting(); // NATALIA code:after sign toggle is always on
+        checkSetting(); // NATALIA code:after sign toggle is always on
+      } else if (!alertShown) {
+        email.disabled = false;
+        password.disabled = false;
+        signInButton.disabled = false;
+        signInButton.innerHTML = "SIGN IN";
 
-          // alert("Wrong username or password, please try again");
-          alertWinow("Wrong username or password, please try again");
+        // alert("Wrong username or password, please try again");
+        alertWinow("Wrong username or password, please try again");
 
-          alertShown = true; // Set the flag to indicate that the alert has been shown
-        }
+        alertShown = true; // Set the flag to indicate that the alert has been shown
       }
-    };
+    }
+  };
+  // End of sign in, up & out actions.
+}// End of sign in function.
 
-    // End of sign in, up & out actions.
-  }); // End of sign in button event listener.
+  signInButton.addEventListener("click", function () {
+    signIn();
+  }); 
 
+  document.addEventListener("keydown", function(e) {
+    if (e.key === "Enter" && signInButton.disabled === false) {
+      signIn();
+    }
+  });
+
+
+  
   var signUpButton = document.getElementById("sign-up-button");
   signUpButton.addEventListener("click", function () {
     const signingUpText = "SIGNING YOU UP...";

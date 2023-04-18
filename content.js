@@ -60,6 +60,40 @@ const pageInfo = () => {
 };
 // helpers --end
 
+//natalia 17.04
+const drawBrainWithMarker = () => {   //natalia 17.04
+  
+    let elBrainDrawerNoHandsImageWithMarker = document.getElementById(
+      "brain-drawer-no-hands-image"
+    );
+    elBrainDrawerNoHandsImageWithMarker.src = chrome.runtime.getURL(
+      "assets/icons/brain-with-marker.png"
+    );
+    elBrainDrawerNoHandsImageWithMarker.style.width = "80px";
+    elBrainDrawerNoHandsImageWithMarker.style.height = "67px";
+    elBrainDrawerNoHandsImageWithMarker.style.top = "0px";
+    elBrainDrawerNoHandsImageWithMarker.style.right = "0px";
+    document.getElementById("brain-drawer-image").src = chrome.runtime.getURL(
+        "assets/icons/brain-with-marker.png"
+    ); 
+}  
+
+const drawBrainWithHands = () => {
+  let elBrainDrawerNoHandsImageWithMarker = document.getElementById(
+    "brain-drawer-no-hands-image"
+  );
+  elBrainDrawerNoHandsImageWithMarker.src = chrome.runtime.getURL(
+    "assets/icons/brain-drawer-no-hands.png"
+  );
+  elBrainDrawerNoHandsImageWithMarker.style.width = "67px";
+  elBrainDrawerNoHandsImageWithMarker.style.height = "54px"; 
+  elBrainDrawerNoHandsImageWithMarker.style.right = "0px"; 
+  document.getElementById("brain-drawer-image").src = chrome.runtime.getURL(
+    "assets/icons/brain-drawer-160.png"
+  );
+// natalia 17.04
+}
+
 // init --start
 const init = () => {
   // 2023-03-20 Added by Stanislav: Delete elements if they're already exist
@@ -85,7 +119,6 @@ const init = () => {
     elBrainDrawer.style.bottom = kBrainRootHeight - 40 + "px";
     elBrainDrawer.style.right = "-36px";
     elBrainDrawer.style.width = "80px";
-    // natalia 16.04
     elBrainDrawer.style.height = "67px";
     elBrainDrawer.style.zIndex = "99999";
     elBrainDrawer.style.cursor = "pointer";
@@ -96,7 +129,7 @@ const init = () => {
       if (elBrainRoot.style.transform === "translateX(100%)") {
         elBrainRoot.style.transform = "translateX(0%)";
        
-        elBrainRootDismissButton.style.display = "block"; //natalia 16.04
+        elBrainRootDismissButton.style.display = "block"; 
         document.getElementById("brain-drawer-no-hands-image").style.display =
           "none";
         document.getElementById("brain-drawer-image").style.display = "initial";
@@ -104,19 +137,22 @@ const init = () => {
         elBrainRoot.style.transform = "translateX(100%)";
         document.getElementById("brain-drawer-no-hands-image").style.display =
           "initial";
-        elBrainRootDismissButton.style.display = "none";  //natalia 16.04
+        elBrainRootDismissButton.style.display = "none";  
         document.getElementById("brain-drawer-image").style.display = "none";
       }
     };
 
     let elBrainDrawerImage = document.createElement("img");
+
+    // pic assigned is seen inside the SMARTPAST
     elBrainDrawerImage.src = chrome.runtime.getURL(
       "assets/icons/brain-drawer-160.png"
     );
+
     elBrainDrawerImage.setAttribute("id", "brain-drawer-image");
     
-    elBrainDrawerImage.style.width = "70px"; //natalia 16.04
-    elBrainDrawerImage.style.height = "67px"; //natalia 16.04
+    elBrainDrawerImage.style.width = "70px"; 
+    elBrainDrawerImage.style.height = "67px"; 
     elBrainDrawerImage.style.display = "none";
     elBrainDrawer.appendChild(elBrainDrawerImage);
 
@@ -180,7 +216,7 @@ const init = () => {
   elBrainRootDismissButton.style.height = "32px";
   elBrainRootDismissButton.style.zIndex = "99999";
   elBrainRootDismissButton.style.cursor = "pointer";
-  elBrainRootDismissButton.style.display = "none"  //natalia 16.04
+  elBrainRootDismissButton.style.display = "none";
 
   elBrainRootDismissButton.onclick = () => {
     elBrainRoot.style.transform = "translateX(100%)";
@@ -300,12 +336,16 @@ const init = () => {
       },
     },
     (response) => {
+ 
       elBrainRootTabs.style.display = "flex";
       elBrainContent.style.display = "block";
       elBrainLoader.style.display = "none";
+
       if (response) {
         pageData = response;
-        // console.log("pageData", pageData);
+        if (pageData.tags.length > 0 || pageData.notes.length > 0) {
+          drawBrainWithMarker(); //natalia 17.04
+        }
         if (!pageData.favicon_url) {
           pageData.favicon_url =
             "https://www.google.com/s2/favicons?domain=" +
@@ -326,18 +366,7 @@ const init = () => {
           );
         }
 
-        if (pageData.tags.length > 0 || pageData.notes.length > 0) {
-          let elBrainDrawerNoHandsImageWithMarker = document.getElementById(
-            "brain-drawer-no-hands-image"
-          );
-          elBrainDrawerNoHandsImageWithMarker.src = chrome.runtime.getURL(
-            "assets/icons/brain-with-marker.png"
-          );
-          elBrainDrawerNoHandsImageWithMarker.style.width = "80px";
-          elBrainDrawerNoHandsImageWithMarker.style.height = "67px";
-          elBrainDrawerNoHandsImageWithMarker.style.top = "0px";
-          elBrainDrawerNoHandsImageWithMarker.style.right = "10px";
-        }
+ 
       }
     }
   );
@@ -424,7 +453,6 @@ const selectTabItem = (tabID) => {
   let selectedText = null;  //natalia 02.04
 
 function createSmartpastContent() {
-  // console.log(`createSmartpastContent func started. Selected text is ${selectedText}`);
 
   let tabContent = document.createElement("div");
   tabContent.id = elBrainContentID + "-smartpast-content";
@@ -443,9 +471,7 @@ function createSmartpastContent() {
       data: {
         access_token: accessToken,
         id: selectedText !== null ? null : pageData.id,
-        // is_new: pageData.is_new,    // as now
         is_new: selectedText !== null ? true : pageData.is_new,
-        // text: pageData.title,  // as now
         text: selectedText !== null ? selectedText : pageData.title,
         limit: 10,
       },
@@ -785,6 +811,7 @@ const onResetTagInput = () => {
 };
 
 const addTag = (tag) => {
+
   const tags = pageData.tags;
   tags.push(tag);
   tags.forEach((tag) => {
@@ -798,6 +825,9 @@ const addTag = (tag) => {
   document.getElementById(
     elBrainContentID + "-tags-content-tag-input-clear"
   ).style.display = "none";
+  if (pageData.tags.length > 0 || pageData.notes.length > 0) {
+    drawBrainWithMarker();
+  }
   chrome.runtime.sendMessage(
     {
       action: "add-tags",
@@ -830,7 +860,13 @@ const removeTag = (e) => {
     tags.splice(index, 1);
   }
   pageData.tags = tags;
+  // natalia 17.04
+  if (pageData.tags.length === 0 && pageData.notes.length === 0) {
+    drawBrainWithHands();
+}// natalia 17.04
+
   fillTagsContent();
+
   chrome.runtime.sendMessage(
     {
       action: "remove-tags",
@@ -850,7 +886,7 @@ const removeTag = (e) => {
 };
 
 const loadRecommendedTags = () => {
-  if (pageData.tags.length === 0) {
+  if (pageData.tags.length === 0 && pageData.notes.length === 0) {
     return;
   }
   chrome.runtime.sendMessage(
@@ -1118,7 +1154,7 @@ const createNotesContent = () => {
 
   document.getElementById(elBrainContentID).innerHTML = "";
   document.getElementById(elBrainContentID).appendChild(tabContent);
-
+  
   // NATALIA: not to affect content in browser while typing notes
   tabContent.addEventListener("keydown", (e) => {
     e.stopPropagation();
@@ -1182,6 +1218,8 @@ const saveNotes = () => {
       }
     }
   );
+    drawBrainWithMarker();// natalia 17.04
+
 };
 // tab notes content --end
 
@@ -1212,7 +1250,6 @@ chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
   } else if (request.action === "smartpast-selected") {
     selectedText = request.text;
     createSmartpastContent();
-    // console.log(`received ${request.text}`);
   }
 });
 

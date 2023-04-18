@@ -96,6 +96,7 @@ var simpleEditor = (function () {
   }
 
   function setup(opts) {
+    editors = [];  /// NEW CODE 2023-04-17
     textareas = [].slice.call(document.querySelectorAll(opts.selector));
 
     // Add rich editors in place of the original textareas.
