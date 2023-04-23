@@ -16,7 +16,7 @@ function loadUser() {
   });
 }
 
-  //to delete synchistory button if it was pushed once, and adjust the popup main page:
+  // to delete synchistory button if it was pushed once, and adjust the popup main page:
   chrome.storage.local.get(["synchistory"]).then((result) => {
     if (result.synchistory) {
       document.querySelector(".sync-history").style.visibility = "hidden";
@@ -341,7 +341,7 @@ function signIn() {
   syncHistoryButton.addEventListener("click", function () {
     const syncHistoryAlert = document.createElement("div");
     syncHistoryAlert.innerHTML = `
-    <div id="sync-content" style="padding-top:50px; height:100%; width:100%; background-color:white;">
+    <div id="sync-content" style="padding-top:50px;  width:100%; background-color:white;">
         <div id="sync-wrapper">
             <div style="display: flex; justify-content:center;">
                <img src="assets/icons/brain-with-marker.png" style="height:62px;text-align: center;margin-bottom:20px;">
@@ -398,12 +398,14 @@ function signIn() {
               This could take up to a few hours but this shouldn’t stop you from start using Brain!`;
 
             document.querySelector("button.ok").style.display = "block";
+            document.querySelector(".sync-history").style.visibility = "hidden";
+            document.querySelector("div.snooze.popup-flex").style.top = "75px";
+            document.querySelector("div.block-the-page.popup-flex").style.top = "125px";
           }
         );
       });
       document.querySelector(".sync-history").style.visibility = "hidden"; // to hide sync-history block
-      let removed = true;
-      chrome.storage.local.set({ synchistory: removed });
+      chrome.storage.local.set({ synchistory: true });
     });
   }); // End of sync-history button event listener.
 
@@ -696,7 +698,7 @@ function signIn() {
     snoozeAlert.style.display = "none";
     switchButton.checked = true;
     storeSetting();
-    console.log('snooze alert removed')
+    // console.log('snooze alert removed')
   } else if (request.action === "render-timer") { // to display remaining time
     timetext.innerHTML = request.text;
   }

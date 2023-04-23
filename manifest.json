@@ -29,6 +29,7 @@
   "offline_enabled": false,
   "host_permissions": ["https://*/*", "http://*/*", "<all_urls>"],
   "permissions": [
+    "scripting",
     "notifications",
     "alarms",
     "tabs",

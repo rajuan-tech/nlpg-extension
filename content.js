@@ -126,6 +126,15 @@ const init = () => {
 
     elBrainDrawer.onclick = () => {
       let elBrainRoot = document.getElementById(elBrainRootID);
+      if (document.getElementById("taglink") !== null)  {document.getElementById("taglink").remove();}
+      let tagLink = document.createElement("a");
+      tagLink.innerHTML = `<a href="https://heybrain.ai/cloud" id="taglink" target="_blank" style="position: absolute; left:30px; color: #2B007B; ">view all</a>`;
+      tagLink.style.padding = '1vmin';
+      tagLink.style.marginBottom = '2vmin';
+      tagLink.style.marginTop = '2vmin';
+
+      document.getElementById( "hey-brain-root").appendChild(tagLink);
+      
       if (elBrainRoot.style.transform === "translateX(100%)") {
         elBrainRoot.style.transform = "translateX(0%)";
        
@@ -191,6 +200,7 @@ const init = () => {
   elBrainRoot.style.border = "1px solid rgba(200, 200, 200, 0.4)";
   elBrainRoot.style.borderRightWidth = "0";
   elBrainRoot.style.display = "flex";
+  elBrainRoot.style.flexDirection = "column"; // natalia 19
   elBrainRoot.style.borderBottomLeftRadius = "20px";
   elBrainRoot.style.borderTopLeftRadius = "20px";
   elBrainRoot.style.padding = "20px";
@@ -437,9 +447,12 @@ const selectTabItem = (tabID) => {
 
   if (tabID === tabFirstItemID) {
     createSmartpastContent();
+    document.getElementById("taglink").style.visibility = "visible"; // 19 04 natalia
   } else if (tabID === tabSecondItemID) {
+    document.getElementById("taglink").style.visibility = "hidden"; // 19 04 natalia
     createTagsContent();
   } else if (tabID === tabThirdItemID) {
+    document.getElementById("taglink").style.visibility = "hidden";  // 19 04 natalia
     createNotesContent();
   }
 };
@@ -461,7 +474,7 @@ function createSmartpastContent() {
   tabContent.style.flexDirection = "column";
   tabContent.style.width = "100%";
   tabContent.style.height = "100%";
-  document.getElementById(elBrainContentID).innerHTML = `<a href="https://heybrain.ai/cloud" target="_blank" style="position: relative; bottom: 0; color: #2B007B; ">view all tags</a>`;
+  document.getElementById(elBrainContentID).innerHTML = ``;
   document.getElementById(elBrainContentID).appendChild(tabContent);
 
   document.getElementById(elBrainLoaderID).style.display = "flex";
