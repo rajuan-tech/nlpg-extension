@@ -430,11 +430,35 @@ async function uploadFile(file, presignedPost) {
 }
 
 // open the tab after install
-chrome.runtime.onInstalled.addListener(() => {
-    chrome.tabs.create({
-        url: "https://heybrain.ai/register"
-      });
-});
+function installScript(){
+  // Installing content script in all opened tabs 2023-04-17 by Stanislav
+  let params = {
+      currentWindow: true
+  };
+
+  chrome.tabs.query(params, function gotTabs(tabs){
+      let contentjsFile = chrome.runtime.getManifest().content_scripts[0].js[0];
+      
+      
+      for (let index = 0; index < tabs.length; index++) {
+          // console.log((index+1)+') '+tabs[index].url+'!!!!!!!')
+        
+          id = tabs[index].id
+          chrome.scripting.executeScript({
+            target: {tabId: id, allFrames: true},
+            files: [contentjsFile],
+          });
+      }
+  });  
+
+  chrome.tabs.create({
+    url: "https://heybrain.ai/register"
+  });
+  
+}
+
+chrome.runtime.onInstalled.addListener(installScript)
+
 
 
 ///2023-03-26 Added by Natalia START-----------------------------------
