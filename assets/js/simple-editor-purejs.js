@@ -13,16 +13,30 @@ var simpleEditor = (function () {
     btnsU = [];
 
   var template =
-    " \
-        <div class='simpledit te-wrapper' style='background: white; width: 100%; border-radius: 12px;'> \
-            <div class=' hey-brain-main text' contentEditable='true' spellcheck='false' style='height: 92%; outline: none; padding: 12px;'></div> \
-            <div class='hey-brain-main tag-buttons' style='border-radius: 12px; padding: 5px 12px; border: 1px solid #F1F1F1; margin-top: 0vmin; position: absolute; width: 100%'> \
-                <span class='hey-brain-main hyb-nt-btn bold cursor-pointer' style='font-weight: bold;'>B</span> \
-                <span class='hey-brain-main hyb-nt-btn italic cursor-pointer' style='font-weight: lighter; font-style: italic; margin-left: 7px; margin-right: 7px;'>I</span> \
-                <span class='hey-brain-main hyb-nt-btn underline cursor-pointer' style='font-weight: lighter; text-decoration: underline;'>U</span> \
-            </div> \
+  `
+  <div class='simpledit te-wrapper' style='position: relative;background: white; width: 100%; border-radius: 24px;'> \
+      <div class=' hey-brain-main text' contentEditable='true' spellcheck='false' style='height: 92%; outline: none; padding: 2.5vmin;'></div> \
+      <div class='hey-brain-main tag-buttons' style=' bottom:0; border-radius: 24px; border: 1px solid #F1F1F1; margin-top: 0vmin; position: absolute; width: 100%'> \
+          <span class='hey-brain-main hyb-nt-btn bold cursor-pointer' style='font-weight: bold;'><img src=${chrome.runtime.getURL("assets/images/B.png")} alt="B"></span> \
+
+          <span class='hey-brain-main hyb-nt-btn italic cursor-pointer' style='font-weight: lighter; font-style: italic; margin-left: 7px; margin-right: 7px;'><img src=${chrome.runtime.getURL("assets/images/I.png")} alt="I" class="notes-img hey-brain-main"></span> \
+
+          <span class='hey-brain-main hyb-nt-btn underline cursor-pointer' style='font-weight: lighter; text-decoration: underline;'><img src=${chrome.runtime.getURL("assets/images/U.png")} alt="U" class="notes-img hey-brain-main"></span> \
+
+          <span class='hey-brain-main cursor-pointer' style='color:black; font-weight: bold'><img src=${chrome.runtime.getURL("assets/images/H1.png")} alt="H1" class="notes-img hey-brain-main"></span> \
+
+          <span class='hey-brain-main cursor-pointer' style='color:black; font-weight: bold'><img src=${chrome.runtime.getURL("assets/images/H2.png")} alt="H2" class="notes-img hey-brain-main"></span> \
+
+          <span class='hey-brain-main cursor-pointer' style='color:black; font-weight: bold'><img src=${chrome.runtime.getURL("assets/images/+.png")} alt="plus" class=" notes-img hey-brain-main"></span> \
+
+          <span class='hey-brain-main cursor-pointer' style='color:black; font-weight: bold'><img src=${chrome.runtime.getURL("assets/images/-.png")} alt="minus" class="notes-img hey-brain-main"></span> \
+
+          <span class='hey-brain-main cursor-pointer' style='color:black; font-weight: bold'><img src=${chrome.runtime.getURL("assets/images/arrow.png")} alt="arrow" class="hey-brain-main"></span> \
+
+                 
         </div> \
-    ";
+  </div> `;
+
 
   /**
    * Remove formatting upon pasting text into the editable area.

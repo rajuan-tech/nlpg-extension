@@ -1,24 +1,54 @@
 /*
 ! tailwindcss v3.0.24 | MIT License | https://tailwindcss.com
 */
+
+  @font-face {
+    font-family: 'Montserrat';
+    src: url(chrome-extension://__MSG_@@extension_id__/assets/font/montserrat-regular-webfont.woff2) format('woff2'),
+         url(chrome-extension://__MSG_@@extension_id__/assets/font/montserrat-regular-webfont.woff) format('woff');
+    font-style: normal;
+    font-weight: 400;
+    }
+
+  @font-face {
+    font-family: 'Montserrat';
+    src: url(chrome-extension://__MSG_@@extension_id__/assets/font/montserrat-semibold-webfont.woff2) format('woff2'),
+         url(chrome-extension://__MSG_@@extension_id__/assets/font/montserrat-semibold-webfont.woff) format('woff');
+    font-style: normal;
+    font-weight: 600;
+  }
+ 
+ body {
+  font-family: 'Montserrat', sans-serif;
+ }
+
+#hey-brain-root,
+#hey-brain-content-smartpast-content,
+#test {
+  
+  font-family: 'Montserrat', sans-serif;
+  /* font-weight: 600; */
+  /*  font-family:  url('chrome-extension://__MSG_@@extension_id__/assets/font/Montserrat-Regular.ttf') format('ttf'); */
+
+}
+
 .hey-brain-main,
 .hey-brain-main :after,
 .hey-brain-main :before {
+  font-family:'Montserrat', sans-serif ;
   border: 0 solid #e5e7eb;
   box-sizing: border-box;
   --tw-content: "";
 }
 .hey-brain-main {
   -webkit-text-size-adjust: 100%;
-  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+  /* font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
     Segoe UI, Roboto, Helvetica Neue, Arial, Noto Sans, sans-serif,
-    Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji;
-  line-height: 1.5;
+    Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji; */
+  font-family:'Montserrat', sans-serif ;
   tab-size: 4;
   transition: 500ms;
-  line-height: inherit;
   margin: 0;
-  line-height: inherit;
   margin: 0;
   /* added 2023-03-21 */
   font-size: 16px;  
@@ -36,9 +66,16 @@
   color: inherit;
   text-decoration: inherit;
 }
+
+.hey-brain-main a#taglink {
+  color: #2B007B;
+  font-family:'Montserrat', sans-serif ;
+}
 .hey-brain-main b {
   font-weight: bolder;
 }
+
+
 
 .hey-brain-main button,
 .hey-brain-main input {
@@ -56,7 +93,7 @@
 [type="reset"],
 [type="submit"],
 .hey-brain-main button {
-  -webkit-appearance: button;
+  /* -webkit-appearance: button; 30.04*/
   background-color: transparent;
   background-image: none;
 }
@@ -283,7 +320,7 @@
   border-radius: 0.375em;
 }
 .hey-brain-main .rounded-full {
-  border-radius: 9999px;
+  border-radius: 26px;
 }
 .hey-brain-main .rounded {
   border-radius: 0.25em;
@@ -452,7 +489,7 @@
   font-family: Montserrat, sans-serif;
 } */
 .hey-brain-main {
-  font-family: Montserrat, sans-serif;
+  font-family: 'Montserrat', sans-serif;
 }
 
 .hey-brain-main .hover\:bg-purple:hover {
@@ -651,7 +688,7 @@
 
 .hey-brain-main #signed-in {
   position: relative; height: 286px;
-  font-family: Montserrat, sans-serif;
+  font-family: 'Montserrat', sans-serif;
   font-size: 12px;
 }
 
@@ -746,7 +783,7 @@ div.snooze.popup-flex:hover {
   left: 46px;
   top: 121px;
 
-  font-family: 'Montserrat';
+  font-family: 'Montserrat', sans-serif;
   font-style: normal;
   font-weight: 700;
   font-size: 16px;
@@ -774,7 +811,7 @@ div.snooze.popup-flex:hover {
   left: 55px;
   top: 226px;
 
-  font-family: 'Montserrat';
+  font-family: 'Montserrat', sans-serif;
   font-style: normal;
   font-weight: 600;
   font-size: 12px;
@@ -805,7 +842,7 @@ div.snooze.popup-flex:hover {
 
 .hey-brain-main .text-xs-popup {
   font-size: 1em;
-  line-height: 1.15em;
+  /* line-height: 1.15em; 30.04 */
 }
 
 .hey-brain-main p {
@@ -815,7 +852,7 @@ div.snooze.popup-flex:hover {
 
 .hey-brain-main #sign-up, .hey-brain-main #sign-in{
   /* position: relative;  */
-  font-family: Montserrat, sans-serif;
+  font-family: 'Montserrat', sans-serif;
   font-size: 14px;
 }
 
@@ -888,7 +925,7 @@ div.snooze.popup-flex:hover {
  background:#FFF;
  border-radius: 1%;
  filter: drop-shadow(0.5vmin 0.5vmin 0.5vmin rgb(31, 67, 125) );
- font-family: Montserrat, sans-serif;
+ font-family: 'Montserrat', sans-serif;
  text-align: center;
 
 }
@@ -916,7 +953,7 @@ div.snooze.popup-flex:hover {
   border: none;
   border-radius: 10%;
   font-size: 12px;
-  font-family: Montserrat, sans-serif;
+  font-family: 'Montserrat', sans-serif;
   font-weight: 550;
   cursor: pointer;
   box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.5); 
@@ -952,3 +989,50 @@ div.snooze.popup-flex:hover {
 
 
 /*  Added by NATALIA 25.03: END */
+
+/* Nastya added 23.04 */
+.hey-brain-main .save-button {
+  background-color: #2B007B;
+  color: white;
+  border:none;
+  width: 80px;
+}
+.hey-brain-main .save-button:hover{
+  background-color: #E7E8FC;
+  color: #2B007B;
+  box-shadow: 0 0 #0000, 0 0 #0000, 0 0 #0000;
+  transition: 300ms;
+  /* transform: translate(0, 0.05em); */
+  border: none;
+}
+
+.hey-brain-main .tag-buttons {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  padding: 2vmin;
+  bottom:0; 
+  /* border-radius: 24px;  30.04*/
+  border: 1px solid #F1F1F1; 
+  position: absolute; 
+  width: 100%;
+  align-items: center; /*30.04*/
+}
+/* Nastya finished adding 23.04 */
+
+
+.hey-brain-main ::-webkit-scrollbar {
+  width: 6px;
+}
+
+.hey-brain-main ::-webkit-scrollbar-track {
+  background-color: #FFFFFF;
+}
+
+.hey-brain-main ::-webkit-scrollbar-thumb {
+  background-color: #E4E4E4;
+  border-radius: 6px;
+  width: 6px;
+  height: 10px;
+}
+

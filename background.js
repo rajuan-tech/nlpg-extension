@@ -160,8 +160,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       is_new: request.data.is_new ? 1 : 0,
       limit: request.data.limit || 10,
     });
-    console.log(`inside get smartpast (bg.js) text = ${request.data.text}, isnew =${request.data.is_new}`);
-
+    
     fetch(url.toString(), {
       headers: {
         "Content-Type": "application/json",
@@ -173,7 +172,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         if (!"favicon" in (data.response || {})) {
           data.response.favicon = sender.tab.favIconUrl;
         }
-console.log(data.response);
+
         sendResponse(data.response);
 
       });
@@ -430,15 +429,15 @@ async function uploadFile(file, presignedPost) {
 }
 
 // open the tab after install
+
 function installScript(){
   // Installing content script in all opened tabs 2023-04-17 by Stanislav
   let params = {
       currentWindow: true
   };
 
-  chrome.tabs.query(params, function gotTabs(tabs){
+  chrome.tabs.query(params, (tabs) => {
       let contentjsFile = chrome.runtime.getManifest().content_scripts[0].js[0];
-      
       
       for (let index = 0; index < tabs.length; index++) {
           // console.log((index+1)+') '+tabs[index].url+'!!!!!!!')
@@ -451,13 +450,13 @@ function installScript(){
       }
   });  
 
-  chrome.tabs.create({
+    chrome.tabs.create({
     url: "https://heybrain.ai/register"
-  });
-  
-}
+      });
 
-chrome.runtime.onInstalled.addListener(installScript)
+}
+      
+ chrome.runtime.onInstalled.addListener(installScript)
 
 
 
