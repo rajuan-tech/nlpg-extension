@@ -70,11 +70,16 @@ const drawBrainWithMarker = () => {   //natalia 17.04
       "assets/icons/brain-with-marker.png"
     );
     elBrainDrawerNoHandsImageWithMarker.alt = "brain-with-marker";
-    elBrainDrawerNoHandsImageWithMarker.style.width = "80px";
+    elBrainDrawerNoHandsImageWithMarker.style.width = "80px"; // 03.05
 
+    document.getElementById('brain-drawer-image').style.width = "80px"; // 03.05
+    // elBrainDrawerNoHandsImageWithMarker.style.right = "26px"; // 03.05
+    document.getElementById('brain-drawer-image').style.position = "absolute";
+    document.getElementById('brain-drawer-image').style.right = "5px";
     elBrainDrawerNoHandsImageWithMarker.style.height = "67px"; 
     elBrainDrawerNoHandsImageWithMarker.style.top = "0px";
-    elBrainDrawerNoHandsImageWithMarker.style.right = "0px";
+    elBrainDrawerNoHandsImageWithMarker.style.right = "3px";
+
     document.getElementById("brain-drawer-image").src = chrome.runtime.getURL(
         "assets/icons/brain-with-marker.png"
     ); 
@@ -88,10 +93,13 @@ const drawBrainWithHands = () => {
   elBrainDrawerNoHandsImageWithMarker.src = chrome.runtime.getURL(
     "assets/icons/brain-drawer-no-hands.png"
   );
+  document.getElementById('brain-drawer-image').style.width = "65px"; // 03.05
+
+
   elBrainDrawerNoHandsImageWithMarker.alt = "brain-drawer-no-hands";
-  elBrainDrawerNoHandsImageWithMarker.style.width = "67px";
+  elBrainDrawerNoHandsImageWithMarker.style.width = "62px";
   elBrainDrawerNoHandsImageWithMarker.style.height = "54px"; 
-  elBrainDrawerNoHandsImageWithMarker.style.right = "0px"; 
+  elBrainDrawerNoHandsImageWithMarker.style.right = "5px"; 
   document.getElementById("brain-drawer-image").src = chrome.runtime.getURL(
     "assets/icons/brain-drawer-160.png"
   );
@@ -134,17 +142,19 @@ const init = () => {
       elBrainDrawer.style.right = "26px"; // 30.04
       if (elBrainRoot.style.transform === "translateX(100%)") {
         elBrainRoot.style.transform = "translateX(0%)";
-       
         elBrainRootDismissButton.style.display = "block"; 
         document.getElementById("brain-drawer-no-hands-image").style.display =
           "none";
         document.getElementById("brain-drawer-image").style.display = "initial";
+        document.getElementById("brain-drawer-image").style.position = "absolute"; //03.05
+        document.getElementById("brain-drawer-image").style.right = "7px"; //03.05
+
       } else {
-        elBrainDrawer.style.right = "-36px";
         elBrainRoot.style.transform = "translateX(100%)";
-        document.getElementById("brain-drawer-no-hands-image").style.display =
-          "initial";
         elBrainRootDismissButton.style.display = "none";  
+        document.getElementById("brain-drawer-no-hands-image").style.display =
+        "initial";
+        elBrainDrawer.style.right = "-36px";
         document.getElementById("brain-drawer-image").style.display = "none";
       }
     };
@@ -158,7 +168,7 @@ const init = () => {
     elBrainDrawerImage.alt = "brain-drawer-160";
     
     elBrainDrawerImage.setAttribute("id", "brain-drawer-image");
-    elBrainDrawerImage.style.width = "70px"; 
+    elBrainDrawerImage.style.width = "65px"; 
     elBrainDrawerImage.style.height = "67px"; 
     elBrainDrawerImage.style.display = "none";
     elBrainDrawer.appendChild(elBrainDrawerImage);
@@ -173,12 +183,11 @@ const init = () => {
     elBrainDrawerNoHandsImage.style.height = "54px";
     elBrainDrawerNoHandsImage.style.position = "absolute";
     elBrainDrawerNoHandsImage.style.top = "0px";
-    elBrainDrawerNoHandsImage.style.right = "0px";
+    elBrainDrawerNoHandsImage.style.right = "3px";
     elBrainDrawerNoHandsImage.style.display = "initial";
     elBrainDrawerNoHandsImage.setAttribute("id", "brain-drawer-no-hands-image");
     elBrainDrawerNoHandsImage.style.transition = "all 0.5s ease-in-out";
     elBrainDrawer.appendChild(elBrainDrawerNoHandsImage);
-
     document.body.appendChild(elBrainDrawer);
     // brain drawer --end
   }
@@ -205,7 +214,7 @@ const init = () => {
   elBrainRoot.style.borderBottomLeftRadius = "20px";
   elBrainRoot.style.borderTopLeftRadius = "20px";
   elBrainRoot.style.padding = "25px 20px";
-  // elBrainRoot.style.padding = "25px 0px 25px 20px";
+
   elBrainRoot.style.boxSizing = "border-box";
   elBrainRoot.style.alignItems = "center";
   elBrainRoot.style.justifyContent = "center";
@@ -526,7 +535,7 @@ function createSmartpastContent() {
       },
     },
     (response) => {
-    
+    console.log(response);
       document.getElementById(elBrainLoaderID).style.display = "none";
       if (response) {
         pageSmartPast = response;
@@ -562,7 +571,7 @@ function createSmartpastContent() {
             };
 
             const favIcon = `
-              <div style="margin-left: 5px;">
+              <div>
                 <img src="${item.favicon_url}" width="16" height="16" alt="favicon" />
               </div>
             `;
@@ -602,7 +611,7 @@ function createSmartpastContent() {
             const descriptionContent = `
               <div class="brain-flex brain-flex-row w-full p-1 space-x-2" style="font-size:10px; line-height:17px;font-weight:400;">
                 <div class="shrink-0"><img src="${descriptionImgSrc}" width="16px" height="16px" /></div>
-                <div style="max-height:20px; line-height: 10px; overflow: hidden; color: rgba(0,0,0,0.8);">${descriptionText}</div>
+                <div style="max-height:20px; margin-left: 9px; line-height: 10px; overflow: hidden; color: rgba(0,0,0,0.8);">${descriptionText}</div>
               </div>
             `;
 
@@ -629,7 +638,7 @@ function createSmartpastContent() {
 
 
               dateContent =
-                `<div style="margin:5px 0 3px 22px;font-size:10px; font-weight: 500; opacity:0.5;">` +
+                `<div style="margin:5px 0 3px 25px;font-size:10px; font-weight: 500; opacity:0.5;">` +
                 dateStr +
                 `</div>
                 
@@ -662,7 +671,7 @@ function createSmartpastContent() {
               `
                     </div>
                   </div>
-                  <div style="font-weight:600; font-family: 'Montserrat', sans-serif; margin:5px 0 0 30px;font-size:10px;opacity:0.5;">` +
+                  <div style="font-weight:600; font-family: 'Montserrat', sans-serif; margin:5px 0 0 25px;font-size:10px;opacity:0.5;">` +
               domain +
               `</div>
                 </div>
@@ -1088,7 +1097,7 @@ const fillSuggestionsContent = () => {
 
   Object.keys(combined).forEach((key, index) => {
     const item = combined[key];
-    const tag = item.id.toLowerCase();
+    const tag = item.id;
 
     if (pageData.tags.indexOf(tag) === -1) {
       var bgColor =
@@ -1195,7 +1204,7 @@ const createNotesContent = () => {
     `
           </div>
         </div>
-        <div class="brain-flex brain-flex-grow fields">
+        <div class="brain-flex brain-flex-grow fields"  style="overflow: hidden;">
           <textarea class="w-full h-full border border-gray-100 rounded-lg p-2 text-md" style="background: white;" id="` +
     elBrainContentID +
     `-notes-textarea"></textarea>
@@ -1276,6 +1285,7 @@ const saveNotes = () => {
       },
     },
     (response) => {
+      // console.log(response);
       if (response) {
         pageData.notes = notes;
         pageData.notes === "\n" ? drawBrainWithHands() : drawBrainWithMarker();// natalia 01.05

@@ -341,7 +341,7 @@ function signIn() {
   syncHistoryButton.addEventListener("click", function () {
     const syncHistoryAlert = document.createElement("div");
     syncHistoryAlert.innerHTML = `
-    <div id="sync-content" style="padding-top:50px; height:100%; width:100%; background-color:white;">
+    <div id="sync-content" style="padding-top:50px; width:100%; background-color:white;">
         <div id="sync-wrapper">
             <div style="display: flex; justify-content:center;">
                <img src="assets/icons/brain-with-marker.png" style="height:62px;text-align: center;margin-bottom:20px;">
@@ -373,6 +373,10 @@ function signIn() {
     });
     document.querySelector("button.ok").addEventListener("click", () => {
       syncHistoryAlert.remove();
+      document.querySelector(".sync-history").style.visibility = "hidden";
+      document.querySelector("div.snooze.popup-flex").style.top = "75px";
+      document.querySelector("div.block-the-page.popup-flex").style.top =
+        "125px";
     });
 
     const nonSyncText = "SYNCED SUCCESSFULLY";
@@ -424,7 +428,7 @@ function signIn() {
       switchButton.checked = isEnabled;
     });
     chrome.storage.local.get(["timer"]).then((result) => {
-      console.log("timer is switched on: " + result.timer);
+      // console.log("timer is switched on: " + result.timer);
       result.timer ? snoozeAlert.style.display = "flex" : snoozeAlert.style.display = "none";
     });
   }

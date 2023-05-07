@@ -10,12 +10,19 @@ var simpleEditor = (function () {
     editors = [],
     btnsB = [],
     btnsI = [],
-    btnsU = [];
+    btnsU = [],
+    /// NEW
+    btnsH1 = [],
+    btnsH2 = [],
+    btnsPlus = [],
+    btnsMinus = [],
+    btnsBullets = [],   /// NEW 2023-05-03
+    btnsUndo = [];
 
   var template =
   `
-  <div class='simpledit te-wrapper' style='position: relative;background: white; width: 100%; border-radius: 24px;'> \
-      <div class=' hey-brain-main text' contentEditable='true' spellcheck='false' style='height: 92%; outline: none; padding: 2.5vmin;'></div> \
+  <div class='simpledit te-wrapper' style='position: relative;background: white; width: 100%; border-radius: 24px; overflow: hidden;'> \
+      <div class='hey-brain-main text' contentEditable='true' spellcheck='false' style='height: 92%; outline: none; padding: 2.5vmin; overflow:scroll;'></div> \
       <div class='hey-brain-main tag-buttons' style=' bottom:0; border-radius: 24px; border: 1px solid #F1F1F1; margin-top: 0vmin; position: absolute; width: 100%'> \
           <span class='hey-brain-main hyb-nt-btn bold cursor-pointer' style='font-weight: bold;'><img src=${chrome.runtime.getURL("assets/images/B.png")} alt="B"></span> \
 
@@ -23,15 +30,17 @@ var simpleEditor = (function () {
 
           <span class='hey-brain-main hyb-nt-btn underline cursor-pointer' style='font-weight: lighter; text-decoration: underline;'><img src=${chrome.runtime.getURL("assets/images/U.png")} alt="U" class="notes-img hey-brain-main"></span> \
 
-          <span class='hey-brain-main cursor-pointer' style='color:black; font-weight: bold'><img src=${chrome.runtime.getURL("assets/images/H1.png")} alt="H1" class="notes-img hey-brain-main"></span> \
+          <span class='hey-brain-main hyb-nt-btn cursor-pointer head1' style='color:black; font-weight: bold'><img src=${chrome.runtime.getURL("assets/images/H1.png")} alt="H1" class="notes-img hey-brain-main"></span> \
 
-          <span class='hey-brain-main cursor-pointer' style='color:black; font-weight: bold'><img src=${chrome.runtime.getURL("assets/images/H2.png")} alt="H2" class="notes-img hey-brain-main"></span> \
+          <span class='hey-brain-main hyb-nt-btn cursor-pointer head2' style='color:black; font-weight: bold'><img src=${chrome.runtime.getURL("assets/images/H2.png")} alt="H2" class="notes-img hey-brain-main"></span> \
 
-          <span class='hey-brain-main cursor-pointer' style='color:black; font-weight: bold'><img src=${chrome.runtime.getURL("assets/images/+.png")} alt="plus" class=" notes-img hey-brain-main"></span> \
+          <span class='hey-brain-main hyb-nt-btn cursor-pointer bullets' style='color:black; font-weight: bold'><img src=${chrome.runtime.getURL("assets/images/bullets.png")} alt="arrow" class="hey-brain-main"></span> \
+          
+          <span class='hey-brain-main hyb-nt-btn cursor-pointer plus' style='color:black; font-weight: bold'><img src=${chrome.runtime.getURL("assets/images/+.png")} alt="plus" class=" notes-img hey-brain-main"></span> \
+          
+          <span class='hey-brain-main hyb-nt-btn cursor-pointer minus' style='color:black; font-weight: bold'><img src=${chrome.runtime.getURL("assets/images/-.png")} alt="minus" class="notes-img hey-brain-main"></span> \
 
-          <span class='hey-brain-main cursor-pointer' style='color:black; font-weight: bold'><img src=${chrome.runtime.getURL("assets/images/-.png")} alt="minus" class="notes-img hey-brain-main"></span> \
-
-          <span class='hey-brain-main cursor-pointer' style='color:black; font-weight: bold'><img src=${chrome.runtime.getURL("assets/images/arrow.png")} alt="arrow" class="hey-brain-main"></span> \
+          <span class='hey-brain-main hyb-nt-btn cursor-pointer undo' style='color:black; font-weight: bold'><img src=${chrome.runtime.getURL("assets/images/arrow.png")} alt="arrow" class="hey-brain-main"></span> \
 
                  
         </div> \
@@ -60,6 +69,27 @@ var simpleEditor = (function () {
    * In some browsers, ^b and ^i shortcuts just work. Sadly, some browsers
    * already use those shortcuts for themselves (^b bookmarks, ^i page info).
    */
+
+  // NEW!!! 2023-05-02
+  let sz = 0;
+  function getSize() {
+    const sizes = [10, 13, 16, 18, 24, 32, 48]
+    const selection = window.getSelection();
+    if (selection) 
+    {
+      let size = window.getComputedStyle(selection.anchorNode.parentElement, null).getPropertyValue('font-size');
+      size = Math.round(parseInt(size));
+      for (let i = 0; i < sizes.length; i++)
+      {
+        if (sizes[i] <= size) sz = i+1
+      }
+      console.log("size: " + size)
+      console.log("sz: " + sz)
+    }
+    return sz
+  }
+
+
   function formatText() {
     // Prevent loosing text selection when clicking the buttons.
     //$(document).on('mousedown', '.simpledit .buttons i.bold, .simpledit .buttons i.italic, .simpledit .buttons i.underline', function (evt) {
@@ -107,6 +137,119 @@ var simpleEditor = (function () {
         false
       );
     });
+
+    //// NEW
+     btnsH1.forEach(function (item) {
+      item.addEventListener("mousedown", function (evt) {
+        evt.preventDefault();
+      });
+
+      item.addEventListener(
+        "click",
+        function () {
+          let elem_parent_node = window.getSelection().getRangeAt(0).startContainer.parentNode;
+          // NEW 2023-05-03
+          if (elem_parent_node.nodeName == "LI") 
+            document.execCommand("insertUnorderedList", false, null);
+          if (elem_parent_node.nodeName == "H1")
+            document.execCommand("formatBlock", false, "p") 
+          else  { document.execCommand("formatBlock", false, "p")
+          document.execCommand("formatBlock", false, "H1")  }
+        },
+        false
+      );
+    });
+
+    btnsH2.forEach(function (item) {
+      item.addEventListener("mousedown", function (evt) {
+        evt.preventDefault();
+      });
+
+      item.addEventListener(
+        "click",
+        function () {
+          let elem_parent_node = window.getSelection().getRangeAt(0).startContainer.parentNode;
+          // NEW 2023-05-03
+          if (elem_parent_node.nodeName == "LI") 
+            document.execCommand("insertUnorderedList", false, null);
+          if (elem_parent_node.nodeName == "H2")
+            document.execCommand("formatBlock", false, "p") // elem_parent_node.remove();
+          else { document.execCommand("formatBlock", false, "p")
+            document.execCommand("formatBlock", false, "H2")  }
+        },
+        false
+      );
+    });
+
+    btnsPlus.forEach(function (item) {
+      item.addEventListener("mousedown", function (evt) {
+        evt.preventDefault();
+      });
+
+      item.addEventListener(
+        "click",
+        function () {
+          getSize() 
+          if (sz < 7) {
+            sz++
+            document.execCommand("fontsize", false, sz);
+          }
+        },
+        false
+      );
+    });
+
+    btnsMinus.forEach(function (item) {
+      item.addEventListener("mousedown", function (evt) {
+        evt.preventDefault();
+      });
+
+      item.addEventListener(
+        "click",
+        function () {
+          getSize() 
+          if (sz > 1) {
+            sz--
+            document.execCommand("fontsize", false, sz);
+          }
+        },
+        false
+      );
+    });
+
+    btnsBullets.forEach(function (item) {
+      item.addEventListener("mousedown", function (evt) {
+        evt.preventDefault();
+      });
+
+      item.addEventListener(
+        "click",
+        function () {
+          document.execCommand("insertUnorderedList", false, null);
+          console.log('It works');
+        },
+        false
+      );
+    });
+
+
+    btnsUndo.forEach(function (item) {
+      item.addEventListener("mousedown", function (evt) {
+        evt.preventDefault();
+      });
+
+      item.addEventListener(
+        "click",
+        function () {
+          document.execCommand("undo");
+          console.log('undo clicked');
+        },
+        false
+      );
+    });
+
+
+
   }
 
   function setup(opts) {
@@ -134,6 +277,12 @@ var simpleEditor = (function () {
       btnsB.push(item.querySelector(".tag-buttons span.bold"));
       btnsI.push(item.querySelector(".tag-buttons span.italic"));
       btnsU.push(item.querySelector(".tag-buttons span.underline"));
+      btnsH1.push(item.querySelector(".tag-buttons span.head1"));
+      btnsH2.push(item.querySelector(".tag-buttons span.head2"));
+      btnsPlus.push(item.querySelector(".tag-buttons span.plus"));
+      btnsMinus.push(item.querySelector(".tag-buttons span.minus"));
+      btnsUndo.push(item.querySelector(".tag-buttons span.undo"));
+      btnsBullets.push(item.querySelector(".tag-buttons span.bullets"));
     });
 
     // Add listeners to btns.
