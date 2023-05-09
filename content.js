@@ -229,6 +229,13 @@ const init = () => {
 
   // brain root dismiss button --start
 
+
+
+  // brain root dismiss button --end
+
+  // brain content --start
+
+
   let elBrainRootDismissButton = document.createElement("div");
   elBrainRootDismissButton.style.position = "absolute";
   elBrainRootDismissButton.style.top = "0";// natalia 23.04
@@ -237,13 +244,7 @@ const init = () => {
   elBrainRootDismissButton.style.cursor = "pointer";
   elBrainRootDismissButton.style.display = "none";
 
-  elBrainRootDismissButton.onclick = () => {
-    elBrainRoot.style.transform = "translateX(100%)";
-    document.getElementById("brain-drawer-no-hands-image").style.display =
-      "initial";
-    document.getElementById("brain-drawer-image").style.display = "none";
-    document.getElementById(elBrainDrawerID).style.right = "-36px";
-  };
+
 
   let elBrainRootDismissButtonImage = document.createElement("img");
   elBrainRootDismissButtonImage.src = chrome.runtime.getURL(
@@ -256,9 +257,14 @@ const init = () => {
   elBrainRootDismissButton.appendChild(elBrainRootDismissButtonImage);
   elBrainRoot.appendChild(elBrainRootDismissButton);
 
-  // brain root dismiss button --end
+  elBrainRootDismissButton.onclick = () => {
+    elBrainRoot.style.transform = "translateX(100%)";
+    document.getElementById("brain-drawer-no-hands-image").style.display =
+      "initial";
+    document.getElementById("brain-drawer-image").style.display = "none";
+    document.getElementById(elBrainDrawerID).style.right = "-36px";
+  };
 
-  // brain content --start
   let elBrainContent = document.createElement("div");
   elBrainContent.id = elBrainContentID;
   elBrainContent.style.position = "relative";
@@ -268,6 +274,7 @@ const init = () => {
   elBrainContent.style.overflowY = "auto";
   elBrainContent.style.overflowX = "hidden";
   elBrainRoot.appendChild(elBrainContent);
+
   // brain content --end
 
   // brain root tabs --start
@@ -736,7 +743,7 @@ const createTagsContent = () => {
     `-tags-content-active-tags-list">
     </div>
     <div class="brain-flex">
-      <div style="position:absolute; right: 20px; margin-top: 12px;font-size: 16px;cursor: pointer; display: none;" id="` +
+      <div class="hey-brain-main input-clear" style="position:absolute; right: 20px; margin-top: 12px;font-size: 16px;cursor: pointer; display: none;" id="` +
     elBrainContentID +
     `-tags-content-tag-input-clear">
         <img src="` +
@@ -807,6 +814,12 @@ const createTagsContent = () => {
       }
     );
   }
+
+  //  not to affect content in browser while typing tags
+    document.getElementById( elBrainContentID + "-tags-content-input").addEventListener('keydown', function(e) {
+          e.stopPropagation();
+    });
+
   loadRecommendedTags();
 };
 
@@ -1021,19 +1034,19 @@ const fillTagsContent = () => {
   var tagsHTML = "";
   tags.forEach((tag, index) => {
     tagsHTML +=
-      '<div class="brain-flex brain-flex-row items-center justify-center px-2 py-1 space-x-1 mr-1 mb-1 text-sm rounded-full" style="background-color: #E7E8FC; height:24px; font-weight: 600; font-size: 12px;">';
-    tagsHTML += '<div class="brain-flex-shrink-0"><img src="';
+      '<div class="hey-brain-main brain-flex brain-flex-row items-center justify-center px-2 py-1 space-x-1 mr-1 mb-1 text-sm rounded-full" style="background-color: #E7E8FC; height:24px; font-weight: 600; font-size: 12px;">';
+    tagsHTML += '<div class="hey-brain-main brain-flex-shrink-0"><img src="';
     tagsHTML += chrome.runtime.getURL("assets/images/tag.png");
-    tagsHTML += '" width="16px" height="16px" alt="tag"/></div>';
+    tagsHTML += '"alt="tag"/></div>';
     tagsHTML += "<div id='tag-item-" + index + "'>" + tag + "</div>";
     tagsHTML +=
-      '<div class="brain-flex-shrink-0 cursor-pointer remove-tag-item" id="tag-remove-item-id-' +
+      '<div class="hey-brain-main brain-flex-shrink-0 cursor-pointer remove-tag-item" id="tag-remove-item-id-' +
       index +
       '"><img idx="' +
       index +
       '" src="';
     tagsHTML += chrome.runtime.getURL("assets/images/tag-remove.png");
-    tagsHTML += '" width="16px" height="16px" alt="tag-remove"/></div>';
+    tagsHTML += '"alt="tag-remove"/></div>';
     tagsHTML += "</div>";
     
   });
@@ -1119,7 +1132,7 @@ const fillSuggestionsContent = () => {
       el.innerHTML =
         '<div class="brain-flex-shrink-0" style="font-weight: 600; font-size: 12px;"><img src="' +
         chrome.runtime.getURL("assets/images/" + iconSrc + ".png") +
-        '" width="16px" height="16px" alt="icon"/></div>';
+        '"alt="icon"/></div>';
       el.innerHTML += "<div style='font-weight: 600; font-size: 12px;'>" + tag + "</div>";
       el.addEventListener("click", (e) => {
         addTag(tag);
@@ -1160,7 +1173,7 @@ const fillAutoCompleteContent = (items) => {
       el.innerHTML =
         '<div class="brain-flex-shrink-0"><img src="' +
         chrome.runtime.getURL("assets/images/" + iconSrc + ".png") +
-        '" width="16px" height="16px" alt="icon"/></div>';
+        '"alt="icon"/></div>';
       el.innerHTML += "<div>" + tag + "</div>";
       el.addEventListener("click", (e) => {
         addTag(tag);
@@ -1264,7 +1277,7 @@ const saveNotes = () => {
   simpleEditor.save();
   let notes = document.querySelector(".hey-brain-main.text").innerText;
   let notes_html = document.querySelector(".hey-brain-main.text").innerHTML;
-
+ 
   if (
     document.getElementById(elBrainContentID + "-notes-save-button")
       .innerText === "SAVING"
