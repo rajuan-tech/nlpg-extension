@@ -67,6 +67,7 @@ const pageInfo = () => {
 // helpers --end
 
 //natalia 17.04
+
 const drawBrainWithMarker = () => {   //natalia 17.04
   
     let elBrainDrawerNoHandsImageWithMarker = document.getElementById(
@@ -158,7 +159,7 @@ const init = () => {
           .innerHTML =
            `<div style="width:30px; height: 20px; margin: 230px auto;"><img src=${chrome.runtime.getURL(
             "assets/icons/spinner.svg")}></div>`;
-
+           
           elBrainRoot.style.transform = "translateX(0%)";
           elBrainRootDismissButton.style.display = "block"; 
           document.getElementById("brain-drawer-no-hands-image").style.display =
@@ -166,8 +167,7 @@ const init = () => {
           document.getElementById("brain-drawer-image").style.display = "initial";
           document.getElementById("brain-drawer-image").style.position = "absolute"; //03.05
           document.getElementById("brain-drawer-image").style.right = "7px"; //03.05
-          // console.log(isSmartpastAvailable);
-     
+        
         } else {
           elBrainRoot.style.transform = "translateX(100%)";
           elBrainRootDismissButton.style.display = "none";  
@@ -820,7 +820,7 @@ const createTagsContent = () => {
     `-tags-content-suggested">
     
     </div>
-    <a href="https://heybrain.ai/` + createPeaceOfLink() + `" target="_blank" style="color: #2B007B; text-decoration: underline; font-weight:400; font-size:14px;">view all tags</a>
+    <a id="view-all-tags-link" href="https://heybrain.ai/`+createPeaceOfLink()+`" target="_blank" style="color: #2B007B; text-decoration: underline; font-weight:400; font-size:14px;">view all tags</a>
   `;
 
   document.getElementById(elBrainContentID).innerHTML = "";
@@ -879,6 +879,21 @@ const createTagsContent = () => {
 
   loadRecommendedTags();
 };
+
+const updateLink = () => {
+  const tags = pageData.tags;
+  let peace = '';
+  for (let i = 0; i < tags.length - 2; i++) {
+    peace += `${tags[i]}%2C `;
+  }
+  peace += tags[tags.length - 1];
+  if (tags.length === 0) {
+    peace = '';
+  }
+  const link = document.getElementById("view-all-tags-link");
+  link.href = "https://heybrain.ai/" + peace;
+};
+
 
 const tagInputKeydown = (e) => {
   if (e.keyCode === 13) {
@@ -998,6 +1013,7 @@ const addTag = (tag) => {
       }
     }
   );
+  updateLink();
   }
 };
 
