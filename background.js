@@ -22,6 +22,7 @@ function checkEnable() {
 
 // 2023-03-12 #6 added by Stanislav: BEGIN  ------------------------
 let startOrStop = () => {
+  // console.log('test3') 
  chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) { 
     let url = current_page.url;
     let id = current_page.id;
@@ -49,6 +50,7 @@ chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
   updateCurrentUrl(); // 2023-03-12 #2 added by Stanislav
   if (changeInfo.status === "complete" && tab.active) {
     // 2023-03-19 changed by Stanislav
+    if (current_page && current_page.url.indexOf('http') === 0)  /// NEW 2023-05-14
     startOrStop(); // 2023-03-13 #7 changed by Stanislav
   }
 });
@@ -57,18 +59,30 @@ chrome.storage.onChanged.addListener((changes) => {
   if (changes?.enabled || changes?.heybrain_black_list) {
     // 2023-03-20 changed by Stanislav
     // console.log('!!! storage was changed')
+    if (current_page.url.indexOf('http') === 0)  // 2023-05-14 NEW!
     startOrStop(); // 2023-03-13 #8 changed by Stanislav
   }
 });
 
 chrome.tabs.onActivated.addListener(() => {
   updateCurrentUrl(); // 2023-03-12 #3 added by Stanislav
+  if (current_page.url.indexOf('http') === 0)  // 2023-05-14 NEW!
   startOrStop(); // 2023-03-13 #9 changed by Stanislav
 });
 
 // 2023-03-12 #4 added by Stanislav: BEGIN  ------------------------
 function updateCurrentUrl() {
   // Save the current url to local storage for sharing it between modules
+  
+  // 2023-05-14 NEW! 
+  let oldUrl = undefined;
+  let oldId = undefined;
+
+  if (current_page) {
+    oldUrl = current_page.url;
+    oldId = current_page.id;
+  }
+  // 2023-05-14 NEW! end
   chrome.tabs.query({ active: true, lastFocusedWindow: true }, (tabs) => {
     if (
       tabs[0].url != "" &&
@@ -80,7 +94,20 @@ function updateCurrentUrl() {
       current_page.id = tabs[0].id;
     } else chrome.storage.local.set({ heybrain_current_url: "" });
   });
+  if (current_page && current_page.url.indexOf('http') === 0) // 2023-05-14 NEW!
   getBlackList;
+  
+  // 2023-05-14 NEW! Save notes
+  // if (oldUrl != current_page.url || oldId != current_page.id) {
+    // console.log('test0')
+    if (oldUrl.indexOf('http') === 0)
+    { 
+      chrome.tabs.sendMessage(oldId, {
+      action: "save_notes",
+      });
+    } 
+  // }    
+  // end - new 2023-05-14 
 }
 // 2023-03-12 #4 added by Stanislav: END  --------------------------
 
@@ -130,10 +157,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       },
       body: JSON.stringify({
         url: sender.url,
-         //natalia 03.01
-        title:  sender.tab.title,  // as now
-        // title:  text !== null ? text : sender.tab.title,
-         //natalia 03.01
+        title:  sender.tab.title,  
         domain: request.data.domain,
         description: request.data.page_description,
       }),
@@ -144,11 +168,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
           data.response.favicon = sender.tab.favIconUrl;
         }
         sendResponse(data.response);
-      });
-       //natalia 03.01
-      // if(text !== null )text = null;
-      // console.log(`after ${text}`);
-        //natalia 03.01
+      }).catch(e => sendResponse(undefined));
     return true;
   } else if (request.action === "get-smartpast") {
     // console.log(`before ${text}`);
@@ -176,8 +196,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         sendResponse(data.response);
 
       });
-      //  if(text !== null )text = null;
-      //  console.log(`after ${text}`);
     return true;
   } else if (request.action === "update-notes") {
     var id = request.data.id;
@@ -443,6 +461,9 @@ function installScript(){
           // console.log((index+1)+') '+tabs[index].url+'!!!!!!!')
         
           id = tabs[index].id
+         url = tabs[index].url
+        //  console.log(url)
+         if (url.indexOf('http') === 0)
           chrome.scripting.executeScript({
             target: {tabId: id, allFrames: true},
             files: [contentjsFile],

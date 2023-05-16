@@ -15,6 +15,12 @@ var pageSmartPast = [];
 var pageTagsSuggestions = [];
 var pageTagsRecommendations = [];
 
+let isServerIsAvailable = true;
+let isSmartpastAvailable = true;
+
+let waitForAutosave = false; /// NEW 2023-05-09, replaced on 2023-05-10
+let AutoSaveTimer = null; /// NEW 2023-05-14
+
 // helpers --start
 
 const metaSelector = (name) => {
@@ -95,7 +101,6 @@ const drawBrainWithHands = () => {
   );
   document.getElementById('brain-drawer-image').style.width = "65px"; // 03.05
 
-
   elBrainDrawerNoHandsImageWithMarker.alt = "brain-drawer-no-hands";
   elBrainDrawerNoHandsImageWithMarker.style.width = "62px";
   elBrainDrawerNoHandsImageWithMarker.style.height = "54px"; 
@@ -109,92 +114,107 @@ const drawBrainWithHands = () => {
 
 // init --start
 const init = () => {
+  pageSmartPast = [];
+
   // 2023-03-20 Added by Stanislav: Delete elements if they're already exist
   if (document.getElementById("hey-brain-drawer") !== null) {
-    document.body.removeChild(document.getElementById(elBrainDrawerID));
+      document.body.removeChild(document.getElementById(elBrainDrawerID));
   }
   if (document.getElementById("hey-brain-root") !== null) {
-    document.body.removeChild(document.getElementById(elBrainRootID));
+      document.body.removeChild(document.getElementById(elBrainRootID));
   }
   if (document.getElementById("hey-brain-root") !== null) {
-    document.body.removeChild(
+      document.body.removeChild(
       document.getElementById(elBrainRootDismissButton)
-    );
+      );
   }
 
-  // brain drawer --star
-  if (document.getElementById(elBrainDrawerID) === null) {
-    // changed 2023-03-20 by Stanislav
-    let elBrainDrawer = document.createElement("div");
-    elBrainDrawer.id = elBrainDrawerID;
-    elBrainDrawer.classList.add("hey-brain-main");
-    elBrainDrawer.style.position = "fixed";
-    elBrainDrawer.style.bottom = kBrainRootHeight - 20 + "px";
-    elBrainDrawer.style.right = "-36px";
-    elBrainDrawer.style.width = "80px";
-    elBrainDrawer.style.height = "67px";
-    elBrainDrawer.style.zIndex = "99999";
-    elBrainDrawer.style.cursor = "pointer";
-   
+    // brain drawer --star
+    if (document.getElementById(elBrainDrawerID) === null) {
+      // changed 2023-03-20 by Stanislav
+      let elBrainDrawer = document.createElement("div");
+      elBrainDrawer.id = elBrainDrawerID;
+      elBrainDrawer.classList.add("hey-brain-main");
+      elBrainDrawer.style.position = "fixed";
+      elBrainDrawer.style.bottom = kBrainRootHeight - 20 + "px";
+      elBrainDrawer.style.right = "-36px";
+      elBrainDrawer.style.width = "80px";
+      elBrainDrawer.style.height = "67px";
+      elBrainDrawer.style.zIndex = "99999";
+      elBrainDrawer.style.cursor = "pointer";
+     
 
-    elBrainDrawer.onclick = () => {
-      let elBrainRoot = document.getElementById(elBrainRootID);
-      elBrainDrawer.style.right = "26px"; // 30.04
-      if (elBrainRoot.style.transform === "translateX(100%)") {
-        elBrainRoot.style.transform = "translateX(0%)";
-        elBrainRootDismissButton.style.display = "block"; 
-        document.getElementById("brain-drawer-no-hands-image").style.display =
-          "none";
-        document.getElementById("brain-drawer-image").style.display = "initial";
-        document.getElementById("brain-drawer-image").style.position = "absolute"; //03.05
-        document.getElementById("brain-drawer-image").style.right = "7px"; //03.05
+      elBrainDrawer.onclick = () => {
+        
+        // getSmartpastContent().then(() => {
+          console.log('click on brain');
+          // createSmartpastContent();
+                // 05.05
+        let elBrainRoot = document.getElementById(elBrainRootID);
+        elBrainDrawer.style.right = "26px"; // 30.04
+        if (elBrainRoot.style.transform === "translateX(100%)") {
 
-      } else {
-        elBrainRoot.style.transform = "translateX(100%)";
-        elBrainRootDismissButton.style.display = "none";  
-        document.getElementById("brain-drawer-no-hands-image").style.display =
-        "initial";
-        elBrainDrawer.style.right = "-36px";
-        document.getElementById("brain-drawer-image").style.display = "none";
-      }
-    };
+          document.getElementById('hey-brain-content')
+          .innerHTML =
+           `<div style="width:30px; height: 20px; margin: 230px auto;"><img src=${chrome.runtime.getURL(
+            "assets/icons/spinner.svg")}></div>`;
 
-    let elBrainDrawerImage = document.createElement("img");
+          elBrainRoot.style.transform = "translateX(0%)";
+          elBrainRootDismissButton.style.display = "block"; 
+          document.getElementById("brain-drawer-no-hands-image").style.display =
+            "none";
+          document.getElementById("brain-drawer-image").style.display = "initial";
+          document.getElementById("brain-drawer-image").style.position = "absolute"; //03.05
+          document.getElementById("brain-drawer-image").style.right = "7px"; //03.05
+          // console.log(isSmartpastAvailable);
+     
+        } else {
+          elBrainRoot.style.transform = "translateX(100%)";
+          elBrainRootDismissButton.style.display = "none";  
+          document.getElementById("brain-drawer-no-hands-image").style.display =
+          "initial";
+          elBrainDrawer.style.right = "-36px";
+          document.getElementById("brain-drawer-image").style.display = "none";
+        }
+        selectTabItem(tabFirstItemID);
+      };
 
-    // pic assigned is seen ONLY inside the SMARTPAST
-    elBrainDrawerImage.src = chrome.runtime.getURL(
-      "assets/icons/brain-drawer-160.png"  
-    );
-    elBrainDrawerImage.alt = "brain-drawer-160";
-    
-    elBrainDrawerImage.setAttribute("id", "brain-drawer-image");
-    elBrainDrawerImage.style.width = "65px"; 
-    elBrainDrawerImage.style.height = "67px"; 
-    elBrainDrawerImage.style.display = "none";
-    elBrainDrawer.appendChild(elBrainDrawerImage);
-
-    let elBrainDrawerNoHandsImage = document.createElement("img");
-    elBrainDrawerNoHandsImage.src = chrome.runtime.getURL(
-      "assets/icons/brain-drawer-no-hands.png"
-    );
-    elBrainDrawerNoHandsImage.alt = "brain-drawer-no-hands"
-
-    elBrainDrawerNoHandsImage.style.width = "67px";
-    elBrainDrawerNoHandsImage.style.height = "54px";
-    elBrainDrawerNoHandsImage.style.position = "absolute";
-    elBrainDrawerNoHandsImage.style.top = "0px";
-    elBrainDrawerNoHandsImage.style.right = "3px";
-    elBrainDrawerNoHandsImage.style.display = "initial";
-    elBrainDrawerNoHandsImage.setAttribute("id", "brain-drawer-no-hands-image");
-    elBrainDrawerNoHandsImage.style.transition = "all 0.5s ease-in-out";
-    elBrainDrawer.appendChild(elBrainDrawerNoHandsImage);
-    document.body.appendChild(elBrainDrawer);
-    // brain drawer --end
-  }
+      let elBrainDrawerImage = document.createElement("img");
+  
+      // pic assigned is seen ONLY inside the SMARTPAST
+      elBrainDrawerImage.src = chrome.runtime.getURL(
+        "assets/icons/brain-drawer-160.png"  
+      );
+      elBrainDrawerImage.alt = "brain-drawer-160";
+      
+      elBrainDrawerImage.setAttribute("id", "brain-drawer-image");
+      elBrainDrawerImage.style.width = "65px"; 
+      elBrainDrawerImage.style.height = "67px"; 
+      elBrainDrawerImage.style.display = "none";
+      elBrainDrawer.appendChild(elBrainDrawerImage);
+  
+      let elBrainDrawerNoHandsImage = document.createElement("img");
+      elBrainDrawerNoHandsImage.src = chrome.runtime.getURL(
+        "assets/icons/brain-drawer-no-hands.png"
+      );
+      elBrainDrawerNoHandsImage.alt = "brain-drawer-no-hands"
+  
+      elBrainDrawerNoHandsImage.style.width = "67px";
+      elBrainDrawerNoHandsImage.style.height = "54px";
+      elBrainDrawerNoHandsImage.style.position = "absolute";
+      elBrainDrawerNoHandsImage.style.top = "0px";
+      elBrainDrawerNoHandsImage.style.right = "3px";
+      elBrainDrawerNoHandsImage.style.display = "initial";
+      elBrainDrawerNoHandsImage.setAttribute("id", "brain-drawer-no-hands-image");
+      elBrainDrawerNoHandsImage.style.transition = "all 0.5s ease-in-out";
+      elBrainDrawer.appendChild(elBrainDrawerNoHandsImage);
+      document.body.appendChild(elBrainDrawer);
+      // brain drawer --end
+    }
   // const metadata = await fetchMetadata(sender.tab.url);
   // sendResponse(metadata);
 
-  // brain root --start
+      // brain root --start
   let elBrainRoot = document.createElement("div");
   elBrainRoot.id = elBrainRootID;
   elBrainRoot.classList.add("hey-brain-main");
@@ -228,133 +248,138 @@ const init = () => {
   // brain root --end
 
   // brain root dismiss button --start
-
-
-
+   let elBrainRootDismissButton = document.createElement("div");
+   elBrainRootDismissButton.style.position = "absolute";
+   elBrainRootDismissButton.style.top = "0";// natalia 23.04
+   elBrainRootDismissButton.style.left = "0";// natalia 23.04
+   elBrainRootDismissButton.style.zIndex = "99999";
+   elBrainRootDismissButton.style.cursor = "pointer";
+   elBrainRootDismissButton.style.display = "none";
+ 
+   let elBrainRootDismissButtonImage = document.createElement("img");
+   elBrainRootDismissButtonImage.src = chrome.runtime.getURL(
+     "assets/images/drawer-dismiss.png"
+   );
+   elBrainRootDismissButtonImage.alt = "drawer-dismiss";
+   elBrainRootDismissButtonImage.style.width = "24px";// natalia 23.04
+   elBrainRootDismissButtonImage.style.height = "24px";// natalia 23.04
+   elBrainRootDismissButtonImage.style.filter = "drop-shadow(0px 1px 2px rgba(0, 0, 0, 0.5))";
+   elBrainRootDismissButton.appendChild(elBrainRootDismissButtonImage);
+   elBrainRoot.appendChild(elBrainRootDismissButton);
+ 
+   elBrainRootDismissButton.onclick = () => {
+     elBrainRoot.style.transform = "translateX(100%)";
+     document.getElementById("brain-drawer-no-hands-image").style.display =
+       "initial";
+     document.getElementById("brain-drawer-image").style.display = "none";
+     document.getElementById(elBrainDrawerID).style.right = "-36px";
+   };
   // brain root dismiss button --end
 
-  // brain content --start
+ // brain content --start
+   let elBrainContent = document.createElement("div");
+   elBrainContent.id = elBrainContentID;
+   elBrainContent.style.position = "relative";
+   elBrainContent.style.width = "100%";
+   elBrainContent.style.height = "100%";
+   elBrainContent.style.zIndex = "99999";
+   elBrainContent.style.overflowY = "auto";
+   elBrainContent.style.overflowX = "hidden";
+   elBrainRoot.appendChild(elBrainContent);
+   // brain content --end
+
+ // brain root tabs --start
+ const tabItemHeight = 25; // natalia 23.04
+ const tabItemDeactiveBackground = "#0A0458";
+
+ let elBrainRootTabs = document.createElement("div");
+ elBrainRootTabs.id = elBrainRootTabsID;
+ elBrainRootTabs.style.position = "absolute";
+ elBrainRootTabs.style.top = -tabItemHeight + "px"; 
+ elBrainRootTabs.style.left = "-40px"; // natalia 23.04
+ elBrainRootTabs.style.width = "100%";
+ elBrainRootTabs.style.height = tabItemHeight + "px";
+ elBrainRootTabs.style.zIndex = "99999";
+ elBrainRootTabs.style.display = "flex";
+ elBrainRootTabs.style.flexDirection = "row";
+ elBrainRootTabs.style.alignItems = "center";
+ elBrainRootTabs.style.justifyContent = "center";
+ elBrainRootTabs.style.boxSizing = "border-box";
+ elBrainRootTabs.style.fontSize= "12px";
+ elBrainRootTabs.style.fontWeight = "600";
+ elBrainRoot.appendChild(elBrainRootTabs);
+
+ // brain root tab first --start
+ let elBrainRootTabItemFirst = createTabItem(tabFirstItemID, "<span style='color:#6416F3; font-size:12px; font-weight:600;'>SMART</span>PAST"); // natalia 23.04
+ elBrainRootTabItemFirst.style.height = tabItemHeight + "px";
+ elBrainRootTabItemFirst.style.backgroundColor = "#EFEFEF";  // natalia 23.04
+ elBrainRootTabItemFirst.style.borderLeft = "1px solid rgba(200, 200, 200, 0.4)";// natalia 23.04
+ elBrainRootTabItemFirst.style.borderBottom = "0px";// natalia 23.04
+ elBrainRootTabItemFirst.style.borderBottom = "none";// natalia 23.04
+ elBrainRootTabItemFirst.style.boxShadow = " -3px 0 3px rgba(0, 0, 0, 0.1)";// natalia 23.04
+ elBrainRootTabItemFirst.style.fontWeight = '600';
+ elBrainRootTabItemFirst.style.fontSize= "12px";
+ elBrainRootTabItemFirst.style.fontFamily = "'Montserrat', sans-serif";
 
 
-  let elBrainRootDismissButton = document.createElement("div");
-  elBrainRootDismissButton.style.position = "absolute";
-  elBrainRootDismissButton.style.top = "0";// natalia 23.04
-  elBrainRootDismissButton.style.left = "0";// natalia 23.04
-  elBrainRootDismissButton.style.zIndex = "99999";
-  elBrainRootDismissButton.style.cursor = "pointer";
-  elBrainRootDismissButton.style.display = "none";
+ elBrainRootTabItemFirst.style.color = tabItemDeactiveBackground;
+ elBrainRootTabItemFirst.onclick = () => {
+   selectTabItem(tabFirstItemID);
+ };
+ elBrainRootTabs.appendChild(elBrainRootTabItemFirst);
+ // brain root tab first --end
 
+ // brain root tab second --start
+ let elBrainRootTabItemSecond = createTabItem(tabSecondItemID, "TAGS");
+ elBrainRootTabItemSecond.style.height = tabItemHeight + "px";
+ elBrainRootTabItemSecond.style.backgroundColor = tabItemDeactiveBackground;
+ elBrainRootTabItemSecond.style.color = "#fff";
+ elBrainRootTabItemSecond.style.fontWeight = '600'; //nastya 23.04
+ elBrainRootTabItemSecond.style.fontSize = '12px'; //nastya 23.04
+ elBrainRootTabItemSecond.style.fontFamily = "'Montserrat', sans-serif";
+ elBrainRootTabItemSecond.style.marginLeft = "8px";
+ elBrainRootTabItemSecond.style.marginRight = "8px";
+ elBrainRootTabItemSecond.onclick = () => {
+   selectTabItem(tabSecondItemID);
+ };
+ elBrainRootTabs.appendChild(elBrainRootTabItemSecond);
+ // brain root tab second --end
 
+ // brain root tab second --third
+ let elBrainRootTabItemThird = createTabItem(tabThirdItemID, "NOTES");
+ elBrainRootTabItemThird.style.height = tabItemHeight + "px";
+ elBrainRootTabItemThird.style.backgroundColor = tabItemDeactiveBackground;
+ elBrainRootTabItemThird.style.color = "#fff";
+ elBrainRootTabItemThird.style.fontWeight = '600';//nastya 23.04
+ elBrainRootTabItemThird.style.fontSize = '12px';
+ elBrainRootTabItemThird.style.fontFamily = "'Montserrat', sans-serif";
+ elBrainRootTabItemThird.onclick = () => {
+   selectTabItem(tabThirdItemID);
+ };
+ elBrainRootTabs.appendChild(elBrainRootTabItemThird);
+ // brain root tab second --third
 
-  let elBrainRootDismissButtonImage = document.createElement("img");
-  elBrainRootDismissButtonImage.src = chrome.runtime.getURL(
-    "assets/images/drawer-dismiss.png"
-  );
-  elBrainRootDismissButtonImage.alt = "drawer-dismiss";
-  elBrainRootDismissButtonImage.style.width = "24px";// natalia 23.04
-  elBrainRootDismissButtonImage.style.height = "24px";// natalia 23.04
-  elBrainRootDismissButtonImage.style.filter = "drop-shadow(0px 1px 2px rgba(0, 0, 0, 0.5))";
-  elBrainRootDismissButton.appendChild(elBrainRootDismissButtonImage);
-  elBrainRoot.appendChild(elBrainRootDismissButton);
+ document.body.appendChild(elBrainRoot);
 
-  elBrainRootDismissButton.onclick = () => {
-    elBrainRoot.style.transform = "translateX(100%)";
-    document.getElementById("brain-drawer-no-hands-image").style.display =
-      "initial";
-    document.getElementById("brain-drawer-image").style.display = "none";
-    document.getElementById(elBrainDrawerID).style.right = "-36px";
-  };
-
-  let elBrainContent = document.createElement("div");
-  elBrainContent.id = elBrainContentID;
-  elBrainContent.style.position = "relative";
-  elBrainContent.style.width = "100%";
-  elBrainContent.style.height = "100%";
-  elBrainContent.style.zIndex = "99999";
-  elBrainContent.style.overflowY = "auto";
-  elBrainContent.style.overflowX = "hidden";
-  elBrainRoot.appendChild(elBrainContent);
-
-  // brain content --end
-
-  // brain root tabs --start
-  const tabItemHeight = 25; // natalia 23.04
-  const tabItemDeactiveBackground = "#0A0458";
-
-  let elBrainRootTabs = document.createElement("div");
-  elBrainRootTabs.id = elBrainRootTabsID;
-  elBrainRootTabs.style.position = "absolute";
-  elBrainRootTabs.style.top = -tabItemHeight + "px"; 
-  elBrainRootTabs.style.left = "-40px"; // natalia 23.04
-  elBrainRootTabs.style.width = "100%";
-  elBrainRootTabs.style.height = tabItemHeight + "px";
-  elBrainRootTabs.style.zIndex = "99999";
-  elBrainRootTabs.style.display = "flex";
-  elBrainRootTabs.style.flexDirection = "row";
-  elBrainRootTabs.style.alignItems = "center";
-  elBrainRootTabs.style.justifyContent = "center";
-  elBrainRootTabs.style.boxSizing = "border-box";
-  elBrainRootTabs.style.fontSize= "12px";
-  elBrainRootTabs.style.fontWeight = "600";
-  elBrainRoot.appendChild(elBrainRootTabs);
-
-  // brain root tab first --start
-  let elBrainRootTabItemFirst = createTabItem(tabFirstItemID, "<span style='color:#6416F3; font-size:12px; font-weight:600;'>SMART</span>PAST"); // natalia 23.04
-  elBrainRootTabItemFirst.style.height = tabItemHeight + "px";
-  elBrainRootTabItemFirst.style.backgroundColor = "#EFEFEF";  // natalia 23.04
-  elBrainRootTabItemFirst.style.borderLeft = "1px solid rgba(200, 200, 200, 0.4)";// natalia 23.04
-  elBrainRootTabItemFirst.style.borderBottom = "0px";// natalia 23.04
-  // elBrainRoot.style.borderRightWidth = "0";// natalia 23.04
-  elBrainRootTabItemFirst.style.borderBottom = "none";// natalia 23.04
-  elBrainRootTabItemFirst.style.boxShadow = " -3px 0 3px rgba(0, 0, 0, 0.1)";// natalia 23.04
-  elBrainRootTabItemFirst.style.fontWeight = '600';
-  elBrainRootTabItemFirst.style.fontSize= "12px";
-  elBrainRootTabItemFirst.style.fontFamily = "'Montserrat', sans-serif";
-
-
-  elBrainRootTabItemFirst.style.color = tabItemDeactiveBackground;
-  elBrainRootTabItemFirst.onclick = () => {
-    selectTabItem(tabFirstItemID);
-  };
-  elBrainRootTabs.appendChild(elBrainRootTabItemFirst);
-  // brain root tab first --end
-
-  // brain root tab second --start
-  let elBrainRootTabItemSecond = createTabItem(tabSecondItemID, "TAGS");
-  elBrainRootTabItemSecond.style.height = tabItemHeight + "px";
-  elBrainRootTabItemSecond.style.backgroundColor = tabItemDeactiveBackground;
-  elBrainRootTabItemSecond.style.color = "#fff";
-  elBrainRootTabItemSecond.style.fontWeight = '600'; //nastya 23.04
-  elBrainRootTabItemSecond.style.fontSize = '12px'; //nastya 23.04
-  elBrainRootTabItemSecond.style.fontFamily = "'Montserrat', sans-serif";
-  elBrainRootTabItemSecond.style.marginLeft = "8px";
-  elBrainRootTabItemSecond.style.marginRight = "8px";
-  elBrainRootTabItemSecond.onclick = () => {
-    selectTabItem(tabSecondItemID);
-  };
-  elBrainRootTabs.appendChild(elBrainRootTabItemSecond);
-  // brain root tab second --end
-
-  // brain root tab second --third
-  let elBrainRootTabItemThird = createTabItem(tabThirdItemID, "NOTES");
-  elBrainRootTabItemThird.style.height = tabItemHeight + "px";
-  elBrainRootTabItemThird.style.backgroundColor = tabItemDeactiveBackground;
-  elBrainRootTabItemThird.style.color = "#fff";
-  elBrainRootTabItemThird.style.fontWeight = '600';//nastya 23.04
-  elBrainRootTabItemThird.style.fontSize = '12px';
-  elBrainRootTabItemThird.style.fontFamily = "'Montserrat', sans-serif";
-  elBrainRootTabItemThird.onclick = () => {
-    selectTabItem(tabThirdItemID);
-  };
-  elBrainRootTabs.appendChild(elBrainRootTabItemThird);
-  // brain root tab second --third
-
-  document.body.appendChild(elBrainRoot);
+  chrome.runtime.sendMessage(
+    {
+      action: "get-url-data",
+      data: {
+        access_token: accessToken,
+        page_description: pageInfo().description,
+        domain: pageInfo().domain,
+      },
+    },
+    (response) => { 
+      if (response) {
+      pageData = response;
+      // console.log(pageData);
+ 
+      // getSmartpastContent().then(() => {
 
   // load page data --start
   elBrainRootTabs.style.display = "none";
   elBrainContent.style.display = "none";
-
   let elBrainLoader = document.createElement("div");
   elBrainLoader.id = elBrainLoaderID;
   elBrainLoader.style.position = "absolute";
@@ -372,24 +397,11 @@ const init = () => {
   elBrainLoader.style.fontWeight = "regular";
   elBrainLoader.innerText = "Loading...";
   elBrainRoot.appendChild(elBrainLoader);
+  elBrainRootTabs.style.display = "flex";
+  elBrainContent.style.display = "block";
+  elBrainLoader.style.display = "none";
 
-  chrome.runtime.sendMessage(
-    {
-      action: "get-url-data",
-      data: {
-        access_token: accessToken,
-        page_description: pageInfo().description,
-        domain: pageInfo().domain,
-      },
-    },
-    (response) => { 
-      elBrainRootTabs.style.display = "flex";
-      elBrainContent.style.display = "block";
-      elBrainLoader.style.display = "none";
-
-      if (response) {
-        pageData = response;
-        if (pageData.tags.length > 0 || pageData.notes.length > 0 && pageData.notes!=="\n") {
+        if (pageData.tags.length > 0 || pageData.notes.length > 0 && pageData.notes!= " ") {
           drawBrainWithMarker(); //natalia 17.04
         } 
         if (!pageData.favicon_url) {
@@ -398,7 +410,7 @@ const init = () => {
             pageData.url +
             "&sz=64";
         }
-        selectTabItem(tabFirstItemID);
+        // selectTabItem(tabFirstItemID);
         if (!pageData.screenshot_url || pageData.screenshot_url.length === 0) {
           chrome.runtime.sendMessage(
             {
@@ -411,8 +423,11 @@ const init = () => {
             (response) => {}
           );
         }
-
- 
+    // });
+   } else {
+      isServerIsAvailable = false;
+      document.getElementById(elBrainContentID)
+      .innerHTML=`<div style="display:flex; justify-content: center; margin-top: 180px;"><p>Sorry, we have technical problems now :(</p></div>`;
       }
     }
   );
@@ -441,7 +456,15 @@ const createTabItem = (id, title) => {
   return tabItem;
 };
 
-const selectTabItem = (tabID) => {
+function selectTabItem  (tabID)  {
+  // NEW 2023-05-09   // NEW 2023-05-10
+  if (tabID != tabThirdItemID) 
+    if (waitForAutosave) {
+      if (AutoSaveTimer) clearTimeout(AutoSaveTimer); 
+      waitForAutosave = false
+      saveNotes()
+    }
+
   let elTabItem = document.getElementById(tabID);
   let elTabItemContainer = document.getElementById(elBrainRootTabsID);
   let elTabItemContainerChildren = elTabItemContainer.children;
@@ -482,7 +505,7 @@ const selectTabItem = (tabID) => {
   }
 
   if (tabID === tabFirstItemID) {
-    createSmartpastContent();
+    pageSmartPast.length === 0 ? getSmartpastContent().then(data => createSmartpastContent(data)) : createSmartpastContent();
   } else if (tabID === tabSecondItemID) {
     createTagsContent();
   } else if (tabID === tabThirdItemID) {
@@ -495,11 +518,58 @@ const selectTabItem = (tabID) => {
 
 // tab smartpast content --start
 
-
 let selectedText = null; 
 
-function createSmartpastContent() {
-  // start natalia 21/04 
+async function getSmartpastContent() {
+
+  return new Promise(resolve => {
+    document.getElementById('hey-brain-content')
+    .innerHTML =
+     `<div style="width:30px; height: 20px; margin: 230px auto;"><img src=${chrome.runtime.getURL(
+      "assets/icons/spinner.svg")}></div>`;
+
+      if (isSmartpastAvailable)  {
+    chrome.runtime.sendMessage(
+      {
+        action: "get-smartpast",
+        data: {
+          access_token: accessToken,
+          id: selectedText !== null ? null : pageData.id,
+          is_new: selectedText !== null ? true : pageData.is_new,
+          text: selectedText !== null ? selectedText : pageData.title,
+          limit: 10,
+        },
+      },
+      (response) => {
+        if (response) {
+          pageSmartPast = response;
+            // console.log(`response from getSmartpastContent received`);
+            chrome.storage.local.set({'getsmartpast': response}); // 05.05 start
+            // getsmartpast = response;
+            // console.log('getSmartpastContent finished work')
+            resolve(response);
+        } else {
+          isSmartpastAvailable = false;
+          document.getElementById(elBrainContentID)
+          .innerHTML=`<div style="display:flex; justify-content: center; margin-top: 180px;">Sorry, we have technical problems now :(</div>`;
+        }
+      }
+    )} else {
+      document.getElementById(elBrainContentID)
+      .innerHTML=`<div style="display:flex; justify-content: center; margin-top: 180px;"><p>Sorry, we have technical problems now :(</p></div>`;
+    }
+    console.log('getsmartpast finished work');
+  });
+  
+}
+
+function createSmartpastContent(data) {
+
+  chrome.storage.local.get(["getsmartpast"]).then((result) => {
+    pageSmartPast = result.getsmartpast;
+   
+  }).then(() => {
+    
   if (document.getElementById("taglink") !== null)  {document.getElementById("taglink").remove();}
   let tagLink = document.createElement("a");
   tagLink.innerHTML = `<a href="https://heybrain.ai/cloud" id="taglink" target="_blank">view all</a>`;
@@ -515,7 +585,10 @@ function createSmartpastContent() {
   tagLink.style.color = "#2B007B";
 
   // end natalia 21/04 
-
+  if (isServerIsAvailable === false || isSmartpastAvailable === false) {
+    document.getElementById(elBrainContentID)
+    .innerHTML=`<div style="display:flex; justify-content: center; margin-top: 180px;"><p>Sorry, we have technical problems now :(</p></div>`;
+  } else {
   let tabContent = document.createElement("div");
   tabContent.id = elBrainContentID + "-smartpast-content";
   tabContent.style.position = "relative";
@@ -528,24 +601,9 @@ function createSmartpastContent() {
   tabContent.style.overflowX = "hidden";
   document.getElementById(elBrainContentID).innerHTML = ``;
   document.getElementById(elBrainContentID).appendChild(tabContent);
- 
   document.getElementById(elBrainLoaderID).style.display = "flex";
-  chrome.runtime.sendMessage(
-    {
-      action: "get-smartpast",
-      data: {
-        access_token: accessToken,
-        id: selectedText !== null ? null : pageData.id,
-        is_new: selectedText !== null ? true : pageData.is_new,
-        text: selectedText !== null ? selectedText : pageData.title,
-        limit: 10,
-      },
-    },
-    (response) => {
-    console.log(response);
-      document.getElementById(elBrainLoaderID).style.display = "none";
-      if (response) {
-        pageSmartPast = response;
+  document.getElementById(elBrainLoaderID).style.display = "none";
+  }
 
         let smartPastContentEl = document.getElementById(
           elBrainContentID + "-smartpast-content"
@@ -643,7 +701,6 @@ function createSmartpastContent() {
               
                `${monthNames[monthIndex]} ${day}, ${year}`;
 
-
               dateContent =
                 `<div style="margin:5px 0 3px 25px;font-size:10px; font-weight: 500; opacity:0.5;">` +
                 dateStr +
@@ -697,17 +754,17 @@ function createSmartpastContent() {
             smartPastContentEl.appendChild(elSmartpastItem);
           });
         }
-      
         document.getElementById(elBrainContentID).appendChild(tagLink);// end natalia 21/04 
-      }
     
          if(selectedText !== null) selectedText = null;
-       
-    }
-  );
-
-  // let elSmartpastContainer = document.createElement("div");
+       console.log('createSmartpastContent finished work');
+  });
 };
+       
+
+  
+  // let elSmartpastContainer = document.createElement("div");
+// };
 // tab smartpast content --end
 
 // tab tags content --start
@@ -899,7 +956,16 @@ const onResetTagInput = () => {
 };
 
 const addTag = (tag) => {
-
+  if (tag.length > 25) {
+    document.getElementById(elBrainContentID + "-tags-content-input").placeholder  ='the tag should be no more than 25 characters';
+    document.getElementById(elBrainContentID + "-tags-content-input").classList.add('placeholder-red');
+    setTimeout(() => {
+      document.getElementById(elBrainContentID + "-tags-content-input").placeholder  ='add new tag';
+      document.getElementById(elBrainContentID + "-tags-content-input").classList.remove('placeholder-red');
+      onResetTagInput();
+    }, 2000 );
+    return;
+  } else {
   const tags = pageData.tags;
   tags.push(tag);
   tags.forEach((tag) => {
@@ -913,7 +979,7 @@ const addTag = (tag) => {
   document.getElementById(
     elBrainContentID + "-tags-content-tag-input-clear"
   ).style.display = "none";
-  if (pageData.tags.length > 0 || pageData.notes.length > 0 && pageData.notes!=="\n") {
+  if (pageData.tags.length > 0 || pageData.notes.length > 0 && pageData.notes!==" ") {
     drawBrainWithMarker();
   }
   chrome.runtime.sendMessage(
@@ -932,6 +998,7 @@ const addTag = (tag) => {
       }
     }
   );
+  }
 };
 
 const removeTag = (e) => {
@@ -949,11 +1016,11 @@ const removeTag = (e) => {
   }
   pageData.tags = tags;
   // natalia 17.04
-  if (pageData.tags.length === 0 && pageData.notes.length === 0 || pageData.notes === "\n") {
-    drawBrainWithHands();
-}// natalia 17.04
+
 
   fillTagsContent();
+
+
 
   chrome.runtime.sendMessage(
     {
@@ -968,10 +1035,18 @@ const removeTag = (e) => {
       if (response) {
         fillSuggestionsContent();
         loadRecommendedTags();
+       
       }
     }
   );
+  console.log(pageData.tags.length);
+  console.log(pageData.notes);
+  if (pageData.tags.length  === 0 && (pageData.notes.length === 0 || pageData.notes === " ")) {
+    drawBrainWithHands();
+}// natalia 17.04
+
 };
+
 const loadRecommendedTags = () => {
   if (pageData.tags.length === 0 ) {
     return;
@@ -1275,8 +1350,15 @@ const createNotesContent = () => {
 
 const saveNotes = () => {
   simpleEditor.save();
-  let notes = document.querySelector(".hey-brain-main.text").innerText;
-  let notes_html = document.querySelector(".hey-brain-main.text").innerHTML;
+  // NEW 2023-05-09
+  if (document.querySelector(".hey-brain-main.text") != null)
+  {   
+    let notes = document.querySelector(".hey-brain-main.text").innerText !='' 
+              ? document.querySelector(".hey-brain-main.text").innerText
+              : ' ';                          // NEW 2023-05-10
+    let notes_html = document.querySelector(".hey-brain-main.text").innerHTML!='' 
+              ? document.querySelector(".hey-brain-main.text").innerHTML
+              : ' ';                          // NEW 2023-05-10;
  
   if (
     document.getElementById(elBrainContentID + "-notes-save-button")
@@ -1301,7 +1383,9 @@ const saveNotes = () => {
       // console.log(response);
       if (response) {
         pageData.notes = notes;
-        pageData.notes === "\n" ? drawBrainWithHands() : drawBrainWithMarker();// natalia 01.05
+
+       pageData.notes === " " && pageData.tags.length === 0 ? drawBrainWithHands() : drawBrainWithMarker();
+          
         pageData.notes_html = notes_html;
         document.getElementById(
           elBrainContentID + "-notes-save-button"
@@ -1316,9 +1400,9 @@ const saveNotes = () => {
         }, 2000);
       }
     }
-  );
   
-
+  );
+  }  /// NEW 2023-05-09
 };
 // tab notes content --end
 
@@ -1326,6 +1410,17 @@ const saveNotes = () => {
 
 // listeners --start
 chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
+
+  /// NEW 2023-05-14
+  if (request.action === "save_notes") 
+    if (tabID = tabThirdItemID) 
+      if (waitForAutosave) {
+        if (AutoSaveTimer) clearTimeout(AutoSaveTimer); 
+        waitForAutosave = false
+        saveNotes()
+    }
+  /// end new
+
   if (request.action === "init") {
     chrome.storage.local.get(["access_token"], (data) => {
       if (data.access_token) {
@@ -1348,7 +1443,10 @@ chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
     }
   } else if (request.action === "smartpast-selected") {
     selectedText = request.text;
-    createSmartpastContent();
+    getSmartpastContent().then((data) => {
+      createSmartpastContent(data);
+    });
+
   }
 });
 

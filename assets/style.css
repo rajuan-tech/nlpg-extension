@@ -1095,3 +1095,8 @@ div.snooze.popup-flex:hover {
 {
   overflow: hidden;
 }
+
+
+#hey-brain-content-tags-content-input.placeholder-red::placeholder {
+  color: rgb(236, 140, 140);
+}

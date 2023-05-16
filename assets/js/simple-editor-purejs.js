@@ -50,18 +50,21 @@ var simpleEditor = (function () {
   /**
    * Remove formatting upon pasting text into the editable area.
    */
-  function plainTextOnPaste() {
-    editors.forEach(function (editor) {
-      editor.querySelector(".text").addEventListener("paste", function () {
-        var _self = this;
-        setTimeout(function () {
-          // Set textContent with the result of textContent, which effectively
-          // removes any formatting (textContent is plain text, unlike innerHTML).
-          _self.textContent = _self.textContent;
-        }, 3);
-      });
-    });
-  }
+  // 2023-05-09 COMMENTED OUT!
+  // function plainTextOnPaste() {
+  //   editors.forEach(function (editor) {
+  //     editor.querySelector(".text").addEventListener("paste", function () {
+  //       var _self = this;
+  //       setTimeout(function () {
+  //         // Set textContent with the result of textContent, which effectively
+  //         // removes any formatting (textContent is plain text, unlike innerHTML).
+  //         _self.textContent = _self.textContent;
+  //       }, 3);
+  //     });
+  //   });
+  // }
+
+
 
   /**
    * Apply bold and italic when ‘b’ and ‘i’ buttons are clicked.
@@ -288,9 +291,25 @@ var simpleEditor = (function () {
     // Add listeners to btns.
     formatText();
 
-    if (opts.pastePlain) {
-      plainTextOnPaste();
+    // 2023-05-09 COMMENTED OUT!
+    // if (opts.pastePlain) {
+    //   plainTextOnPaste();
+    // }
+
+    // 2025-05-09 NEW!!!! By Stanislav (plane paste)
+    editors[editors.length - 1].addEventListener("paste", function(e) {
+      e.preventDefault();
+      var text = (e.originalEvent || e).clipboardData.getData('text/plain');
+      document.execCommand("insertHTML", false, text);
+    });
+
+    editors[editors.length - 1].addEventListener("input",  function(){
+      if (!waitForAutosave) {
+        waitForAutosave = true;
+        AutoSaveTimer = setTimeout(function(){save(); saveNotes(); waitForAutosave = false }, 10000);
     }
+    });
+    /// ------------- END: 2025-05-09 NEW!!!! By Stanislav
   }
 
   /**
@@ -298,7 +317,9 @@ var simpleEditor = (function () {
    */
   function save() {
     editors.forEach(function (editor, index) {
-      textareas[index].value = editor.querySelector(".text").innerHTML;
+      textareas[index].value = editor.querySelector(".text").innerHTML != '' 
+                             ? editor.querySelector(".text").innerHTML
+                             : ' ';               // NEW 2023-05-10
     });
   }
 
