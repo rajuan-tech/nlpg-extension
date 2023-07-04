@@ -472,7 +472,7 @@ function installScript(){
   });  
 
     chrome.tabs.create({
-    url: "https://heybrain.ai/register"
+    url: "https://heybrain.ai/app"
       });
 
 }
