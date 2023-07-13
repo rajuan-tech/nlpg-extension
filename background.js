@@ -22,24 +22,23 @@ function checkEnable() {
 
 // 2023-03-12 #6 added by Stanislav: BEGIN  ------------------------
 let startOrStop = () => {
-  // console.log('test3') 
  chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) { 
     let url = current_page.url;
     let id = current_page.id;
-    // console.log(current_page);
-    chrome.storage.local.get(["enabled"]).then((result) => {
+
+    chrome.storage.local.get(["enabled", "isBrainDisplayed"]).then((result) => {
+      // console.log(result.enabled);
+      // console.log(result.isBrainDisplayed);
       refreshBlackList().then(() => {
         let blackListIdx = isInBlacklist(url, true, false);
-        // console.log('--- INTING START OR STOP ---');
         let needToInit = result.enabled && blackListIdx < 0; /// ToDo: add the condition for Snoose
-        // console.log(blackListIdx);
-        // console.log(needToInit);
 
         chrome.tabs.sendMessage(id, {
           action: needToInit ? "init" : "deinit",
+          isBrainDisplayed: result.isBrainDisplayed // Added 2023-07-05
         });
 
-        // console.log('--- INTING START OR STOP DONE ---');
+
       }); // refreshBlacklist end
     });
   });
@@ -56,12 +55,13 @@ chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
 });
 
 chrome.storage.onChanged.addListener((changes) => {
-  if (changes?.enabled || changes?.heybrain_black_list) {
+  if (changes?.enabled || changes?.heybrain_black_list ) {
     // 2023-03-20 changed by Stanislav
-    // console.log('!!! storage was changed')
     if (current_page.url.indexOf('http') === 0)  // 2023-05-14 NEW!
     startOrStop(); // 2023-03-13 #8 changed by Stanislav
   }
+  // if(changes?.isBrainDisplayed) 
+  // console.log('isBrainDisplayed changed. old value: '+ changes.isBrainDisplayed.oldValue +  ', new value:'+ changes.isBrainDisplayed.newValue);
 });
 
 chrome.tabs.onActivated.addListener(() => {
@@ -99,7 +99,6 @@ function updateCurrentUrl() {
   
   // 2023-05-14 NEW! Save notes
   // if (oldUrl != current_page.url || oldId != current_page.id) {
-    // console.log('test0')
     if (oldUrl.indexOf('http') === 0)
     { 
       chrome.tabs.sendMessage(oldId, {
@@ -117,7 +116,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     // Getting the response for the content (is the URL in the black list)
 
     let resp_data = isInBlacklist(request.key, true, false);
-    //  console.log('Sending the BlackList response for Page: '+ resp_data);
     sendResponse({ data: [resp_data] });
   }
   // 2023-03-12 #5 added by Stanislav: END  --------------------------
@@ -126,7 +124,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   else if (request.action === "getBlackListDom") {
     // Getting the response for the content (is the DOM URL in the black list)
     let resp_data = isInBlacklist(request.key, true, true);
-    //  console.log('Sending the BlackList response for Domain: '+ resp_data);
     sendResponse({ data: [resp_data] });
   }
   // 2023-03-14 #11 added by Stanislav: END  --------------------------
@@ -171,7 +168,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       }).catch(e => sendResponse(undefined));
     return true;
   } else if (request.action === "get-smartpast") {
-    // console.log(`before ${text}`);
     const url = new URL(baseURL + "/brain/embeddings/related");
 
     url.search = new URLSearchParams({
@@ -450,6 +446,11 @@ async function uploadFile(file, presignedPost) {
 
 function installScript(){
   // Installing content script in all opened tabs 2023-04-17 by Stanislav
+  chrome.storage.local.set({
+    enabled: true,
+    isBrainDisplayed: true
+  });
+
   let params = {
       currentWindow: true
   };
@@ -550,7 +551,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     chrome.storage.local.set( {end:endTime} );
     updateTimer();
     timer = setInterval(updateTimer, 1000);
-    chrome.storage.local.set( {enabled:false} );
+    chrome.storage.local.set( {enabled: false} );
   }
 
   if (request.action === "stop-timer") {
@@ -588,7 +589,6 @@ chrome.windows.onCreated.addListener(function(window) {
    
     if(result.timer) {
       updateTimer();
-      // console.log('new window has been created, timer is running');
       timer = setInterval(updateTimer, 1000);
     }
   });
@@ -599,7 +599,6 @@ chrome.windows.onRemoved.addListener(function(window) {
   chrome.storage.local.get(["timer"]).then((result) => {
 
     if(result.timer)  {
-      // console.log('window is closed, timer is running');
       clearInterval(timer);
     }
   });

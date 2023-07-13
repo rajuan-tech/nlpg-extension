@@ -4,7 +4,7 @@ const elBrainRootID = "hey-brain-root";
 const elBrainRootTabsID = "hey-brain-root-tabs";
 const elBrainContentID = "hey-brain-content";
 const elBrainLoaderID = "hey-brain-loader";
-const kBrainRootHeight = 582; 
+
 const tabFirstItemID = "hey-brain-root-tab-item-first";
 const tabSecondItemID = "hey-brain-root-tab-item-second";
 const tabThirdItemID = "hey-brain-root-tab-item-third";
@@ -17,11 +17,35 @@ var pageTagsRecommendations = [];
 
 let isServerIsAvailable = true;
 let isSmartpastAvailable = true;
-
+let tabOpened = null;
+let isScreenshotIsSeen = false; // variable responsible for behaviour of elSmartpastItem's screenshot
 let waitForAutosave = false; /// NEW 2023-05-09, replaced on 2023-05-10
 let AutoSaveTimer = null; /// NEW 2023-05-14
 
 // helpers --start
+let kBrainRootHeight = 582; // default height
+
+const kBrainRootResizeY = () => {
+  let kBrainRootOffsetY = 150;
+
+  if(document.body.clientHeight < (kBrainRootHeight + kBrainRootOffsetY) ) {
+
+    kBrainRootHeight = document.body.clientHeight - kBrainRootOffsetY
+  } else {
+    kBrainRootHeight = 582; 
+  }
+  let elBrainDrawer = document.getElementById(elBrainDrawerID)
+  if (elBrainDrawer) {
+    elBrainDrawer.style.bottom = kBrainRootHeight - 20 + "px"
+  }
+  let elBrainRoot = document.getElementById(elBrainRootID)
+  if (elBrainRoot) {
+    elBrainRoot.style.height = kBrainRootHeight + "px";
+  }
+}
+ kBrainRootResizeY();
+
+window.addEventListener("resize", kBrainRootResizeY);
 
 const metaSelector = (name) => {
   if (!name) {
@@ -113,8 +137,18 @@ const drawBrainWithHands = () => {
 // natalia 17.04
 }
 
+chrome.storage.onChanged.addListener((changes) => {
+
+  if (changes?.isBrainDisplayed) {
+    isBrainDisplayed = changes.isBrainDisplayed.newValue;
+    // console.log("content changed to:" + isBrainDisplayed);
+    init(isBrainDisplayed, false);  // render or hide brain without sending request to server
+  }
+});
+
 // init --start
-const init = () => {
+const init = (isBrainDisplayed = true, isRequest = true) => { // by default it renders brain and sends request to server
+// console.log('init: isBrainDisplayed =' + isBrainDisplayed)
   pageSmartPast = [];
 
   // 2023-03-20 Added by Stanislav: Delete elements if they're already exist
@@ -131,7 +165,7 @@ const init = () => {
   }
 
     // brain drawer --star
-    if (document.getElementById(elBrainDrawerID) === null) {
+    if (document.getElementById(elBrainDrawerID) === null && isBrainDisplayed) {/// NEW 2023-07-05
       // changed 2023-03-20 by Stanislav
       let elBrainDrawer = document.createElement("div");
       elBrainDrawer.id = elBrainDrawerID;
@@ -144,295 +178,317 @@ const init = () => {
       elBrainDrawer.style.zIndex = "99999";
       elBrainDrawer.style.cursor = "pointer";
      
+    elBrainDrawer.onclick = () => {
+      tabOpened = tabFirstItemID;
+     
+      let elBrainRoot = document.getElementById(elBrainRootID);
+      elBrainDrawer.style.right = "26px";
 
-      elBrainDrawer.onclick = () => {
-        
-        // getSmartpastContent().then(() => {
-          console.log('click on brain');
-          // createSmartpastContent();
-                // 05.05
-        let elBrainRoot = document.getElementById(elBrainRootID);
-        elBrainDrawer.style.right = "26px"; // 30.04
-        if (elBrainRoot.style.transform === "translateX(100%)") {
-
-          document.getElementById('hey-brain-content')
-          .innerHTML =
-           `<div style="width:30px; height: 20px; margin: 230px auto;"><img src=${chrome.runtime.getURL(
-            "assets/icons/spinner.svg")}></div>`;
-           
-          elBrainRoot.style.transform = "translateX(0%)";
-          elBrainRootDismissButton.style.display = "block"; 
-          document.getElementById("brain-drawer-no-hands-image").style.display =
-            "none";
-          document.getElementById("brain-drawer-image").style.display = "initial";
-          document.getElementById("brain-drawer-image").style.position = "absolute"; //03.05
-          document.getElementById("brain-drawer-image").style.right = "7px"; //03.05
-        
-        } else {
-          elBrainRoot.style.transform = "translateX(100%)";
-          elBrainRootDismissButton.style.display = "none";  
-          document.getElementById("brain-drawer-no-hands-image").style.display =
-          "initial";
-          elBrainDrawer.style.right = "-36px";
-          document.getElementById("brain-drawer-image").style.display = "none";
-        }
-        selectTabItem(tabFirstItemID);
-      };
-
-      let elBrainDrawerImage = document.createElement("img");
-  
-      // pic assigned is seen ONLY inside the SMARTPAST
-      elBrainDrawerImage.src = chrome.runtime.getURL(
-        "assets/icons/brain-drawer-160.png"  
-      );
-      elBrainDrawerImage.alt = "brain-drawer-160";
-      
-      elBrainDrawerImage.setAttribute("id", "brain-drawer-image");
-      elBrainDrawerImage.style.width = "65px"; 
-      elBrainDrawerImage.style.height = "67px"; 
-      elBrainDrawerImage.style.display = "none";
-      elBrainDrawer.appendChild(elBrainDrawerImage);
-  
-      let elBrainDrawerNoHandsImage = document.createElement("img");
-      elBrainDrawerNoHandsImage.src = chrome.runtime.getURL(
-        "assets/icons/brain-drawer-no-hands.png"
-      );
-      elBrainDrawerNoHandsImage.alt = "brain-drawer-no-hands"
-  
-      elBrainDrawerNoHandsImage.style.width = "67px";
-      elBrainDrawerNoHandsImage.style.height = "54px";
-      elBrainDrawerNoHandsImage.style.position = "absolute";
-      elBrainDrawerNoHandsImage.style.top = "0px";
-      elBrainDrawerNoHandsImage.style.right = "3px";
-      elBrainDrawerNoHandsImage.style.display = "initial";
-      elBrainDrawerNoHandsImage.setAttribute("id", "brain-drawer-no-hands-image");
-      elBrainDrawerNoHandsImage.style.transition = "all 0.5s ease-in-out";
-      elBrainDrawer.appendChild(elBrainDrawerNoHandsImage);
-      document.body.appendChild(elBrainDrawer);
-      // brain drawer --end
-    }
-  // const metadata = await fetchMetadata(sender.tab.url);
-  // sendResponse(metadata);
-
-      // brain root --start
-  let elBrainRoot = document.createElement("div");
-  elBrainRoot.id = elBrainRootID;
-  elBrainRoot.classList.add("hey-brain-main");
-  elBrainRoot.style.position = "fixed";
-  elBrainRoot.style.bottom = "0";
-  elBrainRoot.style.right = "0";
-  elBrainRoot.style.width = "100%";
-  elBrainRoot.style.height = "100%";
-  elBrainRoot.style.zIndex = "99998";
-  elBrainRoot.style.backgroundColor = "rgba(243, 243, 243, 0.8)";
-  elBrainRoot.style.backdropFilter = "blur(10px)";
-  elBrainRoot.style.borderLeft = "1px solid rgba(200, 200, 200, 0.4)";
-  elBrainRoot.style.borderBottom = "1px solid rgba(200, 200, 200, 0.4)";
-  elBrainRoot.style.boxShadow = " -3px 0 3px  rgba(0, 0, 0, 0.1)";
-  elBrainRoot.style.display = "flex";
-  elBrainRoot.style.flexDirection = "column"; // natalia 19/04
-  elBrainRoot.style.borderBottomLeftRadius = "20px";
-  elBrainRoot.style.borderTopLeftRadius = "20px";
-  elBrainRoot.style.padding = "25px 20px";
-
-  elBrainRoot.style.boxSizing = "border-box";
-  elBrainRoot.style.alignItems = "center";
-  elBrainRoot.style.justifyContent = "center";
-  elBrainRoot.style.height = kBrainRootHeight + "px";
-  elBrainRoot.style.width = "427px"; // natalia 23.04
-  elBrainRoot.style.transition = "all 0.3s ease-in-out";
-  elBrainRoot.style.transform = "translateX(100%)";
-  elBrainRoot.style.fontFamily = "'Montserrat', sans-serif";
-  elBrainRoot.style.fontSize = "16px";
-  elBrainRoot.style.color = "#000";
-  // brain root --end
-
-  // brain root dismiss button --start
-   let elBrainRootDismissButton = document.createElement("div");
-   elBrainRootDismissButton.style.position = "absolute";
-   elBrainRootDismissButton.style.top = "0";// natalia 23.04
-   elBrainRootDismissButton.style.left = "0";// natalia 23.04
-   elBrainRootDismissButton.style.zIndex = "99999";
-   elBrainRootDismissButton.style.cursor = "pointer";
-   elBrainRootDismissButton.style.display = "none";
- 
-   let elBrainRootDismissButtonImage = document.createElement("img");
-   elBrainRootDismissButtonImage.src = chrome.runtime.getURL(
-     "assets/images/drawer-dismiss.png"
-   );
-   elBrainRootDismissButtonImage.alt = "drawer-dismiss";
-   elBrainRootDismissButtonImage.style.width = "24px";// natalia 23.04
-   elBrainRootDismissButtonImage.style.height = "24px";// natalia 23.04
-   elBrainRootDismissButtonImage.style.filter = "drop-shadow(0px 1px 2px rgba(0, 0, 0, 0.5))";
-   elBrainRootDismissButton.appendChild(elBrainRootDismissButtonImage);
-   elBrainRoot.appendChild(elBrainRootDismissButton);
- 
-   elBrainRootDismissButton.onclick = () => {
-     elBrainRoot.style.transform = "translateX(100%)";
-     document.getElementById("brain-drawer-no-hands-image").style.display =
-       "initial";
-     document.getElementById("brain-drawer-image").style.display = "none";
-     document.getElementById(elBrainDrawerID).style.right = "-36px";
-   };
-  // brain root dismiss button --end
-
- // brain content --start
-   let elBrainContent = document.createElement("div");
-   elBrainContent.id = elBrainContentID;
-   elBrainContent.style.position = "relative";
-   elBrainContent.style.width = "100%";
-   elBrainContent.style.height = "100%";
-   elBrainContent.style.zIndex = "99999";
-   elBrainContent.style.overflowY = "auto";
-   elBrainContent.style.overflowX = "hidden";
-   elBrainRoot.appendChild(elBrainContent);
-   // brain content --end
-
- // brain root tabs --start
- const tabItemHeight = 25; // natalia 23.04
- const tabItemDeactiveBackground = "#0A0458";
-
- let elBrainRootTabs = document.createElement("div");
- elBrainRootTabs.id = elBrainRootTabsID;
- elBrainRootTabs.style.position = "absolute";
- elBrainRootTabs.style.top = -tabItemHeight + "px"; 
- elBrainRootTabs.style.left = "-40px"; // natalia 23.04
- elBrainRootTabs.style.width = "100%";
- elBrainRootTabs.style.height = tabItemHeight + "px";
- elBrainRootTabs.style.zIndex = "99999";
- elBrainRootTabs.style.display = "flex";
- elBrainRootTabs.style.flexDirection = "row";
- elBrainRootTabs.style.alignItems = "center";
- elBrainRootTabs.style.justifyContent = "center";
- elBrainRootTabs.style.boxSizing = "border-box";
- elBrainRootTabs.style.fontSize= "12px";
- elBrainRootTabs.style.fontWeight = "600";
- elBrainRoot.appendChild(elBrainRootTabs);
-
- // brain root tab first --start
- let elBrainRootTabItemFirst = createTabItem(tabFirstItemID, "<span style='color:#6416F3; font-size:12px; font-weight:600;'>SMART</span>PAST"); // natalia 23.04
- elBrainRootTabItemFirst.style.height = tabItemHeight + "px";
- elBrainRootTabItemFirst.style.backgroundColor = "#EFEFEF";  // natalia 23.04
- elBrainRootTabItemFirst.style.borderLeft = "1px solid rgba(200, 200, 200, 0.4)";// natalia 23.04
- elBrainRootTabItemFirst.style.borderBottom = "0px";// natalia 23.04
- elBrainRootTabItemFirst.style.borderBottom = "none";// natalia 23.04
- elBrainRootTabItemFirst.style.boxShadow = " -3px 0 3px rgba(0, 0, 0, 0.1)";// natalia 23.04
- elBrainRootTabItemFirst.style.fontWeight = '600';
- elBrainRootTabItemFirst.style.fontSize= "12px";
- elBrainRootTabItemFirst.style.fontFamily = "'Montserrat', sans-serif";
-
-
- elBrainRootTabItemFirst.style.color = tabItemDeactiveBackground;
- elBrainRootTabItemFirst.onclick = () => {
-   selectTabItem(tabFirstItemID);
- };
- elBrainRootTabs.appendChild(elBrainRootTabItemFirst);
- // brain root tab first --end
-
- // brain root tab second --start
- let elBrainRootTabItemSecond = createTabItem(tabSecondItemID, "TAGS");
- elBrainRootTabItemSecond.style.height = tabItemHeight + "px";
- elBrainRootTabItemSecond.style.backgroundColor = tabItemDeactiveBackground;
- elBrainRootTabItemSecond.style.color = "#fff";
- elBrainRootTabItemSecond.style.fontWeight = '600'; //nastya 23.04
- elBrainRootTabItemSecond.style.fontSize = '12px'; //nastya 23.04
- elBrainRootTabItemSecond.style.fontFamily = "'Montserrat', sans-serif";
- elBrainRootTabItemSecond.style.marginLeft = "8px";
- elBrainRootTabItemSecond.style.marginRight = "8px";
- elBrainRootTabItemSecond.onclick = () => {
-   selectTabItem(tabSecondItemID);
- };
- elBrainRootTabs.appendChild(elBrainRootTabItemSecond);
- // brain root tab second --end
-
- // brain root tab second --third
- let elBrainRootTabItemThird = createTabItem(tabThirdItemID, "NOTES");
- elBrainRootTabItemThird.style.height = tabItemHeight + "px";
- elBrainRootTabItemThird.style.backgroundColor = tabItemDeactiveBackground;
- elBrainRootTabItemThird.style.color = "#fff";
- elBrainRootTabItemThird.style.fontWeight = '600';//nastya 23.04
- elBrainRootTabItemThird.style.fontSize = '12px';
- elBrainRootTabItemThird.style.fontFamily = "'Montserrat', sans-serif";
- elBrainRootTabItemThird.onclick = () => {
-   selectTabItem(tabThirdItemID);
- };
- elBrainRootTabs.appendChild(elBrainRootTabItemThird);
- // brain root tab second --third
-
- document.body.appendChild(elBrainRoot);
-
-  chrome.runtime.sendMessage(
-    {
-      action: "get-url-data",
-      data: {
-        access_token: accessToken,
-        page_description: pageInfo().description,
-        domain: pageInfo().domain,
-      },
-    },
-    (response) => { 
-      if (response) {
-      pageData = response;
-      // console.log(pageData);
- 
-      // getSmartpastContent().then(() => {
-
-  // load page data --start
-  elBrainRootTabs.style.display = "none";
-  elBrainContent.style.display = "none";
-  let elBrainLoader = document.createElement("div");
-  elBrainLoader.id = elBrainLoaderID;
-  elBrainLoader.style.position = "absolute";
-  elBrainLoader.style.top = "0";
-  elBrainLoader.style.left = "0";
-  elBrainLoader.style.width = "100%";
-  elBrainLoader.style.height = "100%";
-  elBrainLoader.style.zIndex = "99999";
-  elBrainLoader.style.display = "flex";
-  elBrainLoader.style.flexDirection = "column";
-  elBrainLoader.style.alignItems = "center";
-  elBrainLoader.style.justifyContent = "center";
-  elBrainLoader.style.boxSizing = "border-box";
-  elBrainLoader.style.fontSize = "16px";
-  elBrainLoader.style.fontWeight = "regular";
-  elBrainLoader.innerText = "Loading...";
-  elBrainRoot.appendChild(elBrainLoader);
-  elBrainRootTabs.style.display = "flex";
-  elBrainContent.style.display = "block";
-  elBrainLoader.style.display = "none";
-
-        if (pageData.tags.length > 0 || pageData.notes.length > 0 && pageData.notes!= " ") {
-          drawBrainWithMarker(); //natalia 17.04
-        } 
-        if (!pageData.favicon_url) {
-          pageData.favicon_url =
-            "https://www.google.com/s2/favicons?domain=" +
-            pageData.url +
-            "&sz=64";
-        }
-        // selectTabItem(tabFirstItemID);
-        if (!pageData.screenshot_url || pageData.screenshot_url.length === 0) {
-          chrome.runtime.sendMessage(
-            {
-              action: "save-screenshot",
-              data: {
-                access_token: accessToken,
-                id: pageData.id,
-              },
-            },
-            (response) => {}
-          );
-        }
-    // });
-   } else {
-      isServerIsAvailable = false;
-      document.getElementById(elBrainContentID)
-      .innerHTML=`<div style="display:flex; justify-content: center; margin-top: 180px;"><p>Sorry, we have technical problems now :(</p></div>`;
+      if (elBrainRoot.style.transform === "translateX(100%)") {
+        document.getElementById('hey-brain-content')
+        .innerHTML =
+        `<div style="margin: 150px auto;"><img style="text-align:center; margin: auto;" src=${chrome.runtime.getURL(
+          "assets/icons/Rolling-1s-200px.svg")}></div>`;
+        elBrainRoot.style.transform = "translateX(0%)";
+        elBrainRootDismissButton.style.display = "block"; 
+        document.getElementById("brain-drawer-no-hands-image").style.display =
+          "none";
+        document.getElementById("brain-drawer-image").style.display = "initial";
+        document.getElementById("brain-drawer-image").style.position = "absolute"; //03.05
+        document.getElementById("brain-drawer-image").style.right = "7px"; //03.05
+        checkPageData().then(() => {
+          if (tabOpened == tabFirstItemID) {
+            selectTabItem(tabFirstItemID)
+          }   
+        });
+         
+       
+      } else {
+        elBrainRoot.style.transform = "translateX(100%)";
+        elBrainRootDismissButton.style.display = "none";  
+        document.getElementById("brain-drawer-no-hands-image").style.display =
+        "initial";
+        elBrainDrawer.style.right = "-36px";
+        document.getElementById("brain-drawer-image").style.display = "none";
       }
-    }
-  );
+      
+    };
+
+    checkPageData = async() => {
+      let tries = 0;
+
+      return new Promise(resolve => {
+        const check = setInterval(() => {
+          tries++;
+          if(pageData !== null || tries === 30) {
+            clearInterval(check);
+            resolve (pageData);
+          }
+        }, 200);
+    });
+  }
+
+    let elBrainDrawerImage = document.createElement("img");
+
+    // pic assigned is seen ONLY inside the SMARTPAST
+    elBrainDrawerImage.src = chrome.runtime.getURL(
+      "assets/icons/brain-drawer-160.png"  
+    );
+    elBrainDrawerImage.alt = "brain-drawer-160";
+    
+    elBrainDrawerImage.setAttribute("id", "brain-drawer-image");
+    elBrainDrawerImage.style.width = "65px"; 
+    elBrainDrawerImage.style.height = "67px"; 
+    elBrainDrawerImage.style.display = "none";
+    elBrainDrawer.appendChild(elBrainDrawerImage);
+
+    let elBrainDrawerNoHandsImage = document.createElement("img");
+    elBrainDrawerNoHandsImage.src = chrome.runtime.getURL(
+      "assets/icons/brain-drawer-no-hands.png"
+    );
+    elBrainDrawerNoHandsImage.alt = "brain-drawer-no-hands"
+
+    elBrainDrawerNoHandsImage.style.width = "67px";
+    elBrainDrawerNoHandsImage.style.height = "54px";
+    elBrainDrawerNoHandsImage.style.position = "absolute";
+    elBrainDrawerNoHandsImage.style.top = "0px";
+    elBrainDrawerNoHandsImage.style.right = "3px";
+    elBrainDrawerNoHandsImage.style.display = "initial";
+    elBrainDrawerNoHandsImage.setAttribute("id", "brain-drawer-no-hands-image");
+    elBrainDrawerNoHandsImage.style.transition = "all 0.5s ease-in-out";
+    elBrainDrawer.appendChild(elBrainDrawerNoHandsImage);
+    document.body.appendChild(elBrainDrawer);
+    // brain drawer --end
+  }
+    // const metadata = await fetchMetadata(sender.tab.url);
+    // sendResponse(metadata);
+
+    // brain root --start
+   
+        let elBrainRoot = document.createElement("div");
+        elBrainRoot.id = elBrainRootID;
+        elBrainRoot.classList.add("hey-brain-main");
+        elBrainRoot.style.position = "fixed";
+        elBrainRoot.style.bottom = "0";
+        elBrainRoot.style.right = "0";
+        elBrainRoot.style.width = "100%";
+        elBrainRoot.style.height = "100%";
+        elBrainRoot.style.zIndex = "99998";
+        elBrainRoot.style.backgroundColor = "rgba(243, 243, 243, 0.8)";
+        elBrainRoot.style.backdropFilter = "blur(10px)";
+        elBrainRoot.style.borderLeft = "1px solid rgba(200, 200, 200, 0.4)";
+        elBrainRoot.style.borderBottom = "1px solid rgba(200, 200, 200, 0.4)";
+        elBrainRoot.style.boxShadow = " -3px 0 3px  rgba(0, 0, 0, 0.1)";
+        elBrainRoot.style.display = "flex";
+        elBrainRoot.style.flexDirection = "column"; // natalia 19/04
+        elBrainRoot.style.borderBottomLeftRadius = "20px";
+        elBrainRoot.style.borderTopLeftRadius = "20px";
+        elBrainRoot.style.padding = "25px 20px";
+        elBrainRoot.style.boxSizing = "border-box";
+        elBrainRoot.style.alignItems = "center";
+        elBrainRoot.style.justifyContent = "center";
+        elBrainRoot.style.height = kBrainRootHeight + "px";
+        elBrainRoot.style.width = "427px"; // natalia 23.04
+        elBrainRoot.style.transition = "all 0.3s ease-in-out";
+        elBrainRoot.style.transform = "translateX(100%)";
+        elBrainRoot.style.fontFamily = "'Montserrat', sans-serif";
+        elBrainRoot.style.fontSize = "16px";
+        elBrainRoot.style.color = "#000";
+        // brain root --end
+
+        // brain root dismiss button --start
+        let elBrainRootDismissButton = document.createElement("div");
+        elBrainRootDismissButton.style.position = "absolute";
+        elBrainRootDismissButton.style.top = "0";// natalia 23.04
+        elBrainRootDismissButton.style.left = "0";// natalia 23.04
+        elBrainRootDismissButton.style.zIndex = "99999";
+        elBrainRootDismissButton.style.cursor = "pointer";
+        elBrainRootDismissButton.style.display = "none";
+      
+        let elBrainRootDismissButtonImage = document.createElement("img");
+        elBrainRootDismissButtonImage.src = chrome.runtime.getURL(
+          "assets/images/drawer-dismiss.png"
+        );
+        elBrainRootDismissButtonImage.alt = "drawer-dismiss";
+        elBrainRootDismissButtonImage.style.width = "24px";// natalia 23.04
+        elBrainRootDismissButtonImage.style.height = "24px";// natalia 23.04
+        elBrainRootDismissButtonImage.style.filter = "drop-shadow(0px 1px 2px rgba(0, 0, 0, 0.5))";
+        elBrainRootDismissButton.appendChild(elBrainRootDismissButtonImage);
+        elBrainRoot.appendChild(elBrainRootDismissButton);
+      
+        elBrainRootDismissButton.onclick = () => {
+          elBrainRoot.style.transform = "translateX(100%)";
+          document.getElementById("brain-drawer-no-hands-image").style.display =
+            "initial";
+          document.getElementById("brain-drawer-image").style.display = "none";
+          document.getElementById(elBrainDrawerID).style.right = "-36px";
+        };
+          // brain root dismiss button --end
+
+        // brain content --start
+        let elBrainContent = document.createElement("div");
+        elBrainContent.id = elBrainContentID;
+        elBrainContent.style.position = "relative";
+        elBrainContent.style.width = "100%";
+        elBrainContent.style.height = "100%";
+        elBrainContent.style.zIndex = "99999";
+        elBrainContent.style.overflowY = "hidden";
+        elBrainContent.style.overflowX = "hidden";
+        elBrainRoot.appendChild(elBrainContent);
+        // brain content --end
+
+        // brain root tabs --start
+        const tabItemHeight = 25; // natalia 23.04
+        const tabItemDeactiveBackground = "#0A0458";
+
+        let elBrainRootTabs = document.createElement("div");
+        elBrainRootTabs.id = elBrainRootTabsID;
+        elBrainRootTabs.style.position = "absolute";
+        elBrainRootTabs.style.top = -tabItemHeight + "px"; 
+        elBrainRootTabs.style.left = "-40px"; // natalia 23.04
+        elBrainRootTabs.style.width = "100%";
+        elBrainRootTabs.style.height = tabItemHeight + "px";
+        elBrainRootTabs.style.zIndex = "99999";
+        elBrainRootTabs.style.display = "flex";
+        elBrainRootTabs.style.flexDirection = "row";
+        elBrainRootTabs.style.alignItems = "center";
+        elBrainRootTabs.style.justifyContent = "center";
+        elBrainRootTabs.style.boxSizing = "border-box";
+        elBrainRootTabs.style.fontSize= "12px";
+        elBrainRootTabs.style.fontWeight = "600";
+        elBrainRoot.appendChild(elBrainRootTabs);
+
+        // brain root tab first --start
+        let elBrainRootTabItemFirst = createTabItem(tabFirstItemID, "<span style='color:#6416F3; font-size:12px; font-weight:600;'>SMART</span>PAST"); // natalia 23.04
+        elBrainRootTabItemFirst.style.height = tabItemHeight + "px";
+        elBrainRootTabItemFirst.style.backgroundColor = "#EFEFEF";  // natalia 23.04
+        elBrainRootTabItemFirst.style.borderLeft = "1px solid rgba(200, 200, 200, 0.4)";// natalia 23.04
+        elBrainRootTabItemFirst.style.borderBottom = "0px";// natalia 23.04
+        elBrainRootTabItemFirst.style.borderBottom = "none";// natalia 23.04
+        elBrainRootTabItemFirst.style.boxShadow = " -3px 0 3px rgba(0, 0, 0, 0.1)";// natalia 23.04
+        elBrainRootTabItemFirst.style.fontWeight = '600';
+        elBrainRootTabItemFirst.style.fontSize= "12px";
+        elBrainRootTabItemFirst.style.fontFamily = "'Montserrat', sans-serif";
+
+
+        elBrainRootTabItemFirst.style.color = tabItemDeactiveBackground;
+        elBrainRootTabItemFirst.onclick = () => {
+          selectTabItem(tabFirstItemID);
+          tabOpened = tabFirstItemID;
+          //  console.log(tabOpened);
+        };
+        elBrainRootTabs.appendChild(elBrainRootTabItemFirst);
+        // brain root tab first --end
+
+        // brain root tab second --start
+        let elBrainRootTabItemSecond = createTabItem(tabSecondItemID, "TAGS");
+        elBrainRootTabItemSecond.style.height = tabItemHeight + "px";
+        elBrainRootTabItemSecond.style.backgroundColor = tabItemDeactiveBackground;
+        elBrainRootTabItemSecond.style.color = "#fff";
+        elBrainRootTabItemSecond.style.fontWeight = '600'; //nastya 23.04
+        elBrainRootTabItemSecond.style.fontSize = '12px'; //nastya 23.04
+        elBrainRootTabItemSecond.style.fontFamily = "'Montserrat', sans-serif";
+        elBrainRootTabItemSecond.style.marginLeft = "8px";
+        elBrainRootTabItemSecond.style.marginRight = "8px";
+        elBrainRootTabItemSecond.onclick = () => {
+          selectTabItem(tabSecondItemID);
+          tabOpened = tabSecondItemID;
+          //  console.log(tabOpened);
+        };
+        elBrainRootTabs.appendChild(elBrainRootTabItemSecond);
+        // brain root tab second --end
+
+        // brain root tab second --third
+        let elBrainRootTabItemThird = createTabItem(tabThirdItemID, "NOTES");
+        elBrainRootTabItemThird.style.height = tabItemHeight + "px";
+        elBrainRootTabItemThird.style.backgroundColor = tabItemDeactiveBackground;
+        elBrainRootTabItemThird.style.color = "#fff";
+        elBrainRootTabItemThird.style.fontWeight = '600';//nastya 23.04
+        elBrainRootTabItemThird.style.fontSize = '12px';
+        elBrainRootTabItemThird.style.fontFamily = "'Montserrat', sans-serif";
+        elBrainRootTabItemThird.onclick = () => {
+          selectTabItem(tabThirdItemID);
+          tabOpened = tabThirdItemID;
+          //  console.log(tabOpened);
+        };
+        elBrainRootTabs.appendChild(elBrainRootTabItemThird);
+        // brain root tab second --third
+
+        if(isBrainDisplayed) document.body.appendChild(elBrainRoot); /// NEW 2023-07-05
+     
+        if(isRequest) {
+        chrome.runtime.sendMessage(
+        {
+          action: "get-url-data",
+          data: {
+            access_token: accessToken,
+            page_description: pageInfo().description,
+            domain: pageInfo().domain,
+          },
+        },
+        (response) => { 
+           try {
+              if (response ) { /// NEW 2023-07-05
+              pageData = response;
+
+              // load page data --start
+              if (isBrainDisplayed) {
+              elBrainRootTabs.style.display = "none";
+              elBrainContent.style.display = "none";
+              let elBrainLoader = document.createElement("div");
+              elBrainLoader.id = elBrainLoaderID;
+              elBrainLoader.style.position = "absolute";
+              elBrainLoader.style.top = "0";
+              elBrainLoader.style.left = "0";
+              elBrainLoader.style.width = "100%";
+              elBrainLoader.style.height = "100%";
+              elBrainLoader.style.zIndex = "99999";
+              elBrainLoader.style.display = "flex";
+              elBrainLoader.style.flexDirection = "column";
+              elBrainLoader.style.alignItems = "center";
+              elBrainLoader.style.justifyContent = "center";
+              elBrainLoader.style.boxSizing = "border-box";
+              elBrainLoader.style.fontSize = "16px";
+              elBrainLoader.style.fontWeight = "regular";
+              elBrainLoader.innerText = "Loading...";
+              elBrainRoot.appendChild(elBrainLoader);
+              elBrainRootTabs.style.display = "flex";
+              elBrainContent.style.display = "block";
+              elBrainLoader.style.display = "none";
+
+                if (pageData.tags.length > 0 || pageData.notes.length > 0 && pageData.notes!= " ") {
+                  drawBrainWithMarker(); //natalia 17.04
+                } 
+              }
+              if (!pageData.favicon_url) {
+                pageData.favicon_url =
+                  "https://www.google.com/s2/favicons?domain=" +
+                  pageData.url +
+                  "&sz=64";
+              }
+              // selectTabItem(tabFirstItemID);
+              if (!pageData.screenshot_url || pageData.screenshot_url.length === 0) {
+                chrome.runtime.sendMessage(
+                  {
+                    action: "save-screenshot",
+                    data: {
+                      access_token: accessToken,
+                      id: pageData.id,
+                    },
+                  },
+                  (response) => {}
+                );
+              }
+            } 
+          } catch(e) {
+          isServerIsAvailable = false;
+          document.getElementById(elBrainContentID)
+          .innerHTML=`<div style="display:flex; justify-content: center; margin-top: 180px;"><p>Sorry, we have technical problems now :(</p></div>`;
+        };
   // load page data --end
-};
+       }
+    )}
+  };
 // init --end
 
 // tab related actions --start
@@ -457,7 +513,7 @@ const createTabItem = (id, title) => {
 };
 
 function selectTabItem  (tabID)  {
-  // NEW 2023-05-09   // NEW 2023-05-10
+
   if (tabID != tabThirdItemID) 
     if (waitForAutosave) {
       if (AutoSaveTimer) clearTimeout(AutoSaveTimer); 
@@ -505,10 +561,13 @@ function selectTabItem  (tabID)  {
   }
 
   if (tabID === tabFirstItemID) {
+    tabOpened = tabFirstItemID;
     pageSmartPast.length === 0 ? getSmartpastContent().then(data => createSmartpastContent(data)) : createSmartpastContent();
   } else if (tabID === tabSecondItemID) {
+    tabOpened = tabSecondItemID;
     createTagsContent();
   } else if (tabID === tabThirdItemID) {
+    tabOpened = tabThirdItemID;
     createNotesContent();
   }
 };
@@ -525,241 +584,244 @@ async function getSmartpastContent() {
   return new Promise(resolve => {
     document.getElementById('hey-brain-content')
     .innerHTML =
-     `<div style="width:30px; height: 20px; margin: 230px auto;"><img src=${chrome.runtime.getURL(
-      "assets/icons/spinner.svg")}></div>`;
+    `<div style="margin: 150px auto;"><img style="text-align:center; margin: auto;" src=${chrome.runtime.getURL(
+      "assets/icons/Rolling-1s-200px.svg")}></div>`;
 
-      if (isSmartpastAvailable)  {
-    chrome.runtime.sendMessage(
-      {
-        action: "get-smartpast",
-        data: {
-          access_token: accessToken,
-          id: selectedText !== null ? null : pageData.id,
-          is_new: selectedText !== null ? true : pageData.is_new,
-          text: selectedText !== null ? selectedText : pageData.title,
-          limit: 10,
+    if (isSmartpastAvailable)  {
+      chrome.runtime.sendMessage(
+        {
+          action: "get-smartpast",
+          data: {
+            access_token: accessToken,
+            id: selectedText !== null ? null : pageData.id,
+            is_new: selectedText !== null ? true : pageData.is_new,
+            text: selectedText !== null ? selectedText : pageData.title,
+            limit: 10,
+          },
         },
-      },
       (response) => {
-        if (response) {
-          pageSmartPast = response;
-            // console.log(`response from getSmartpastContent received`);
-            chrome.storage.local.set({'getsmartpast': response}); // 05.05 start
-            // getsmartpast = response;
-            // console.log('getSmartpastContent finished work')
-            resolve(response);
+        if (!response.error) {
+          // pageSmartPast = response;
+          chrome.storage.local.set({'getsmartpast': response}); // 05.05 start
+          resolve(response);
         } else {
           isSmartpastAvailable = false;
           document.getElementById(elBrainContentID)
           .innerHTML=`<div style="display:flex; justify-content: center; margin-top: 180px;">Sorry, we have technical problems now :(</div>`;
         }
       }
-    )} else {
+    )
+  } else {
       document.getElementById(elBrainContentID)
       .innerHTML=`<div style="display:flex; justify-content: center; margin-top: 180px;"><p>Sorry, we have technical problems now :(</p></div>`;
-    }
-    console.log('getsmartpast finished work');
-  });
-  
+  }
+
+ });  
+}
+
+function extractDomain(url) {
+  var domainRegex = /^(?:https?:\/\/)?(?:[^@\n]+@)?(?:www\.)?([^:\/\n]+)/im;
+  var matches = url.match(domainRegex);
+  if (matches && matches[1]) {
+    var domain = matches[1];
+    return domain;
+  } else {
+    return '';
+  }
 }
 
 function createSmartpastContent(data) {
-
-  chrome.storage.local.get(["getsmartpast"]).then((result) => {
+  if(tabOpened === tabFirstItemID) {
+    chrome.storage.local.get(["getsmartpast"]).then((result) => {
     pageSmartPast = result.getsmartpast;
-   
-  }).then(() => {
     
-  if (document.getElementById("taglink") !== null)  {document.getElementById("taglink").remove();}
-  let tagLink = document.createElement("a");
-  tagLink.innerHTML = `<a href="https://heybrain.ai/cloud" id="taglink" target="_blank">view all</a>`;
-  tagLink.style.position = "absolute";
-  tagLink.style.bottom = "0px";
-  tagLink.style.left = "0px";
-  tagLink.style.marginTop = "10px";
-  tagLink.style.fontSize = "14px";
-  tagLink.style.lineHeight = "20px";
-  tagLink.style.fontWeight = "400";
-  tagLink.style.fontStyle = "normal";
-  tagLink.style.textDecorationLine = "underline";
-  tagLink.style.color = "#2B007B";
+    }).then(() => {
+      
+    if (document.getElementById("taglink") !== null)  {document.getElementById("taglink").remove();}
+    let tagLink = document.createElement("a");
+    tagLink.innerHTML = `<a href="https://heybrain.ai/cloud" id="taglink" target="_blank">view all</a>`;
+    tagLink.style.position = "absolute";
+    tagLink.style.bottom = "10px";
+    tagLink.style.left = "20px";
+    tagLink.style.marginTop = "10px";
+    tagLink.style.fontSize = "14px";
+    tagLink.style.lineHeight = "20px";
+    tagLink.style.fontWeight = "400";
+    tagLink.style.fontStyle = "normal";
+    tagLink.style.textDecorationLine = "underline";
+    tagLink.style.color = "#2B007B";
+    tagLink.style.visibility = "hidden";
 
-  // end natalia 21/04 
-  if (isServerIsAvailable === false || isSmartpastAvailable === false) {
-    document.getElementById(elBrainContentID)
-    .innerHTML=`<div style="display:flex; justify-content: center; margin-top: 180px;"><p>Sorry, we have technical problems now :(</p></div>`;
-  } else {
-  let tabContent = document.createElement("div");
-  tabContent.id = elBrainContentID + "-smartpast-content";
-  tabContent.style.position = "relative";
-  tabContent.style.display = "flex";
-  tabContent.style.flexDirection = "column";
-  tabContent.style.width = "376px"; // natalia 23.04
-  tabContent.style.height = "506px"; // natalia 23.04
+    // end natalia 21/04 
+    if (isServerIsAvailable === false || isSmartpastAvailable === false) {
+      document.getElementById(elBrainContentID)
+      .innerHTML=`<div style="display:flex; justify-content: center; margin-top: 180px;"><p>Sorry, we have technical problems now :(</p></div>`;
+    } else {
+    let tabContent = document.createElement("div");
+    tabContent.id = elBrainContentID + "-smartpast-content";
+    tabContent.style.position = "relative";
+    tabContent.style.display = "flex";
+    tabContent.style.flexDirection = "column";
+    tabContent.style.width = "376px"; // natalia 23.04
+    tabContent.style.height = "506px"; // natalia 23.04
 
-  tabContent.style.overflowY = "auto";
-  tabContent.style.overflowX = "hidden";
-  document.getElementById(elBrainContentID).innerHTML = ``;
-  document.getElementById(elBrainContentID).appendChild(tabContent);
-  document.getElementById(elBrainLoaderID).style.display = "flex";
-  document.getElementById(elBrainLoaderID).style.display = "none";
-  }
+    tabContent.style.overflowY = "auto";
+    tabContent.style.overflowX = "hidden";
+    document.getElementById(elBrainContentID).innerHTML = ``;
+    document.getElementById(elBrainContentID).appendChild(tabContent);
+    document.getElementById(elBrainLoaderID).style.display = "flex";
+    document.getElementById(elBrainLoaderID).style.display = "none";
+    }
 
-        let smartPastContentEl = document.getElementById(
-          elBrainContentID + "-smartpast-content"
-        );
-        if (smartPastContentEl) {
-          pageSmartPast.forEach((item) => {
-            if (!item.favicon_url) {
-              item.favicon_url =
-                "https://www.google.com/s2/favicons?domain=" +
-                item.url +
-                "&sz=64";
-            }
+          let smartPastContentEl = document.getElementById(
+            elBrainContentID + "-smartpast-content"
+          );
+          if (smartPastContentEl) {
+            pageSmartPast.forEach((item) => {
+              if (!item.favicon_url) {
+                item.favicon_url =
+                  "https://www.google.com/s2/favicons?domain=" +
+                  item.url +
+                  "&sz=64";
+              }
 
-            let elSmartpastItem = document.createElement("div");
-            elSmartpastItem.style.position = "relative";
-            elSmartpastItem.style.border = "1px solid rgba(200, 200, 200, 0.4)";
-            elSmartpastItem.style.borderRadius = "12px";
-            elSmartpastItem.style.marginBottom = "10px";
-            elSmartpastItem.style.padding = "15px";
-            elSmartpastItem.style.display = "flex";
-            elSmartpastItem.style.flexDirection = "column";
-            elSmartpastItem.style.justifyContent = "space-between";
-            elSmartpastItem.style.cursor = "pointer";
-            elSmartpastItem.style.boxSizing = "border-box";
-            elSmartpastItem.style.backgroundColor = "white";
-            elSmartpastItem.style.width= "366px";
-            elSmartpastItem.style.height = "290px";
-            elSmartpastItem.onclick = () => {
-              window.open(item.url, "_blank");
-            };
+              let elSmartpastItem = document.createElement("div");
+              elSmartpastItem.style.position = "relative";
+              elSmartpastItem.style.border = "1px solid rgba(200, 200, 200, 0.4)";
+              elSmartpastItem.style.borderRadius = "12px";
+              elSmartpastItem.style.marginBottom = "10px";
+              elSmartpastItem.style.padding = "15px";
+              elSmartpastItem.style.display = "flex";
+              elSmartpastItem.style.flexDirection = "column";
+              elSmartpastItem.style.justifyContent = "space-between";
+              elSmartpastItem.style.cursor = "pointer";
+              elSmartpastItem.style.boxSizing = "border-box";
+              elSmartpastItem.style.backgroundColor = "white";
+              elSmartpastItem.style.width= "366px";
+              elSmartpastItem.style.height = "290px";
+              elSmartpastItem.onclick = () => {
+                window.open(item.url, "_blank");
+              };
 
-            const favIcon = `
-              <div>
-                <img src="${item.favicon_url}" width="16" height="16" alt="favicon" />
-              </div>
-            `;
-
-            const title =
-              item.title.length > 75
-                ? item.title.substring(0, 75) + "..."
-                : item.title;
-
-            const screenshot_url = item.screenshot_url
-              ? item.screenshot_url
-              : item.favicon_url;
-
-            const blur_effect = !item.screenshot_url
-              ? "style=' filter: blur(6px);border:1px solid #EFEFEF; border-radius:8px; max-height: 147px;object-fit: contain; margin: 10px 0 auto;'"
-              : "";
-            // natalia 24.04
-            let isScreenshotIsSeen = false; // variable responsible for behaviour of elSmartpastItem's screenshot
-            const screenshot = isScreenshotIsSeen
-            ? `<img src="${screenshot_url}" width="332px" height="147px" ; ${blur_effect}>`
-            : ``
-
-            const descriptionImgSrc = chrome.runtime.getURL(
-              "assets/images/description.png"
-            );
-
-            var descriptionText =
-              item.description && item.description.length > 0
-                ? item.description
-                : item.title;
-
-            descriptionText =
-              descriptionText.length > 150
-                ? descriptionText.substring(0, 150) + "..."
-                : descriptionText;
-
-            const descriptionContent = `
-              <div class="brain-flex brain-flex-row w-full p-1 space-x-2" style="font-size:10px; line-height:17px;font-weight:400;">
-                <div class="shrink-0"><img src="${descriptionImgSrc}" width="16px" height="16px" /></div>
-                <div style="max-height:20px; margin-left: 9px; line-height: 10px; overflow: hidden; color: rgba(0,0,0,0.8);">${descriptionText}</div>
-              </div>
-            `;
-
-            var dateContent = "";
-
-            if (item.__timestamp) {
-              const date = new Date(item.__timestamp);
-              const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-              const monthIndex = date.getMonth();
-              const year = date.getFullYear();
-              const day = date.getDate();
-              const dateStr =
-                // date.getDate() +
-                // "/" +
-                // (date.getMonth() + 1) +
-                // "/" +
-                // date.getFullYear() +
-                // " " +
-                // date.getHours() +
-                // ":" +
-                // date.getMinutes();
-              
-               `${monthNames[monthIndex]} ${day}, ${year}`;
-
-              dateContent =
-                `<div style="margin:5px 0 3px 25px;font-size:10px; font-weight: 500; opacity:0.5;">` +
-                dateStr +
-                `</div>
-                
-                `;
-            }
-
-            let domain = item.domain;
-            let url = item.url;
-
-            // replace www. with empty string if www. only occurs once
-            // once because there might be such domain: "www.examplewww.com"
-            if (domain && domain.split("www.").length === 2) {
-              domain = domain.replace("www.", "");
-            }
-
-            if (domain && url) {
-              domain = url.split("//")[0] + "//" + domain;
-            }
-
-            elSmartpastItem.innerHTML =
-              `
-              <div style="font-family: 'Montserrat', sans-serif;position: relative; display: flex; flex-direction: column; justify-content: space-between; font-size: 16px;" class="space-y-4">
-              <div class="brain-flex brain-flex-col">
-                <div class="brain-flex brain-flex-row space-x-2">
-                ` +
-              favIcon +
-              `
-                    <div style="font-size:14px; font-family: 'Montserrat', sans-serif; font-weight: bold;">` +
-              title +
-              `
-                    </div>
-                  </div>
-                  <div style="font-weight:600; font-family: 'Montserrat', sans-serif; margin:5px 0 0 25px;font-size:10px;opacity:0.5;">` +
-              domain +
-              `</div>
+              const favIcon = `
+                <div>
+                  <img src="${item.favicon_url}" width="16" height="16" alt="favicon" />
                 </div>
-                ` +
-              screenshot +
-              `  
-              ` +
-              descriptionContent +
-              `
-              ` +
-              dateContent +
-              `
-              </div>
-             
               `;
-            smartPastContentEl.appendChild(elSmartpastItem);
-          });
-        }
-        document.getElementById(elBrainContentID).appendChild(tagLink);// end natalia 21/04 
-    
-         if(selectedText !== null) selectedText = null;
-       console.log('createSmartpastContent finished work');
-  });
-};
+
+              const title =
+                item.title.length > 75
+                  ? item.title.substring(0, 75) + "..."
+                  : item.title;
+
+              const screenshot_url = item.screenshot_url
+                ? item.screenshot_url
+                : item.favicon_url;
+
+              const blur_effect = !item.screenshot_url
+                ? "style=' filter: blur(6px);border:1px solid #EFEFEF; border-radius:8px; max-height: 147px;object-fit: contain; margin: 10px 0 auto;'"
+                : "";
+              // natalia 24.04
+              
+              const screenshot = isScreenshotIsSeen
+              ? `<img src="${screenshot_url}" width="332px" height="147px" ; ${blur_effect}>`
+              : ``
+
+              const descriptionImgSrc = chrome.runtime.getURL(
+                "assets/images/description.png"
+              );
+
+              var descriptionText =
+                item.description && item.description.length > 0
+                  ? item.description
+                  : item.title;
+
+              descriptionText =
+                descriptionText.length > 150
+                  ? descriptionText.substring(0, 150) + "..."
+                  : descriptionText;
+
+              const descriptionContent = `
+                <div class="brain-flex brain-flex-row w-full p-1 space-x-2" style="font-size:10px; line-height:17px;font-weight:400;">
+                  <div class="shrink-0"><img src="${descriptionImgSrc}" width="16px" height="16px" /></div>
+                  <div style="max-height:20px; margin-left: 9px; line-height: 10px; overflow: hidden; color: rgba(0,0,0,0.8);">${descriptionText}</div>
+                </div>
+              `;
+
+              var dateContent = "";
+
+              if (item.__timestamp) {
+                const date = new Date(item.__timestamp);
+                const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                const monthIndex = date.getMonth();
+                const year = date.getFullYear();
+                const day = date.getDate();
+                const dateStr =                
+                `${monthNames[monthIndex]} ${day}, ${year}`;
+
+                dateContent =
+                  `<div style="margin:5px 0 3px 25px;font-size:10px; font-weight: 500; opacity:0.5;">` +
+                  dateStr +
+                  `</div>
+                  
+                  `;
+              }
+
+              let domain = item.domain || extractDomain(item.url);
+              classNameDomain = (domain !== undefined) ? "" : ("invisible");
+
+              // let url = item.url;
+
+              // replace www. with empty string if www. only occurs once
+              // once because there might be such domain: "www.examplewww.com"
+              // if (domain && domain.split("www.").length === 2) {
+              //   domain = domain.replace("www.", "");
+              // }
+
+              // if (domain && url) {
+              //   domain = url.split("//")[0] + "//" + domain;
+              // }
+
+              elSmartpastItem.innerHTML =
+                `
+                <div style="font-family: 'Montserrat', sans-serif;position: relative; display: flex; flex-direction: column; justify-content: space-between; font-size: 16px;" class="space-y-4">
+                <div class="brain-flex brain-flex-col">
+                  <div class="brain-flex brain-flex-row space-x-2">
+                  ` +
+                favIcon +
+                `
+                      <div style="font-size:14px; font-family: 'Montserrat', sans-serif; font-weight: bold;">` +
+                title +
+                `
+                      </div>
+                    </div>
+                    <div class="` + classNameDomain + `" style="font-weight:600; font-family: 'Montserrat', sans-serif; margin:5px 0 0 25px;font-size:10px;opacity:0.5;">` +
+                domain +
+                `</div>
+                  </div>
+                  ` +
+                screenshot +
+                `  
+                ` +
+                descriptionContent +
+                `
+                ` +
+                dateContent +
+                `
+                </div>
+              
+                `;
+              smartPastContentEl.appendChild(elSmartpastItem);
+            });
+          }
+          document.getElementById(elBrainRootID).appendChild(tagLink);// end natalia 21/04 
+          if (tabOpened === tabFirstItemID)
+          tagLink.style.visibility = "visible";
+          if(selectedText !== null) selectedText = null;
+
+    });
+  }
+}; // end of createSmartpastContent function
        
 
   
@@ -769,6 +831,8 @@ function createSmartpastContent(data) {
 
 // tab tags content --start
 const createTagsContent = () => {
+  if (document.getElementById("taglink") !== null) 
+  document.getElementById("taglink").style.visibility = "hidden";
   let tabContent = document.createElement("div");
   tabContent.id = elBrainContentID + "-tags-content";
   tabContent.style.position = "relative";
@@ -1055,8 +1119,7 @@ const removeTag = (e) => {
       }
     }
   );
-  console.log(pageData.tags.length);
-  console.log(pageData.notes);
+
   if (pageData.tags.length  === 0 && (pageData.notes.length === 0 || pageData.notes === " ")) {
     drawBrainWithHands();
 }// natalia 17.04
@@ -1280,6 +1343,8 @@ const fillAutoCompleteContent = (items) => {
 
 // tab notes content --start
 const createNotesContent = () => {
+  if (document.getElementById("taglink") !== null) 
+  document.getElementById("taglink").style.visibility = "hidden";
   let tabContent = document.createElement("div");
   tabContent.id = elBrainContentID + "-notes-content";
   tabContent.style.position = "relative";
@@ -1396,7 +1461,7 @@ const saveNotes = () => {
       },
     },
     (response) => {
-      // console.log(response);
+
       if (response) {
         pageData.notes = notes;
 
@@ -1441,7 +1506,7 @@ chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
     chrome.storage.local.get(["access_token"], (data) => {
       if (data.access_token) {
         accessToken = data.access_token;
-        init();
+        init(request.isBrainDisplayed);
       }
     });
   } else if (request.action === "deinit") {
@@ -1462,8 +1527,7 @@ chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
     getSmartpastContent().then((data) => {
       createSmartpastContent(data);
     });
-
-  }
+  } 
 });
 
 if (document.readyState !== "complete") {

@@ -1,6 +1,14 @@
 const baseURL = "https://api.nlpgraph.com/stage/api";
 var isLoggedIn = false;
 
+
+// let isBrainDisplayed; // Added 2023-07-05
+
+// chrome.storage.local.get(["isBrainDisplayed"], (res) => {// Added 2023-07-05
+//      isBrainDisplayed = res.isBrainDisplayed ?   res.isBrainDisplayed : true;
+//      console.log("popup: " + isBrainDisplayed);
+// });
+
 document.addEventListener("DOMContentLoaded", function () {
   // replaced here 2023-03-22
 function loadUser() {
@@ -18,21 +26,21 @@ const renderInput = document.querySelector('.logo-switch input[type="checkbox"]#
 
 renderInput.addEventListener('change', () => { /// NEW 2023-07-05
 chrome.storage.local.set({isBrainDisplayed: renderInput.checked});  // true or false
-storeBrainDisplaySetting();
-checkSetting();
-renderInput.checked === true ?
-document.querySelector('.isEnabled').style.visibility = "hidden":
-document.querySelector('.isEnabled').style.visibility = "visible";
 });
 
-const offButton = document.getElementById('off-button');
-offButton.addEventListener('click', () => {
-    document.querySelector("#app-is-off").style.display = 'flex';
-    storeSetting(false);
-    checkSetting();
+  // to delete synchistory button if it was pushed once, and adjust the popup main page:
+  chrome.storage.local.get(["synchistory"]).then((result) => {
+    if (result.synchistory) {
+      document.querySelector(".sync-history").style.visibility = "hidden";
+      document.querySelector("div.snooze.popup-flex").style.top = "75px";
+      document.querySelector("div.block-the-page.popup-flex").style.top =
+        "125px";
+    }
+  });
 
-})
-
+  const switchButton = document.querySelector(
+    '.logo-switch input[type="checkbox"]#isEnabled'
+  );
   checkSetting(); // required to check toggle's condition after refresh app
 
   //TODO: Maybe a tiny loader, while fetching access_token?
@@ -68,8 +76,6 @@ offButton.addEventListener('click', () => {
     chrome.storage.local.set({
       access_token: null,
       user: null,
-      enabled: false,
-      isBrainDisplayed: false
     });
 
     document.getElementById("sign-in").style.display = "flex";
@@ -79,7 +85,8 @@ offButton.addEventListener('click', () => {
     document.getElementById("heybrain-blocked").style.display = "none"; /// 2023-03-19 Added by Stanislav
 
     //to turn off the app
-    storeSetting(false); // NATALIA code:after sign out toggle is always off
+    switchButton.checked = false; // NATALIA code:after sign out toggle is always off
+    storeSetting(); // NATALIA code:after sign out toggle is always off
     checkSetting(); // NATALIA code:after sign out toggle is always off
     chrome.tabs.query({ currentWindow: true }, function (tabs) {
       tabs.forEach((tab) => {
@@ -115,10 +122,6 @@ offButton.addEventListener('click', () => {
     document.getElementById("sign-up").style.display = "flex";
     document.getElementById("heybrain-settings").style.display = "none"; /// 2023-03-13 Added by Stanislav
     document.getElementById("heybrain-blocked").style.display = "none"; /// 2023-03-19 Added by Stanislav
-    // renderInput.checked = true;
-    // storeSetting(true); // NATALIA code:after sign up app is always on
-    // storeBrainDisplaySetting();
-    // checkSetting(); // 
   });
 
   var signInButton = document.getElementById("sign-in-button"); // sign in button
@@ -189,10 +192,9 @@ function signIn() {
         password.disabled = false;
         signInButton.disabled = false;
 
-        document.querySelector('.logo-switch input[type="checkbox"]#stopBrainRender').checked = true;
-        storeSetting(true); // NATALIA code:after sign in app is always on
-        storeBrainDisplaySetting()
-        checkSetting(); // 
+        switchButton.checked = true; // NATALIA code:after sign toggle is always on
+        storeSetting(); // NATALIA code:after sign toggle is always on
+        checkSetting(); // NATALIA code:after sign toggle is always on
       } else if (!alertShown) {
         email.disabled = false;
         password.disabled = false;
@@ -317,16 +319,11 @@ function signIn() {
           chrome.storage.local.set({
             access_token: response.data.user.api_key,
             user: JSON.stringify(response.data.user),
-            enabled: true,
-            isBrainDisplayed: true
           });
           // hide sign in form
           document.getElementById("sign-up").style.display = "none";
           // signed in form
           document.getElementById("signed-in").style.display = "flex";
-          // document.querySelector('.logo-switch input[type="checkbox"]#stopBrainRender').checked === true;
-          // storeBrainDisplaySetting();
-          checkSetting();
           // load user
           loadUser();
         } else {
@@ -426,49 +423,31 @@ function signIn() {
     });
   }); // End of sync-history button event listener.
 
-  function storeSetting(value) { // responsible for off/on of the extension
-    console.log('storeSetting, set enabled:'+ value);
-    chrome.storage.local.set({ enabled: value });
-  }
+  switchButton.addEventListener("change", function () {
+    storeSetting();
+    checkSetting();
+  }); // End of switchButton event listener.
 
-  function storeBrainDisplaySetting() {
-    // console.log('storeBrainDisplaySetting '+ renderInput.checked);
-    chrome.storage.local.set({isBrainDisplayed: document.querySelector('.logo-switch input[type="checkbox"]#stopBrainRender').checked}); 
+  function storeSetting() {
+    const isEnabled = switchButton.checked; //true or false
+    const setting = { enabled: isEnabled };
+    chrome.storage.local.set(setting);
   }
 
   function checkSetting() {
-    console.log('checkSetting...');
-    chrome.storage.local.get(["synchistory", "isBrainDisplayed", "enabled", "timer", "user"]).then((result) => {
-      // to delete synchistory button if it was pushed once, and adjust the popup main page:
-      console.log(result.user);
-      console.log(result.enabled);
-      console.log(result.timer);
-      console.log(result.isBrainDisplayed);
-    if (result.synchistory) {
-      document.querySelector(".sync-history").style.visibility = "hidden";
-      document.querySelector("div.snooze.popup-flex").style.top = "75px";
-      document.querySelector("div.block-the-page.popup-flex").style.top =
-        "125px";
-    }
-    //check timer
-    result.timer ? snoozeAlert.style.display = "flex" : snoozeAlert.style.display = "none";
-    
-    if (result.isBrainDisplayed === false) {
-      document.querySelector('.isEnabled').style.visibility = "visible";
-      document.querySelector('.logo-switch input[type="checkbox"]#stopBrainRender').checked = false;
-    } else {
-      document.querySelector('.isEnabled').style.visibility = "hidden";
-      document.querySelector('.logo-switch input[type="checkbox"]#stopBrainRender').checked = true;
-    }
-  
-    if (result.enabled === false && (result.timer === false || result.timer === undefined) && result.user !== null) {
-      document.getElementById("app-is-off").style.display = 'flex';
-    } else {
-      document.getElementById("app-is-off").style.display = 'none';
-    }
-  });
+    chrome.storage.local.get(["enabled"]).then((result) => {
+      const isEnabled = result.enabled;
+      switchButton.checked = isEnabled;
+    });
+    chrome.storage.local.get(["isBrainDisplayed"]).then((result) => {
+      const isBrainDisplayed = result.isBrainDisplayed;
+      renderInput.checked = isBrainDisplayed;
+    });
+    chrome.storage.local.get(["timer"]).then((result) => {
+      // console.log("timer is switched on: " + result.timer);
+      result.timer ? snoozeAlert.style.display = "flex" : snoozeAlert.style.display = "none";
+    });
   }
-
 
   /// 2023-03-13 Added by Stanislav: BEGIN ----------------------------------------------------------------
 
@@ -691,6 +670,7 @@ function signIn() {
 
   snoozeButton.addEventListener("click", () => {
     //initialize timer
+ 
     storeSetting();
     startTimer();
     chrome.runtime.sendMessage(
@@ -704,6 +684,7 @@ function signIn() {
   function startTimer() {
     //create alarm
     snoozeAlert.style.display = "flex";
+    switchButton.checked = false;
     chrome.alarms.create("timerAlarm", { delayInMinutes: delayInMinutes }); // minutes
     chrome.storage.local.set({ timer: true });
   }
@@ -711,6 +692,7 @@ function signIn() {
   function stopTimer() {
     //stop alarm
     snoozeAlert.style.display = "none";
+    switchButton.checked = true;
     timetext.innerHTML = "";
     chrome.alarms.clear("timerAlarm");
     chrome.storage.local.set({ timer: false });
@@ -718,7 +700,7 @@ function signIn() {
 
   wakeupButton.addEventListener("click", () => {
 
-    storeSetting(true);
+    storeSetting();
     stopTimer()
     chrome.runtime.sendMessage(
       {
@@ -732,18 +714,12 @@ function signIn() {
     
   if (request.action === "remove-snooze-window") {// to remove snooze window if popup is opened
     snoozeAlert.style.display = "none";
-    storeSetting(true);
+    switchButton.checked = true;
+    storeSetting();
+    console.log('snooze alert removed')
   } else if (request.action === "render-timer") { // to display remaining time
     timetext.innerHTML = request.text;
   }
-});
-
-const offAlert = document.querySelector("#app-is-off");
-offAlert.style.display = "none";
-const onButton = document.querySelector("#app-is-on");
-onButton.addEventListener("click", () => {
-  offAlert.style.display = "none";
-  storeSetting(true);
 });
 
 }); // End of DOMContentLoaded event listener.

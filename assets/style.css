@@ -26,14 +26,10 @@
   font-family: 'Montserrat', sans-serif;
  }
 
-#hey-brain-root,
-#hey-brain-content-smartpast-content,
-#test {
-  
+  #hey-brain-root,
+  #hey-brain-content-smartpast-content,
+  #test {
   font-family: 'Montserrat', sans-serif;
-  /* font-weight: 600; */
-  /*  font-family:  url('chrome-extension://__MSG_@@extension_id__/assets/font/Montserrat-Regular.ttf') format('ttf'); */
-
 }
 
 .hey-brain-main,
@@ -226,7 +222,10 @@
   margin-bottom: 0.25em;
 }
 
-/* Modified 2023-03-22 */
+.hey-brain-main .mt-1 {
+  margin-top: 0.25em;
+}
+
 .hey-brain-main .brain-flex {
   display: flex;
 }
@@ -234,6 +233,15 @@
 .hey-brain-main .hidden {
   display: none;
 }
+
+.hey-brain-main .invisible {
+  visibility: hidden;
+}
+
+.hey-brain-main .visible {
+  visibility: visible;
+}
+
 .hey-brain-main .h-full {
   height: 100%;
 }
@@ -247,6 +255,9 @@
   width: 3em;
 }
 
+.hey-brain-main .w-2 {
+  width: 0.625rem; 
+}
 /* Modified 2023-03-22 */
 .hey-brain-main .brain-flex-shrink-0 {
   flex-shrink: 0;
@@ -624,6 +635,8 @@
   align-self: center;
   justify-self: end;
 }
+
+
 .hey-brain-main .switch input {
   opacity: 0;
   width: 0;
@@ -668,6 +681,15 @@
 /*  circle in active input*/
 .hey-brain-main input:checked + .slider:before {
   background-color: #8962f4;
+}
+
+/* active input*/
+.hey-brain-main .green input:checked + .slider {
+  background-color: #d4fcd0;
+}
+/*  circle in active input*/
+.hey-brain-main .green input:checked + .slider:before {
+  background-color: #84DA93;
 }
 
 /* for movement*/
@@ -988,18 +1010,19 @@ div.snooze.popup-flex:hover {
 
 /*  Added by NATALIA 25.03:  */
 
-#snooze-content {
+#snooze-content,
+#app-is-off {
   z-index: 999999;
   flex-direction: column;
   position: absolute;
   background: white;
   align-items: center;
-  /* justify-content: center; */
   bottom: 0px;
   right: 0px;
   width: 100%;
   height: 100%;
 }
+
 
 
 /*  Added by NATALIA 25.03: END */
