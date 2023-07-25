@@ -141,24 +141,34 @@ chrome.storage.onChanged.addListener((changes) => {
 
   if (changes?.isBrainDisplayed) {
     isBrainDisplayed = changes.isBrainDisplayed.newValue;
-    // console.log("content changed to:" + isBrainDisplayed);
     init(isBrainDisplayed, false);  // render or hide brain without sending request to server
   }
 });
 
 // init --start
 const init = (isBrainDisplayed = true, isRequest = true) => { // by default it renders brain and sends request to server
-// console.log('init: isBrainDisplayed =' + isBrainDisplayed)
   pageSmartPast = [];
+  if (document.getElementById("hey-brain-drawer") !== null
+  && document.getElementById("hey-brain-root") !== null) 
+  return; // not to init if tab was already opened
 
+  // chrome.storage.local.get(["tabOpened"]).then((result) => { //20/07  to check opened tab by initializing new page and initializing tabOpened variable
+  //   if(result) {
+  //     tabOpened = result.tabOpened;
+  //   } else {
+  //     tabOpened = tabFirstItemID;
+  //   }
+
+  // });
+  tabOpened = tabFirstItemID;
   // 2023-03-20 Added by Stanislav: Delete elements if they're already exist
   if (document.getElementById("hey-brain-drawer") !== null) {
       document.body.removeChild(document.getElementById(elBrainDrawerID));
   }
-  if (document.getElementById("hey-brain-root") !== null) {
+  if (document.getElementById(elBrainRootID) !== null) {
       document.body.removeChild(document.getElementById(elBrainRootID));
   }
-  if (document.getElementById("hey-brain-root") !== null) {
+  if (document.getElementById(elBrainRootID) !== null) {
       document.body.removeChild(
       document.getElementById(elBrainRootDismissButton)
       );
@@ -179,13 +189,11 @@ const init = (isBrainDisplayed = true, isRequest = true) => { // by default it r
       elBrainDrawer.style.cursor = "pointer";
      
     elBrainDrawer.onclick = () => {
-      tabOpened = tabFirstItemID;
-     
       let elBrainRoot = document.getElementById(elBrainRootID);
       elBrainDrawer.style.right = "26px";
 
       if (elBrainRoot.style.transform === "translateX(100%)") {
-        document.getElementById('hey-brain-content')
+        document.getElementById(elBrainContentID)
         .innerHTML =
         `<div style="margin: 150px auto;"><img style="text-align:center; margin: auto;" src=${chrome.runtime.getURL(
           "assets/icons/Rolling-1s-200px.svg")}></div>`;
@@ -197,11 +205,19 @@ const init = (isBrainDisplayed = true, isRequest = true) => { // by default it r
         document.getElementById("brain-drawer-image").style.position = "absolute"; //03.05
         document.getElementById("brain-drawer-image").style.right = "7px"; //03.05
         checkPageData().then(() => {
-          if (tabOpened == tabFirstItemID) {
+          if (tabOpened === tabFirstItemID) {
             selectTabItem(tabFirstItemID)
           }   
+          if (tabOpened === tabSecondItemID ) {
+            // createTagsContent(); // 20.07 open last opened tab
+            selectTabItem (tabSecondItemID);  // 20.07 open last opened tab
+          }
+          if (tabOpened === tabThirdItemID ) {
+            createNotesContent(); // 20.07 open last opened tab
+            selectTabItem (tabThirdItemID);  // 20.07 open last opened tab
+          }
         });
-         
+
        
       } else {
         elBrainRoot.style.transform = "translateX(100%)";
@@ -214,13 +230,13 @@ const init = (isBrainDisplayed = true, isRequest = true) => { // by default it r
       
     };
 
-    checkPageData = async() => {
+    checkPageData = async() => { // not to start other operations until pageData === null
       let tries = 0;
 
       return new Promise(resolve => {
         const check = setInterval(() => {
           tries++;
-          if(pageData !== null || tries === 30) {
+          if(pageData !== null || tries === 15) {
             clearInterval(check);
             resolve (pageData);
           }
@@ -359,9 +375,10 @@ const init = (isBrainDisplayed = true, isRequest = true) => { // by default it r
         elBrainRoot.appendChild(elBrainRootTabs);
 
         // brain root tab first --start
-        let elBrainRootTabItemFirst = createTabItem(tabFirstItemID, "<span style='color:#6416F3; font-size:12px; font-weight:600;'>SMART</span>PAST"); // natalia 23.04
+        let elBrainRootTabItemFirst = createTabItem(tabFirstItemID, "<span style='color:#6416F3; font-size:12px; font-weight:600;'>SMART</span><span id='span' style='color: white'>PAST</span>"); // natalia 23.04
         elBrainRootTabItemFirst.style.height = tabItemHeight + "px";
-        elBrainRootTabItemFirst.style.backgroundColor = "#EFEFEF";  // natalia 23.04
+        // elBrainRootTabItemFirst.style.backgroundColor = "#EFEFEF";  // natalia 23.04
+        elBrainRootTabItemFirst.style.backgroundColor = tabItemDeactiveBackground;  // 20/07 to make all tabs deactive
         elBrainRootTabItemFirst.style.borderLeft = "1px solid rgba(200, 200, 200, 0.4)";// natalia 23.04
         elBrainRootTabItemFirst.style.borderBottom = "0px";// natalia 23.04
         elBrainRootTabItemFirst.style.borderBottom = "none";// natalia 23.04
@@ -371,11 +388,12 @@ const init = (isBrainDisplayed = true, isRequest = true) => { // by default it r
         elBrainRootTabItemFirst.style.fontFamily = "'Montserrat', sans-serif";
 
 
-        elBrainRootTabItemFirst.style.color = tabItemDeactiveBackground;
+        // elBrainRootTabItemFirst.style.color = tabItemDeactiveBackground;
         elBrainRootTabItemFirst.onclick = () => {
-          selectTabItem(tabFirstItemID);
           tabOpened = tabFirstItemID;
-          //  console.log(tabOpened);
+          selectTabItem(tabFirstItemID);
+          chrome.storage.local.set({'tabOpened': tabFirstItemID}) //20/07
+
         };
         elBrainRootTabs.appendChild(elBrainRootTabItemFirst);
         // brain root tab first --end
@@ -393,7 +411,8 @@ const init = (isBrainDisplayed = true, isRequest = true) => { // by default it r
         elBrainRootTabItemSecond.onclick = () => {
           selectTabItem(tabSecondItemID);
           tabOpened = tabSecondItemID;
-          //  console.log(tabOpened);
+          chrome.storage.local.set({'tabOpened': tabSecondItemID}) //20/07
+
         };
         elBrainRootTabs.appendChild(elBrainRootTabItemSecond);
         // brain root tab second --end
@@ -409,7 +428,8 @@ const init = (isBrainDisplayed = true, isRequest = true) => { // by default it r
         elBrainRootTabItemThird.onclick = () => {
           selectTabItem(tabThirdItemID);
           tabOpened = tabThirdItemID;
-          //  console.log(tabOpened);
+          chrome.storage.local.set({'tabOpened': tabThirdItemID}) 
+
         };
         elBrainRootTabs.appendChild(elBrainRootTabItemThird);
         // brain root tab second --third
@@ -528,9 +548,9 @@ function selectTabItem  (tabID)  {
     elTabItemContainerChildren[i].style.backgroundColor = "#0A0458";
     elTabItemContainerChildren[i].style.color = "#fff";
   }
-  elTabItem.style.backgroundColor = "rgba(243, 243, 243, 0.8)";
-  elTabItem.style.color = "#0A0458";
-  document.getElementById(elBrainLoaderID).style.display = "none";
+  elTabItem.style.backgroundColor = "rgba(243, 243, 243, 0.8)"; // bg color of active tab
+  elTabItem.style.color = "#0A0458"; // color of font of active tab
+  if( document.getElementById(elBrainLoaderID)) document.getElementById(elBrainLoaderID).style.display = "none";
 
   if (document.getElementById(elBrainContentID + "-tags-content-input")) {
     // remove input enter key listener
@@ -561,13 +581,18 @@ function selectTabItem  (tabID)  {
   }
 
   if (tabID === tabFirstItemID) {
-    tabOpened = tabFirstItemID;
-    pageSmartPast.length === 0 ? getSmartpastContent().then(data => createSmartpastContent(data)) : createSmartpastContent();
+    document.getElementById('span').style.color = "#0A0458";
+
+    if (pageSmartPast.length === 0 ) {
+      getSmartpastContent().then(data => createSmartpastContent(data)) 
+    } else {
+        createSmartpastContent(pageSmartPast);
+      } 
   } else if (tabID === tabSecondItemID) {
-    tabOpened = tabSecondItemID;
+    document.getElementById('span').style.color = "white";
     createTagsContent();
   } else if (tabID === tabThirdItemID) {
-    tabOpened = tabThirdItemID;
+    document.getElementById('span').style.color = "white";
     createNotesContent();
   }
 };
@@ -582,7 +607,7 @@ let selectedText = null;
 async function getSmartpastContent() {
 
   return new Promise(resolve => {
-    document.getElementById('hey-brain-content')
+    document.getElementById(elBrainContentID)
     .innerHTML =
     `<div style="margin: 150px auto;"><img style="text-align:center; margin: auto;" src=${chrome.runtime.getURL(
       "assets/icons/Rolling-1s-200px.svg")}></div>`;
@@ -634,7 +659,6 @@ function createSmartpastContent(data) {
   if(tabOpened === tabFirstItemID) {
     chrome.storage.local.get(["getsmartpast"]).then((result) => {
     pageSmartPast = result.getsmartpast;
-    
     }).then(() => {
       
     if (document.getElementById("taglink") !== null)  {document.getElementById("taglink").remove();}
@@ -833,6 +857,7 @@ function createSmartpastContent(data) {
 const createTagsContent = () => {
   if (document.getElementById("taglink") !== null) 
   document.getElementById("taglink").style.visibility = "hidden";
+
   let tabContent = document.createElement("div");
   tabContent.id = elBrainContentID + "-tags-content";
   tabContent.style.position = "relative";
@@ -1345,6 +1370,7 @@ const fillAutoCompleteContent = (items) => {
 const createNotesContent = () => {
   if (document.getElementById("taglink") !== null) 
   document.getElementById("taglink").style.visibility = "hidden";
+
   let tabContent = document.createElement("div");
   tabContent.id = elBrainContentID + "-notes-content";
   tabContent.style.position = "relative";
@@ -1513,10 +1539,10 @@ chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
     if (document.getElementById("hey-brain-drawer") !== null) {
       document.body.removeChild(document.getElementById(elBrainDrawerID));
     }
-    if (document.getElementById("hey-brain-root") !== null) {
+    if (document.getElementById(elBrainRootID) !== null) {
       document.body.removeChild(document.getElementById(elBrainRootID));
     }
-    if (document.getElementById("hey-brain-root") !== null) {
+    if (document.getElementById(elBrainRootID) !== null) {
       // 2023-03-20 Added by Stanislav
       document.body.removeChild(
         document.getElementById(elBrainRootDismissButton)

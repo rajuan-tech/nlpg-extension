@@ -427,7 +427,6 @@ function signIn() {
   }); // End of sync-history button event listener.
 
   function storeSetting(value) { // responsible for off/on of the extension
-    console.log('storeSetting, set enabled:'+ value);
     chrome.storage.local.set({ enabled: value });
   }
 
@@ -437,13 +436,9 @@ function signIn() {
   }
 
   function checkSetting() {
-    console.log('checkSetting...');
     chrome.storage.local.get(["synchistory", "isBrainDisplayed", "enabled", "timer", "user"]).then((result) => {
       // to delete synchistory button if it was pushed once, and adjust the popup main page:
-      console.log(result.user);
-      console.log(result.enabled);
-      console.log(result.timer);
-      console.log(result.isBrainDisplayed);
+
     if (result.synchistory) {
       document.querySelector(".sync-history").style.visibility = "hidden";
       document.querySelector("div.snooze.popup-flex").style.top = "75px";
